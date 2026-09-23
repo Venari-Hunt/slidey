@@ -6,6 +6,7 @@ import {
     type WorkspaceLeaf,
 } from "obsidian";
 import type { Options, SlidesExtendedSettings } from "../@types";
+import { headingsToSlides, slidesMode } from "../obsidian/slidesMode";
 import type { SlidesExtendedPlugin } from "../slidesExtended-Plugin";
 import { YamlParser } from "../yaml/yamlParser";
 
@@ -315,6 +316,11 @@ export class RevealPreviewView extends ItemView {
     }
 
     getSlideLines(source: string, separators: Options) {
+        if (slidesMode(separators) === "headings") {
+            const { starts } = headingsToSlides(source, []);
+            return new Map(starts.map((line, i) => [`${i},0`, line]));
+        }
+
         let store = new Map<number, string>();
 
         const l = this.getIdxOfRegex(/^/gm, source);

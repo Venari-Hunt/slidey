@@ -15,6 +15,7 @@ Obsidian community plugin: a markdown note → a controllable, preset-styled rev
 
 ## Docs (read only the one a task touches)
 
+- `docs/authoring-modes.md` — `slides:` frontmatter dispatch, headings mode.
 - `docs/presets.md` — preset pipeline, deck DOM shape, changing starters, swatches.
 - `docs/preview-and-present.md` — preview pane, clicker key forwarding, present mode, commands.
 - `docs/development.md` — build, dev vault, live testing over CDP + its gotchas.
