@@ -28,9 +28,9 @@ Editor → slide sync: `RevealPreviewView.getSlideLines` uses `headingsToSlides(
 
 Tests: `test/slidesMode.unit.test.ts`. Live test note: `02 - Projetos/Slidey/_slidey-headings-test.md` in Vault Claude.
 
-### Preset dots (editor gutter)
+### Preset dots and pills (editor)
 
-`src/obsidian/presetGutter.ts` — a CM6 `gutter` registered with `registerEditorExtension`. In a note whose frontmatter has `slides: headings`, each heading line gets a dot for the preset it resolves to (`headingOutline()` in `slidesMode.ts`, which shares `splitSections` + `readMarkers` with `headingsToSlides`, so the dot and the deck can't disagree). Blank level preset falls back to the frontmatter `preset:`.
+`src/obsidian/presetGutter.ts` — one CM6 `StateField` registered with `registerEditorExtension`, drawn two ways: a `gutter` dot and, at the end of the heading line, a pill widget (`Decoration.widget`, `side: 1`) naming the preset. `markFor()` gives both the same kind/text/color. In a note whose frontmatter has `slides: headings`, each heading line gets a dot for the preset it resolves to (`headingOutline()` in `slidesMode.ts`, which shares `splitSections` + `readMarkers` with `headingsToSlides`, so the dot and the deck can't disagree). Blank level preset falls back to the frontmatter `preset:`.
 
 | Dot | Meaning |
 |---|---|
@@ -39,14 +39,15 @@ Tests: `test/slidesMode.unit.test.ts`. Live test note: `02 - Projetos/Slidey/_sl
 | dashed red ring | preset name that doesn't exist |
 | short dash | `%% noslide %%` |
 
+Pill text: the preset name (in its color), `no preset`, `name?` (red dashed), `not a slide` (struck through).
+
 - Rebuilt on every doc change (parses the frontmatter with `getFrontMatterInfo` + `parseYaml`, not the metadata cache, so toggling `slides:` updates instantly).
-- `saveSettings` calls `refreshPresetGutters()`, which dispatches a `refreshDots` effect to every open editor so dots recolor after settings edits.
+- `saveSettings` calls `refreshPresetGutters()`, which dispatches a `refreshMarks` effect to every open editor so dots and pills recolor after settings edits.
 - The settings preset list prepends the same dot to each preset name as the legend.
 - Spacing lives on the dot, not the gutter, so non-deck notes get a 0-width gutter.
 - `@codemirror/state` / `@codemirror/view` are devDependencies pinned to Obsidian's versions and external in esbuild (Obsidian provides them at runtime).
 
 ## Next
 
-- Heading pill (the preset name on the heading line) — the owner's second pick after the gutter dot.
 - `blocks` mode.
 - Speaker notes and per-slide background image markers.
