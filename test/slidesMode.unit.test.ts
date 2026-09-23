@@ -2,6 +2,8 @@ import type { Options } from "../src/@types";
 import { PresetProcessor } from "../src/obsidian/processors/presetProcessor";
 import {
     applySlidesMode,
+    blockOutline,
+    blocksToSlides,
     HEADING_SLIDE_SEPARATOR,
     headingOutline,
     headingsToSlides,
@@ -151,5 +153,62 @@ describe("headingOutline", () => {
             { line: 3, level: 2, preset: "quote", skip: false },
             { line: 9, level: 3, preset: "bullets", skip: true },
         ]);
+    });
+});
+
+describe("blocksToSlides", () => {
+    it("reads blocks case-insensitively", () => {
+        expect(slidesMode({ slides: "Blocks" })).toBe("blocks");
+    });
+
+    it("keeps only %% slide %% regions", () => {
+        const { markdown, starts } = blocksToSlides(
+            "research\n%% slide %%\n# One\n%% endslide %%\nprose\n%% slide preset=quote %%\n> Two\n%% /slide %%\nmore prose",
+        );
+        expect(slidesOf(markdown)).toEqual([
+            "# One",
+            '<!-- slide preset="quote" -->\n> Two',
+        ]);
+        expect(starts).toEqual([1, 5]);
+    });
+
+    it("ends a region at the next marker or the end of the note", () => {
+        const { markdown } = blocksToSlides(
+            "%% slide %%\nA\n%% slide %%\nB\n---\nC",
+        );
+        expect(slidesOf(markdown)).toEqual(["A", "B\n---\nC"]);
+    });
+
+    it("ignores markers inside fenced code", () => {
+        const md = "%% slide %%\n```\n%% slide %%\n%% endslide %%\n```";
+        expect(slidesOf(blocksToSlides(md).markdown)).toEqual([
+            "```\n%% slide %%\n%% endslide %%\n```",
+        ]);
+    });
+
+    it("does not treat other words as markers", () => {
+        expect(blockOutline("%% slideshow %%\n%% slide-deck %%")).toEqual([]);
+    });
+
+    it("shows a hint when there are no blocks", () => {
+        const { markdown, starts } = blocksToSlides("just a note");
+        expect(markdown).toContain("No slides yet");
+        expect(starts).toEqual([0]);
+    });
+
+    it("outlines each marker with its preset", () => {
+        expect(
+            blockOutline("x\n%% slide preset=cover %%\ny\n%% slide %%"),
+        ).toEqual([
+            { line: 1, level: 0, preset: "cover", skip: false },
+            { line: 3, level: 0, preset: "", skip: false },
+        ]);
+    });
+
+    it("applySlidesMode switches to sentinels", () => {
+        const options = getSlideOptions({ slides: "blocks" } as Partial<Options>);
+        const out = applySlidesMode("%% slide %%\nA\n%% slide %%\nB", options);
+        expect(options.separator).toBe(HEADING_SLIDE_SEPARATOR);
+        expect(slidesOf(out)).toEqual(["A", "B"]);
     });
 });

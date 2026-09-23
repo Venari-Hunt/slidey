@@ -15,12 +15,12 @@ import {
 } from "@codemirror/view";
 import { getFrontMatterInfo, parseYaml, type Workspace } from "obsidian";
 import type { Options, SlidesExtendedSettings } from "../@types";
-import { headingOutline, slidesMode } from "./slidesMode";
+import { blockOutline, headingOutline, slidesMode } from "./slidesMode";
 
-// Editor marks for `slides: headings` notes, so the slide each heading becomes
-// is visible while writing: a dot in the gutter beside every heading, in its
-// preset's color, and a pill with the preset name at the end of the heading
-// line. Hover shows the full label.
+// Editor marks for `slides: headings` / `slides: blocks` notes, so the slide
+// each heading (or `%% slide %%` line) becomes is visible while writing: a dot
+// in the gutter, in its preset's color, and a pill with the preset name at the
+// end of the line. Hover shows the full label.
 
 // One color per preset, by its position in Settings → Slide presets. Also
 // shown next to each preset there as the legend.
@@ -126,7 +126,8 @@ function buildMarks(
     } catch {
         return NO_MARKS;
     }
-    if (slidesMode(frontmatter as Partial<Options>) !== "headings") {
+    const mode = slidesMode(frontmatter as Partial<Options>);
+    if (mode === "separators") {
         return NO_MARKS;
     }
 
@@ -140,7 +141,9 @@ function buildMarks(
 
     const dots = [];
     const pills = [];
-    const outline = headingOutline(text.substring(info.contentStart), levels);
+    const body = text.substring(info.contentStart);
+    const outline =
+        mode === "blocks" ? blockOutline(body) : headingOutline(body, levels);
     for (const heading of outline) {
         const line = state.doc.line(heading.line + lineOffset + 1);
         const mark = markFor(
