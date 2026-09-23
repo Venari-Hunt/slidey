@@ -121,6 +121,39 @@ div.reveal-preview-view>iframe {
     background: var(--text-faint);
 }
 
+/* Pill at the end of each heading line naming its preset (same colors as the
+   dot). Fixed small size so it doesn't grow with the heading font. */
+.slidey-preset-pill {
+    display: inline-block;
+    margin-left: 0.6em;
+    padding: 0 0.6em;
+    border-radius: 1em;
+    font-family: var(--font-interface);
+    font-size: var(--font-ui-smaller);
+    font-weight: normal;
+    font-style: normal;
+    line-height: 1.6;
+    vertical-align: middle;
+    white-space: nowrap;
+    user-select: none;
+    color: var(--text-muted);
+    border: 1px solid var(--background-modifier-border);
+}
+
+.slidey-preset-pill-preset {
+    color: var(--slidey-dot-color);
+    border-color: var(--slidey-dot-color);
+}
+
+.slidey-preset-pill-unknown {
+    color: var(--text-error);
+    border: 1px dashed var(--text-error);
+}
+
+.slidey-preset-pill-skip {
+    text-decoration: line-through;
+}
+
 /* Settings → Slide presets: a miniature sample slide per preset. The preset's
    own CSS (scoped to [data-swatch="i"]) overrides these black-theme defaults.
    Font size mirrors a 960px-wide reveal slide shrunk to the swatch width. */
