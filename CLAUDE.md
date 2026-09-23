@@ -52,6 +52,8 @@ As of 2026-09-07: fork assembled, rebranded, builds clean, **smoke-tested live i
 
 The repo is public (2026-09-07), so the plugin's runtime `slidey.zip` download from the matching GitHub release works for a fresh non-dev install — verified against the `0.1.0` asset.
 
+As of 2026-09-23: **`0.2.0` released** — the first real (non-local) run of `release.yml` via `workflow_dispatch`; it bumped the version/tag itself, built plugin + reveal-dist, packaged `slidey.zip`, and published the GitHub Release. Bundled **present mode** (hotkey → fullscreen, mouse-move "exit presentation" control, confirmed working live) plus **slide presets** and **presentation-clicker robustness**, both already shipped in earlier sessions but never version-bumped past `0.1.0` until now. Also: the "Slidey" CardBoard tab and inbox/Board naming-drift fixes landed. Note: the GitHub owner/repo renamed `joaovenari` → `Venari-Hunt` (`git remote`s still point at the old name — GitHub redirects pushes/pulls fine, but repointing them needs the user, since Claude's auto-mode classifier blocks remote URL changes). Next: tune the starter presets with the user, then image-layout defaults and export polish.
+
 ### Smoke-testing over CDP
 
 Obsidian must be launched with `--remote-debugging-port=9222` (needs the user to quit their running instance first). The deck renders in a separate `type:"iframe"` CDP target at `http://localhost:3000/<vault-relative-path>` — connect to that target directly; `window.Reveal` is the reveal.js API. Details + scripts in Claude memory (`slidey-obsidian-cdp-testing`).
