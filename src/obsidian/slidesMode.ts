@@ -14,19 +14,31 @@ export type SlidesMode = "separators" | "headings" | "blocks";
 // read it as a slide annotation).
 export const HEADING_SLIDE_SEPARATOR = "\n<!-- @slidey:slide -->\n";
 export const HEADING_VERTICAL_SEPARATOR = "\n<!-- @slidey:vertical -->\n";
+// Replaces a `%% notes %%` line; the rest of the slide is speaker notes. A
+// sentinel rather than upstream's `note:` so prose can't start notes by accident.
+export const HEADING_NOTES_SEPARATOR = "<!-- @slidey:notes -->";
 
 const HEADING = /^(#{1,6})[ \t]+\S/;
 const FENCE = /^[ \t]{0,3}(`{3,}|~{3,})/;
 const MARKER = /^\s*%%\s*(.*?)\s*%%\s*$/;
+const NOTES_MARKER = /^\s*%%\s*notes?\s*%%\s*$/i;
 const SLIDE_COMMENT = /<!--\s*\.?slide\b/;
 const BLOCK_START = /^\s*%%\s*slide(?=\s|%)(.*?)%%\s*$/i;
 const BLOCK_END = /^\s*%%\s*(?:end\s*slide|\/\s*slide)\s*%%\s*$/i;
-const PRESET_ATTR = /\bpreset\s*=\s*"?([^"\s]+)"?/i;
+const ATTR = /\b(\w+)\s*=\s*("[^"]*"|\[\[[^\]]*\]\]|[^\s"]+)/g;
+const WIKILINK = /^\[\[([^\]|]+)(?:\|[^\]]*)?\]\]$/;
+const IMAGE_FILE = /\.(?:png|jpe?g|gif|webp|svg|bmp|avif)$/i;
 
 // Shown when a blocks-mode note has no regions yet. Entities keep the markers
 // from being read as Obsidian comments.
 const NO_BLOCKS_HINT =
     "No slides yet. Put a line reading <code>&#37;&#37; slide &#37;&#37;</code> above the part of the note you want as a slide, and <code>&#37;&#37; endslide &#37;&#37;</code> after it.";
+
+/** Per-slide settings read from `%% … %%` markers. */
+interface SlideAttrs {
+    preset?: string;
+    bg?: string;
+}
 
 export function slidesMode(options: Partial<Options>): SlidesMode {
     const value =
@@ -51,6 +63,7 @@ export function applySlidesMode(markdown: string, options: Options): string {
     }
     options.separator = HEADING_SLIDE_SEPARATOR;
     options.verticalSeparator = HEADING_VERTICAL_SEPARATOR;
+    options.notesSeparator = HEADING_NOTES_SEPARATOR;
     if (mode === "blocks") {
         return blocksToSlides(markdown).markdown;
     }
@@ -89,11 +102,12 @@ export function headingOutline(
     return splitSections(markdown)
         .filter((section) => section.level > 0)
         .map((section) => {
-            const { skip, preset } = readMarkers(section.lines);
+            const { skip, attrs } = readMarkers(section.lines);
             return {
                 line: section.start,
                 level: section.level,
-                preset: preset ?? levelPreset(levelPresets, section.level),
+                preset:
+                    attrs.preset ?? levelPreset(levelPresets, section.level),
                 skip,
             };
         });
@@ -105,6 +119,8 @@ export function headingOutline(
  * a heading configure that slide and are removed:
  *   `%% noslide %%`        — leave this section out of the deck
  *   `%% preset=quote %%`   — use this preset instead of the level's one
+ *   `%% bg=photo.jpg %%`   — background picture (or color) for this slide
+ * A `%% notes %%` line anywhere in the section starts its speaker notes.
  *
  * Returns the deck markdown plus, per slide, the source line it starts on
  * (used by the preview to follow the editor cursor).
@@ -118,17 +134,22 @@ export function headingsToSlides(
     for (const section of splitSections(markdown)) {
         if (section.level === 0) {
             if (section.lines.join("").trim()) {
-                slides.push(section.lines.join("\n"));
+                slides.push(withNotes(section.lines).join("\n"));
                 starts.push(section.start);
             }
             continue;
         }
-        const { lines, skip, preset } = readMarkers(section.lines);
+        const { lines, skip, attrs } = readMarkers(section.lines);
         if (skip) {
             continue;
         }
-        const name = preset ?? levelPreset(levelPresets, section.level);
-        slides.push(withPreset(lines.join("\n"), name));
+        slides.push(
+            withAttrs(withNotes(lines).join("\n"), {
+                ...attrs,
+                preset:
+                    attrs.preset ?? levelPreset(levelPresets, section.level),
+            }),
+        );
         starts.push(section.start);
     }
 
@@ -137,16 +158,17 @@ export function headingsToSlides(
 
 interface Block {
     start: number;
-    preset: string;
+    attrs: SlideAttrs;
     lines: string[];
 }
 
 /**
  * Blocks mode: only regions opened by a `%% slide %%` line become slides.
  * A region ends at `%% endslide %%` (or `%% /slide %%`), the next
- * `%% slide %%`, or the end of the note. `%% slide preset=quote %%` picks the
- * preset; without one the deck default applies. Markers inside fenced code
- * are text.
+ * `%% slide %%`, or the end of the note. `%% slide preset=quote bg=photo.jpg %%`
+ * picks the preset and background; without a preset the deck default applies.
+ * A `%% notes %%` line inside a region starts its speaker notes. Markers
+ * inside fenced code are text.
  */
 export function blocksToSlides(markdown: string): {
     markdown: string;
@@ -158,7 +180,9 @@ export function blocksToSlides(markdown: string): {
     }
     return {
         markdown: blocks
-            .map((block) => withPreset(block.lines.join("\n"), block.preset))
+            .map((block) =>
+                withAttrs(withNotes(block.lines).join("\n"), block.attrs),
+            )
             .join(HEADING_SLIDE_SEPARATOR),
         starts: blocks.map((block) => block.start),
     };
@@ -169,7 +193,7 @@ export function blockOutline(markdown: string): HeadingSlide[] {
     return splitBlocks(markdown).map((block) => ({
         line: block.start,
         level: 0,
-        preset: block.preset,
+        preset: block.attrs.preset ?? "",
         skip: false,
     }));
 }
@@ -177,26 +201,15 @@ export function blockOutline(markdown: string): HeadingSlide[] {
 function splitBlocks(markdown: string): Block[] {
     const blocks: Block[] = [];
     let current: Block | null = null;
-    let fence: string | null = null;
+    const inCode = fenceTracker();
 
     markdown.split(/\r?\n/).forEach((line, index) => {
-        const fenceMatch = FENCE.exec(line);
-        if (fence) {
-            if (
-                fenceMatch &&
-                fenceMatch[1][0] === fence[0] &&
-                fenceMatch[1].length >= fence.length
-            ) {
-                fence = null;
-            }
-        } else if (fenceMatch) {
-            fence = fenceMatch[1];
-        } else {
+        if (!inCode(line)) {
             const start = BLOCK_START.exec(line);
             if (start) {
                 current = {
                     start: index,
-                    preset: PRESET_ATTR.exec(start[1])?.[1] ?? "",
+                    attrs: readAttrs(start[1]).attrs,
                     lines: [],
                 };
                 blocks.push(current);
@@ -219,33 +232,44 @@ function levelPreset(levelPresets: string[], level: number): string {
 // Section 0 (level 0) holds whatever comes before the first heading.
 function splitSections(markdown: string): Section[] {
     const sections: Section[] = [{ start: 0, level: 0, lines: [] }];
-    let fence: string | null = null;
+    const inCode = fenceTracker();
 
     markdown.split(/\r?\n/).forEach((line, index) => {
-        const fenceMatch = FENCE.exec(line);
-        if (fence) {
-            if (
-                fenceMatch &&
-                fenceMatch[1][0] === fence[0] &&
-                fenceMatch[1].length >= fence.length
-            ) {
-                fence = null;
-            }
-        } else if (fenceMatch) {
-            fence = fenceMatch[1];
-        } else {
-            const heading = HEADING.exec(line);
-            if (heading) {
-                sections.push({
-                    start: index,
-                    level: heading[1].length,
-                    lines: [],
-                });
-            }
+        const heading = !inCode(line) && HEADING.exec(line);
+        if (heading) {
+            sections.push({
+                start: index,
+                level: heading[1].length,
+                lines: [],
+            });
         }
         sections[sections.length - 1].lines.push(line);
     });
     return sections;
+}
+
+// Feed lines in order; answers whether each one is part of a fenced code
+// block (fence lines included).
+function fenceTracker(): (line: string) => boolean {
+    let fence: string | null = null;
+    return (line) => {
+        const match = FENCE.exec(line);
+        if (fence) {
+            if (
+                match &&
+                match[1][0] === fence[0] &&
+                match[1].length >= fence.length
+            ) {
+                fence = null;
+            }
+            return true;
+        }
+        if (match) {
+            fence = match[1];
+            return true;
+        }
+        return false;
+    };
 }
 
 // Consumes the `%% … %%` lines (and blank lines between them) right under the
@@ -253,10 +277,10 @@ function splitSections(markdown: string): Section[] {
 function readMarkers(lines: string[]): {
     lines: string[];
     skip: boolean;
-    preset?: string;
+    attrs: SlideAttrs;
 } {
     let skip = false;
-    let preset: string | undefined;
+    const attrs: SlideAttrs = {};
     const kept = [lines[0]];
     let index = 1;
     for (; index < lines.length; index++) {
@@ -266,7 +290,7 @@ function readMarkers(lines: string[]): {
             continue;
         }
         const marker = MARKER.exec(line);
-        if (!marker) {
+        if (!marker || NOTES_MARKER.test(line)) {
             break;
         }
         const body = marker[1];
@@ -274,33 +298,85 @@ function readMarkers(lines: string[]): {
             skip = true;
             continue;
         }
-        const presetMatch = /^(?:slide\s+)?preset\s*=\s*"?([^"\s]+)"?$/i.exec(
-            body,
-        );
-        if (presetMatch) {
-            preset = presetMatch[1];
+        const read = readAttrs(body.replace(/^slide\s+/i, ""));
+        if (!read.rest && (read.attrs.preset || read.attrs.bg)) {
+            Object.assign(attrs, read.attrs);
             continue;
         }
         kept.push(line);
     }
-    return { lines: kept.concat(lines.slice(index)), skip, preset };
+    return { lines: kept.concat(lines.slice(index)), skip, attrs };
 }
 
-// Hands the preset to PresetProcessor via the slide comment it already reads.
-// An explicit `preset=` on an existing slide comment wins.
-function withPreset(slide: string, name: string): string {
-    if (!name) {
-        return slide;
+// Reads `preset=quote bg=[[My photo.jpg]]`. `rest` is whatever wasn't a known
+// attribute, so a marker holding anything else can be left alone.
+function readAttrs(text: string): { attrs: SlideAttrs; rest: string } {
+    const attrs: SlideAttrs = {};
+    const rest = text.replace(ATTR, (match, key: string, raw: string) => {
+        const value = raw.replace(/^"|"$/g, "").trim();
+        switch (key.toLowerCase()) {
+            case "preset":
+                attrs.preset = value;
+                return "";
+            case "bg":
+                attrs.bg = bgValue(value);
+                return "";
+            default:
+                return match;
+        }
+    });
+    return { attrs, rest: rest.trim() };
+}
+
+// Picture files become `[[file]]`, which MediaProcessor resolves to the
+// vault path; colors and URLs pass through.
+function bgValue(value: string): string {
+    const target = WIKILINK.exec(value)?.[1].trim() ?? value;
+    return IMAGE_FILE.test(target) && !target.includes("://")
+        ? `[[${target}]]`
+        : target;
+}
+
+// The first `%% notes %%` line (outside code) becomes the notes separator;
+// later ones are dropped, since reveal.js takes a single split.
+function withNotes(lines: string[]): string[] {
+    const inCode = fenceTracker();
+    let found = false;
+    const out: string[] = [];
+    for (const line of lines) {
+        if (!inCode(line) && NOTES_MARKER.test(line)) {
+            if (!found) {
+                out.push(HEADING_NOTES_SEPARATOR);
+            }
+            found = true;
+            continue;
+        }
+        out.push(line);
     }
-    const attr = `preset="${name.replace(/"/g, "")}"`;
+    return out;
+}
+
+// Hands preset and background to the processors via the slide comment they
+// already read. Attributes already on an existing slide comment win.
+function withAttrs(slide: string, attrs: SlideAttrs): string {
+    const owned: [keyof SlideAttrs, RegExp][] = [
+        ["preset", /\bpreset\s*=/],
+        ["bg", /\b(?:bg|data-background-\w+)\s*=/],
+    ];
     const comment = SLIDE_COMMENT.exec(slide);
-    if (!comment) {
-        return `<!-- slide ${attr} -->\n${slide}`;
-    }
-    const end = slide.indexOf("-->", comment.index);
-    if (/\bpreset\s*=/.test(slide.substring(comment.index, end))) {
+    const existing = comment
+        ? slide.substring(comment.index, slide.indexOf("-->", comment.index))
+        : "";
+    const added = owned
+        .filter(([key, taken]) => attrs[key] && !taken.test(existing))
+        .map(([key]) => `${key}="${attrs[key]?.replace(/"/g, "")}"`)
+        .join(" ");
+    if (!added) {
         return slide;
+    }
+    if (!comment) {
+        return `<!-- slide ${added} -->\n${slide}`;
     }
     const at = comment.index + comment[0].length;
-    return `${slide.substring(0, at)} ${attr}${slide.substring(at)}`;
+    return `${slide.substring(0, at)} ${added}${slide.substring(at)}`;
 }

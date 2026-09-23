@@ -60,6 +60,16 @@ Pill text: the preset name (in its color), `no preset`, `name?` (red dashed), `n
 
 Live test note: `02 - Projetos/Slidey/_slidey-blocks-test.md` in Vault Claude.
 
+## Speaker notes and backgrounds (both modes)
+
+Handled in `slidesMode.ts` for headings and blocks mode; separator decks keep upstream's `note:` and `<!-- slide bg="…" -->`.
+
+- **Notes** — a `%% notes %%` (or `%% note %%`) line, anywhere in the slide outside fenced code, becomes `HEADING_NOTES_SEPARATOR` (`<!-- @slidey:notes -->`). `applySlidesMode` sets `options.notesSeparator` to it, so reveal.js (`data-separator-notes`) and the processors that split notes by literal `indexOf` (drop, template) cut there. Only the first marker counts; later ones are dropped (reveal takes one split). Upstream's `note:` separator is off in these modes, so prose containing "note:" stays on the slide.
+- **Background** — `bg=` in a heading marker (`%% bg=photo.jpg %%`, `%% preset=quote bg=#224466 %%`) or on the `%% slide … %%` line. `readAttrs()` parses `key=value` pairs (value: `"quoted"`, `[[wikilink]]`, or a bare token). Image filenames and `[[file|alias]]` become `[[file]]`, which `MediaProcessor` rewrites to the vault path (its quoted-link branch); colors and URLs pass through. `withAttrs()` writes `bg="…"` onto the slide comment next to `preset=`. `BackgroundTransformer` turns it into `data-background-image` / `data-background-color`. A `bg` or `data-background-*` already on the slide comment wins; the marker's `bg` beats a preset's `background`.
+- A heading marker with any unknown key (`%% bg=a.jpg foo=1 %%`) is left in place as a plain comment.
+
+Live test note: `02 - Projetos/Slidey/_slidey-notes-bg-test.md` in Vault Claude.
+
 ## Next
 
-- Speaker notes and per-slide background image markers.
+- Transitions per slide (owner deferred).
