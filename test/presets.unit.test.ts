@@ -158,7 +158,7 @@ describe("upgradeStarterPresets", () => {
 
     it("replaces unedited retired starter CSS", () => {
         const presets = [{ name: "image-left", css: oldImageLeft }];
-        expect(upgradeStarterPresets(presets)).toBe(true);
+        expect(upgradeStarterPresets(presets)).toEqual(["image-left"]);
         expect(presets[0].css).toBe(
             STARTER_PRESETS.find((p) => p.name === "image-left")?.css,
         );
@@ -166,7 +166,7 @@ describe("upgradeStarterPresets", () => {
 
     it("leaves user-edited CSS alone", () => {
         const presets = [{ name: "image-left", css: `${oldImageLeft}\n& h2{}` }];
-        expect(upgradeStarterPresets(presets)).toBe(false);
+        expect(upgradeStarterPresets(presets)).toEqual([]);
         expect(presets[0].css).toContain("& h2{}");
     });
 });

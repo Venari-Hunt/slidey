@@ -16,7 +16,7 @@ Slide content is **not** a direct child of `<section>`: it sits inside an absolu
 
 ## Changing a starter preset
 
-Stored presets are *copies* of the starters, so editing `STARTER_PRESETS` doesn't reach existing installs. Add the old CSS to `RETIRED_STARTER_CSS` in `presets.ts`; `upgradeStarterPresets()` (called from `loadSettings`) swaps it for the new CSS only where the user never edited it.
+Stored presets are *copies* of the starters, so editing `STARTER_PRESETS` doesn't reach existing installs. Add the old CSS to `RETIRED_STARTER_CSS` in `presets.ts`; `upgradeStarterPresets()` (called from `loadSettings`) swaps it for the new CSS only where the user never edited it, and returns the upgraded names so `loadSettings` shows a Notice (no silent changes).
 
 ## Preview swatches (0.3.0)
 

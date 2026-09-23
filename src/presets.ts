@@ -124,20 +124,20 @@ const RETIRED_STARTER_CSS: Record<string, { from: string; to: string }> = {
 /**
  * Presets are copied into settings, so starter fixes don't reach existing
  * installs on their own. Swap in the new CSS only where the user never
- * edited the old starter CSS. Returns true if anything changed.
+ * edited the old starter CSS. Returns the names of upgraded presets.
  */
 export function upgradeStarterPresets(
     presets: SlidePreset[] | undefined,
-): boolean {
-    let changed = false;
+): string[] {
+    const upgraded: string[] = [];
     for (const preset of presets ?? []) {
         const retired = RETIRED_STARTER_CSS[preset?.name];
         if (retired && preset.css === retired.from) {
             preset.css = retired.to;
-            changed = true;
+            upgraded.push(preset.name);
         }
     }
-    return changed;
+    return upgraded;
 }
 
 export const STARTER_PRESETS: SlidePreset[] = [
