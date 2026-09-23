@@ -56,7 +56,7 @@ Pill text: the preset name (in its color), `no preset`, `name?` (red dashed), `n
 - No `preset=` → deck default (`preset:` frontmatter). The preset reaches `PresetProcessor` through the same `withPreset()` slide comment as headings mode.
 - Markers inside fenced code are text. `%% slideshow %%` and similar are not markers (`slide` must be followed by space or `%`).
 - A note with no regions renders one hint slide explaining the markers (HTML entities, so the `%%` isn't read as a comment).
-- Uses the same sentinel separators as headings mode; `getSlideLines` uses `blocksToSlides(...).starts` for cursor sync. The dots and pills (below) sit on each `%% slide %%` line.
+- Uses the same sentinel separators as headings mode; `getSlideLines` uses `blocksToSlides(...).starts` for cursor sync. The dots and pills (above) sit on each `%% slide %%` line.
 
 Live test note: `02 - Projetos/Slidey/_slidey-blocks-test.md` in Vault Claude.
 
