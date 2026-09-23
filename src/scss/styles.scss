@@ -17,11 +17,13 @@
 }
 
 .view-content.reveal-preview-view {
+    position: relative;
     padding: 0;
     overflow: hidden;
 }
 
 div.reveal-preview-view {
+    position: relative;
     aspect-ratio: 16/9;
     padding: 0;
     overflow: hidden;
@@ -32,6 +34,42 @@ div.reveal-preview-view>iframe {
     border-style: none;
     width: 100%;
     height: 100%;
+}
+
+/* Present mode: fullscreen presentation triggered by the "Present slides"
+   command, exited via the overlay button below or Escape. */
+.reveal-preview-view.is-presenting {
+    aspect-ratio: unset;
+    width: 100vw;
+    height: 100vh;
+    background: var(--background-primary);
+}
+
+.slidey-present-exit {
+    display: none;
+    position: absolute;
+    top: 1.5em;
+    right: 1.5em;
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+
+    padding: 0.5em 1em;
+    border-radius: var(--radius-m);
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    box-shadow: var(--shadow-s);
+    cursor: pointer;
+}
+
+.reveal-preview-view.is-presenting .slidey-present-exit {
+    display: block;
+}
+
+.reveal-preview-view.is-presenting .slidey-present-exit.is-visible {
+    opacity: 0.9;
+    pointer-events: auto;
 }
 
 

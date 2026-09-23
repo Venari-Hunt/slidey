@@ -2,6 +2,7 @@ import {
     ItemView,
     MarkdownView,
     type Menu,
+    Notice,
     type WorkspaceLeaf,
 } from "obsidian";
 import type { Options, SlidesExtendedSettings } from "../@types";
@@ -15,6 +16,12 @@ export class RevealPreviewView extends ItemView {
     private home: URL;
     private onCloseListener: () => void;
     private boundOnMessage = (ev: MessageEvent) => this.onMessage(ev);
+    private boundOnFullscreenChange = () => this.onFullscreenChange();
+    private presentIdleTimer: number | null = null;
+
+    // Idle delay (ms) before the "exit presentation" control fades back out
+    // after the mouse stops moving.
+    private static readonly PRESENT_IDLE_MS = 2000;
 
     private urlRegex = /#\/(\d*)(?:\/(\d*))?(?:\/(\d*))?/;
     private yaml: YamlParser;
@@ -94,10 +101,86 @@ export class RevealPreviewView extends ItemView {
                 }
             },
         );
+
+        // Present mode: while fullscreen, show the "exit presentation"
+        // control on mouse movement and let it fade back out once the
+        // pointer stops (a real button/mouse click always shows it too,
+        // via bubbled mousemove-equivalent activity above).
+        this.registerDomEvent(this.containerEl, "pointermove", () =>
+            this.onPresentPointerMove(),
+        );
+        document.addEventListener(
+            "fullscreenchange",
+            this.boundOnFullscreenChange,
+        );
     }
 
     private getIframe(): HTMLIFrameElement | null {
         return this.containerEl.querySelector("iframe");
+    }
+
+    private getViewContent(): HTMLElement {
+        return this.containerEl.children[1] as HTMLElement;
+    }
+
+    private getPresentExitButton(): HTMLElement | null {
+        return this.getViewContent().querySelector<HTMLElement>(
+            ".slidey-present-exit",
+        );
+    }
+
+    /** Enter fullscreen presentation mode, hiding all Obsidian chrome. */
+    async presentMode() {
+        const viewContent = this.getViewContent();
+        if (!viewContent || document.fullscreenElement === viewContent) {
+            return;
+        }
+        try {
+            await viewContent.requestFullscreen();
+        } catch (err) {
+            console.error("Slidey: failed to enter fullscreen", err);
+            new Notice("Slidey: couldn't enter fullscreen presentation mode.");
+        }
+    }
+
+    exitPresentMode() {
+        if (document.fullscreenElement) {
+            void document.exitFullscreen();
+        }
+    }
+
+    private onFullscreenChange() {
+        const viewContent = this.getViewContent();
+        if (!viewContent) {
+            return;
+        }
+        const presenting = document.fullscreenElement === viewContent;
+        viewContent.toggleClass("is-presenting", presenting);
+        if (presenting) {
+            this.focusDeck();
+        } else {
+            this.clearPresentIdleTimer();
+            this.getPresentExitButton()?.removeClass("is-visible");
+        }
+    }
+
+    private onPresentPointerMove() {
+        const viewContent = this.getViewContent();
+        if (!viewContent?.hasClass("is-presenting")) {
+            return;
+        }
+        this.getPresentExitButton()?.addClass("is-visible");
+        this.clearPresentIdleTimer();
+        this.presentIdleTimer = window.setTimeout(() => {
+            this.getPresentExitButton()?.removeClass("is-visible");
+        }, RevealPreviewView.PRESENT_IDLE_MS);
+    }
+
+    private clearPresentIdleTimer() {
+        if (this.presentIdleTimer !== null) {
+            window.clearTimeout(this.presentIdleTimer);
+            this.presentIdleTimer = null;
+        }
     }
 
     private focusDeck() {
@@ -333,6 +416,11 @@ export class RevealPreviewView extends ItemView {
 
     async onClose() {
         window.removeEventListener("message", this.boundOnMessage);
+        document.removeEventListener(
+            "fullscreenchange",
+            this.boundOnFullscreenChange,
+        );
+        this.clearPresentIdleTimer();
         this.onCloseListener();
     }
 
@@ -357,5 +445,13 @@ export class RevealPreviewView extends ItemView {
         // Hand keyboard focus to the freshly loaded deck so a clicker works
         // immediately, without the user needing to click the slides first.
         iframe.addEventListener("load", () => this.focusDeck());
+
+        // Overlay control shown only in present mode (fullscreen), faded in
+        // on mouse movement and back out after PRESENT_IDLE_MS of stillness.
+        const exitButton = viewContent.createEl("button", {
+            cls: "slidey-present-exit",
+            text: "Exit presentation",
+        });
+        exitButton.addEventListener("click", () => this.exitPresentMode());
     }
 }

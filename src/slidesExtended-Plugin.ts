@@ -75,6 +75,15 @@ export class SlidesExtendedPlugin extends Plugin {
             },
         });
         this.addCommand({
+            id: "present-active-presentation",
+            name: "Present slides (fullscreen)",
+            callback: async () => {
+                await this.showView();
+                const instance = this.getViewInstance();
+                await instance?.presentMode();
+            },
+        });
+        this.addCommand({
             id: "print-active-presentation",
             name: "Print active presentation",
             callback: async () => {
