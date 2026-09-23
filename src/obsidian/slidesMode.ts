@@ -3,10 +3,11 @@ import type { Options } from "../@types";
 // How a note is cut into slides, picked by the `slides:` frontmatter key.
 // "separators" is upstream's `---` / `--` behaviour and the default when the
 // key is absent. "headings" makes every heading start a slide, with the
-// heading level choosing a preset (Settings → Heading levels).
-export type SlidesMode = "separators" | "headings";
+// heading level choosing a preset (Settings → Heading levels). "blocks" keeps
+// the note as prose and turns only the `%% slide %%` regions into slides.
+export type SlidesMode = "separators" | "headings" | "blocks";
 
-// Heading-mode decks are joined with sentinels that can't collide with prose,
+// Heading- and block-mode decks are joined with sentinels that can't collide with prose,
 // so a `---` horizontal rule or a `--` line in a normal note stays text.
 // No regex metacharacters: processors split on these as regexes and join on
 // them as literal strings. Must not start with "slide" (CommentParser would
@@ -18,13 +19,24 @@ const HEADING = /^(#{1,6})[ \t]+\S/;
 const FENCE = /^[ \t]{0,3}(`{3,}|~{3,})/;
 const MARKER = /^\s*%%\s*(.*?)\s*%%\s*$/;
 const SLIDE_COMMENT = /<!--\s*\.?slide\b/;
+const BLOCK_START = /^\s*%%\s*slide(?=\s|%)(.*?)%%\s*$/i;
+const BLOCK_END = /^\s*%%\s*(?:end\s*slide|\/\s*slide)\s*%%\s*$/i;
+const PRESET_ATTR = /\bpreset\s*=\s*"?([^"\s]+)"?/i;
+
+// Shown when a blocks-mode note has no regions yet. Entities keep the markers
+// from being read as Obsidian comments.
+const NO_BLOCKS_HINT =
+    "No slides yet. Put a line reading <code>&#37;&#37; slide &#37;&#37;</code> above the part of the note you want as a slide, and <code>&#37;&#37; endslide &#37;&#37;</code> after it.";
 
 export function slidesMode(options: Partial<Options>): SlidesMode {
     const value =
         typeof options.slides === "string"
             ? options.slides.trim().toLowerCase()
             : "";
-    return value === "headings" ? "headings" : "separators";
+    if (value === "headings" || value === "blocks") {
+        return value;
+    }
+    return "separators";
 }
 
 /**
@@ -33,11 +45,15 @@ export function slidesMode(options: Partial<Options>): SlidesMode {
  * are read from `options`.
  */
 export function applySlidesMode(markdown: string, options: Options): string {
-    if (slidesMode(options) !== "headings") {
+    const mode = slidesMode(options);
+    if (mode === "separators") {
         return markdown;
     }
     options.separator = HEADING_SLIDE_SEPARATOR;
     options.verticalSeparator = HEADING_VERTICAL_SEPARATOR;
+    if (mode === "blocks") {
+        return blocksToSlides(markdown).markdown;
+    }
     const levelPresets = Array.isArray(options.headingPresets)
         ? (options.headingPresets as string[])
         : [];
@@ -50,10 +66,11 @@ interface Section {
     lines: string[];
 }
 
-/** One heading of a headings-mode note, as it will appear in the deck. */
+/** One heading (or `%% slide %%` line), as it will appear in the deck. */
 export interface HeadingSlide {
     /** Source line of the heading (0-based, relative to the markdown given). */
     line: number;
+    /** Heading level; 0 for a `%% slide %%` block. */
     level: number;
     /** Resolved preset name; "" means the deck default (`preset:` frontmatter). */
     preset: string;
@@ -116,6 +133,83 @@ export function headingsToSlides(
     }
 
     return { markdown: slides.join(HEADING_SLIDE_SEPARATOR), starts };
+}
+
+interface Block {
+    start: number;
+    preset: string;
+    lines: string[];
+}
+
+/**
+ * Blocks mode: only regions opened by a `%% slide %%` line become slides.
+ * A region ends at `%% endslide %%` (or `%% /slide %%`), the next
+ * `%% slide %%`, or the end of the note. `%% slide preset=quote %%` picks the
+ * preset; without one the deck default applies. Markers inside fenced code
+ * are text.
+ */
+export function blocksToSlides(markdown: string): {
+    markdown: string;
+    starts: number[];
+} {
+    const blocks = splitBlocks(markdown);
+    if (!blocks.length) {
+        return { markdown: NO_BLOCKS_HINT, starts: [0] };
+    }
+    return {
+        markdown: blocks
+            .map((block) => withPreset(block.lines.join("\n"), block.preset))
+            .join(HEADING_SLIDE_SEPARATOR),
+        starts: blocks.map((block) => block.start),
+    };
+}
+
+/** Every `%% slide %%` line with its preset — what the editor gutter shows. */
+export function blockOutline(markdown: string): HeadingSlide[] {
+    return splitBlocks(markdown).map((block) => ({
+        line: block.start,
+        level: 0,
+        preset: block.preset,
+        skip: false,
+    }));
+}
+
+function splitBlocks(markdown: string): Block[] {
+    const blocks: Block[] = [];
+    let current: Block | null = null;
+    let fence: string | null = null;
+
+    markdown.split(/\r?\n/).forEach((line, index) => {
+        const fenceMatch = FENCE.exec(line);
+        if (fence) {
+            if (
+                fenceMatch &&
+                fenceMatch[1][0] === fence[0] &&
+                fenceMatch[1].length >= fence.length
+            ) {
+                fence = null;
+            }
+        } else if (fenceMatch) {
+            fence = fenceMatch[1];
+        } else {
+            const start = BLOCK_START.exec(line);
+            if (start) {
+                current = {
+                    start: index,
+                    preset: PRESET_ATTR.exec(start[1])?.[1] ?? "",
+                    lines: [],
+                };
+                blocks.push(current);
+                return;
+            }
+            if (BLOCK_END.test(line)) {
+                current = null;
+                return;
+            }
+        }
+        current?.lines.push(line);
+    });
+    return blocks;
 }
 
 function levelPreset(levelPresets: string[], level: number): string {

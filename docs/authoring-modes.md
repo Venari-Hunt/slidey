@@ -6,7 +6,7 @@ A note's frontmatter `slides:` key picks how it is cut into slides. Code: `src/o
 |---|---|
 | absent / `separators` | Upstream's `---` (horizontal) and `--` (vertical) separators. Default. |
 | `headings` | Every heading starts a slide; its level picks a preset. |
-| `blocks` | Planned: `%% slide preset=x %%` regions in an otherwise normal note. Not built yet (falls back to separators). |
+| `blocks` | Only `%% slide %%` regions become slides; the rest of the note is ignored. |
 
 ## Headings mode
 
@@ -30,7 +30,7 @@ Tests: `test/slidesMode.unit.test.ts`. Live test note: `02 - Projetos/Slidey/_sl
 
 ### Preset dots and pills (editor)
 
-`src/obsidian/presetGutter.ts` — one CM6 `StateField` registered with `registerEditorExtension`, drawn two ways: a `gutter` dot and, at the end of the heading line, a pill widget (`Decoration.widget`, `side: 1`) naming the preset. `markFor()` gives both the same kind/text/color. In a note whose frontmatter has `slides: headings`, each heading line gets a dot for the preset it resolves to (`headingOutline()` in `slidesMode.ts`, which shares `splitSections` + `readMarkers` with `headingsToSlides`, so the dot and the deck can't disagree). Blank level preset falls back to the frontmatter `preset:`.
+`src/obsidian/presetGutter.ts` — one CM6 `StateField` registered with `registerEditorExtension`, drawn two ways: a `gutter` dot and, at the end of the heading line, a pill widget (`Decoration.widget`, `side: 1`) naming the preset. `markFor()` gives both the same kind/text/color. In a `slides: headings` note each heading line (in `slides: blocks`, each `%% slide %%` line) gets a dot for the preset it resolves to (`headingOutline()` in `slidesMode.ts`, which shares `splitSections` + `readMarkers` with `headingsToSlides`, so the dot and the deck can't disagree). Blank level preset falls back to the frontmatter `preset:`.
 
 | Dot | Meaning |
 |---|---|
@@ -47,7 +47,19 @@ Pill text: the preset name (in its color), `no preset`, `name?` (red dashed), `n
 - Spacing lives on the dot, not the gutter, so non-deck notes get a 0-width gutter.
 - `@codemirror/state` / `@codemirror/view` are devDependencies pinned to Obsidian's versions and external in esbuild (Obsidian provides them at runtime).
 
+## Blocks mode
+
+`blocksToSlides()` / `blockOutline()` in `slidesMode.ts`.
+
+- A line `%% slide %%` (or `%% slide preset=quote %%`) opens a slide. It ends at `%% endslide %%` / `%% /slide %%`, the next `%% slide %%`, or the end of the note. Marker lines are dropped from the slide.
+- Everything outside a region is left out of the deck. `---` inside a region is an ordinary rule.
+- No `preset=` → deck default (`preset:` frontmatter). The preset reaches `PresetProcessor` through the same `withPreset()` slide comment as headings mode.
+- Markers inside fenced code are text. `%% slideshow %%` and similar are not markers (`slide` must be followed by space or `%`).
+- A note with no regions renders one hint slide explaining the markers (HTML entities, so the `%%` isn't read as a comment).
+- Uses the same sentinel separators as headings mode; `getSlideLines` uses `blocksToSlides(...).starts` for cursor sync. The dots and pills (above) sit on each `%% slide %%` line.
+
+Live test note: `02 - Projetos/Slidey/_slidey-blocks-test.md` in Vault Claude.
+
 ## Next
 
-- `blocks` mode.
 - Speaker notes and per-slide background image markers.

@@ -13,6 +13,10 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.7.0 — 2026-09-23
+
+- **Blocks mode** — put `slides: blocks` in a note's properties and keep writing a normal note. Only the parts you wrap become slides: a `%% slide %%` line starts one, `%% endslide %%` ends it (or the next `%% slide %%`, or the end of the note). `%% slide preset=quote %%` picks the preset. Everything else — research, outline, notes — stays out of the deck. Marker lines get the same colored dot and preset pill as headings. The preview follows the cursor. A note with no slides yet shows a short hint slide.
+
 ## 0.6.0 — 2026-09-23
 
 - **Preset pill on each heading** — in `slides: headings` notes, every heading line ends with a small label naming the preset that slide will use, in the same color as its gutter dot. `no preset`, `name?` (red, dashed: preset doesn't exist) and a struck-through `not a slide` (`%% noslide %%`) cover the other cases. Editor only; reading view and the deck are unchanged.
