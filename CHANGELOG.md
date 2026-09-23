@@ -8,10 +8,16 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 ### Known gaps
 
 - Preset tuning (the 7 starters are a first cut).
-- `image-left` layout is broken-ish: its `grid-row:1/999` spawns 999 implicit rows, so the image collapses (visible in its swatch). `image-bg` needs a real image on the slide.
+- `image-bg` needs a real image on the slide to look like anything.
 - Image-layout defaults, PDF/PPTX export polish.
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
+
+## 0.3.1 — 2026-09-23
+
+- **`image-left` preset fixed** — the image now actually sits in a left column (≈42% wide, full slide height, never cropped) with the heading, text and bullets stacked in the right column. The old CSS targeted the `<section>`, but Slidey renders slide content inside a full-size wrapper `<div>`, so the layout never applied. The new rule lays out whichever element directly holds the image (also handles an image wrapped alone in a `<p>`). Works for both `![](img)` and `![[img]]`.
+- **Existing settings are upgraded automatically** — if your saved `image-left` still has the old starter CSS (unedited), it is replaced on load. If you edited it, it's left alone.
+- The preview swatch now stays 16:9 even when a preset sets `height:100%`.
 
 ## 0.3.0 — 2026-09-23
 

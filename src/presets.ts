@@ -107,6 +107,39 @@ export function buildPresetCss(
     return blocks.join("\n");
 }
 
+const IMAGE_LEFT_CSS = `&:has(> img, > p > img:only-child),& > div:has(> img, > p > img:only-child){display:flex!important;flex-flow:column wrap!important;justify-content:center!important;align-content:center!important;align-items:flex-start!important;column-gap:1.2em;height:100%;text-align:left}
+& img,& p:has(> img:only-child){order:-1;flex:0 0 100%;width:42%;max-width:42%;height:100%;max-height:100%;object-fit:contain!important;margin:0}
+& p:has(> img:only-child) img{width:100%;max-width:100%}
+& > :not(img):not(p:has(> img:only-child)),& > div > :not(img):not(p:has(> img:only-child)){max-width:52%;margin-left:0;margin-right:0}`;
+
+/** Starter CSS from earlier releases, upgraded in place if still unedited. */
+const RETIRED_STARTER_CSS: Record<string, { from: string; to: string }> = {
+    "image-left": {
+        from: `&{display:grid!important;grid-template-columns:40% 1fr;gap:1em;align-items:center;justify-items:start}
+& img{width:100%;height:auto;grid-row:1/999;align-self:center}`,
+        to: IMAGE_LEFT_CSS,
+    },
+};
+
+/**
+ * Presets are copied into settings, so starter fixes don't reach existing
+ * installs on their own. Swap in the new CSS only where the user never
+ * edited the old starter CSS. Returns true if anything changed.
+ */
+export function upgradeStarterPresets(
+    presets: SlidePreset[] | undefined,
+): boolean {
+    let changed = false;
+    for (const preset of presets ?? []) {
+        const retired = RETIRED_STARTER_CSS[preset?.name];
+        if (retired && preset.css === retired.from) {
+            preset.css = retired.to;
+            changed = true;
+        }
+    }
+    return changed;
+}
+
 export const STARTER_PRESETS: SlidePreset[] = [
     {
         name: "cover",
@@ -137,8 +170,11 @@ export const STARTER_PRESETS: SlidePreset[] = [
         name: "image-left",
         label: "Image left, text right",
         align: "left",
-        css: `&{display:grid!important;grid-template-columns:40% 1fr;gap:1em;align-items:center;justify-items:start}
-& img{width:100%;height:auto;grid-row:1/999;align-self:center}`,
+        // Slide content usually sits in a full-size flex wrapper <div>, so the
+        // layout goes on whichever element directly holds the image: a column
+        // flex-wrap where the image fills the first column and the rest flows
+        // into the second.
+        css: IMAGE_LEFT_CSS,
     },
     {
         name: "bullets",

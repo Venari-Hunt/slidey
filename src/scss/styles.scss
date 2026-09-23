@@ -82,6 +82,8 @@ div.reveal-preview-view>iframe {
     box-sizing: border-box;
     width: 100%;
     max-width: 320px;
+    // Presets may set `height: 100%` on the slide; keep the swatch 16:9.
+    height: auto !important;
     aspect-ratio: 16 / 9;
     margin: 0.5em 0;
     padding: 0.8em;

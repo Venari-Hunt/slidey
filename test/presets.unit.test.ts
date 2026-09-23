@@ -1,6 +1,11 @@
 import type { Options } from "../src/@types";
 import { PresetProcessor } from "../src/obsidian/processors/presetProcessor";
-import { buildPresetCss, presetClass, STARTER_PRESETS } from "../src/presets";
+import {
+    buildPresetCss,
+    presetClass,
+    STARTER_PRESETS,
+    upgradeStarterPresets,
+} from "../src/presets";
 import { YamlStore } from "../src/yaml/yamlStore";
 import { getSlideOptions } from "./testUtils";
 
@@ -144,5 +149,24 @@ describe("PresetProcessor", () => {
         expect(out).toMatch(
             /class="foo slidey-preset-cover"|class="slidey-preset-cover foo"/,
         );
+    });
+});
+
+describe("upgradeStarterPresets", () => {
+    const oldImageLeft = `&{display:grid!important;grid-template-columns:40% 1fr;gap:1em;align-items:center;justify-items:start}
+& img{width:100%;height:auto;grid-row:1/999;align-self:center}`;
+
+    it("replaces unedited retired starter CSS", () => {
+        const presets = [{ name: "image-left", css: oldImageLeft }];
+        expect(upgradeStarterPresets(presets)).toBe(true);
+        expect(presets[0].css).toBe(
+            STARTER_PRESETS.find((p) => p.name === "image-left")?.css,
+        );
+    });
+
+    it("leaves user-edited CSS alone", () => {
+        const presets = [{ name: "image-left", css: `${oldImageLeft}\n& h2{}` }];
+        expect(upgradeStarterPresets(presets)).toBe(false);
+        expect(presets[0].css).toContain("& h2{}");
     });
 });

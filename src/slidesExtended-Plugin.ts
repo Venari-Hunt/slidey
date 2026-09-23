@@ -4,6 +4,7 @@ import { EmbeddedSlideProcessor } from "./obsidian/embeddedSlideProcessor";
 import { ObsidianUtils } from "./obsidian/obsidianUtils";
 import { AutoCompleteSuggest } from "./obsidian/suggesters/AutoCompleteSuggester";
 import { LineSelectionListener } from "./obsidian/suggesters/lineSelectionListener";
+import { upgradeStarterPresets } from "./presets";
 import {
     REVEAL_PREVIEW_VIEW,
     RevealPreviewView,
@@ -325,6 +326,9 @@ export class SlidesExtendedPlugin extends Plugin {
         // Migrate renamed setting
         if (data?.themeDirectory && !data?.assetsDirectory) {
             this.settings.assetsDirectory = data.themeDirectory;
+        }
+        if (upgradeStarterPresets(this.settings.presets)) {
+            await this.saveData(this.settings);
         }
     }
 
