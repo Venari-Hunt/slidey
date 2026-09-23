@@ -8,6 +8,7 @@ import {
 } from "obsidian";
 import { FolderInputSuggest } from "obsidian-utilities";
 import type { SlidesExtendedSettings } from "./@types";
+import { presetDotColor } from "./obsidian/presetGutter";
 import {
     getThemeFiles,
     ThemeInputSuggest,
@@ -648,28 +649,36 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
             const box = containerEl.createDiv({ cls: "slidey-preset-editor" });
             this.drawPresetSwatch(box, preset, index);
 
-            new Setting(box)
+            const row = new Setting(box)
                 .setName(preset.label || preset.name || `Preset ${index + 1}`)
-                .setDesc(`class: .slidey-preset-${preset.name || "?"}`)
-                .addText((text) =>
-                    text
-                        .setPlaceholder("name (used in markdown)")
-                        .setValue(preset.name ?? "")
-                        .onChange((v) => {
-                            preset.name = v.trim();
-                            refreshSwatches();
-                        }),
-                )
-                .addExtraButton((btn) =>
-                    btn
-                        .setIcon("trash")
-                        .setTooltip("Delete preset")
-                        .onClick(() => {
-                            this.newSettings.presets.splice(index, 1);
-                            void this.save();
-                            this.display();
-                        }),
-                );
+                .setDesc(`class: .slidey-preset-${preset.name || "?"}`);
+            // Same color as this preset's dot in the editor gutter.
+            row.nameEl.prepend(
+                createSpan({
+                    cls: "slidey-preset-dot slidey-preset-dot-preset",
+                    attr: {
+                        style: `--slidey-dot-color:${presetDotColor(index)}`,
+                    },
+                }),
+            );
+            row.addText((text) =>
+                text
+                    .setPlaceholder("name (used in markdown)")
+                    .setValue(preset.name ?? "")
+                    .onChange((v) => {
+                        preset.name = v.trim();
+                        refreshSwatches();
+                    }),
+            ).addExtraButton((btn) =>
+                btn
+                    .setIcon("trash")
+                    .setTooltip("Delete preset")
+                    .onClick(() => {
+                        this.newSettings.presets.splice(index, 1);
+                        void this.save();
+                        this.display();
+                    }),
+            );
 
             const color = (
                 label: string,

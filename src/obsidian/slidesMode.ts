@@ -50,6 +50,38 @@ interface Section {
     lines: string[];
 }
 
+/** One heading of a headings-mode note, as it will appear in the deck. */
+export interface HeadingSlide {
+    /** Source line of the heading (0-based, relative to the markdown given). */
+    line: number;
+    level: number;
+    /** Resolved preset name; "" means the deck default (`preset:` frontmatter). */
+    preset: string;
+    /** `%% noslide %%` — left out of the deck. */
+    skip: boolean;
+}
+
+/**
+ * Every heading of a headings-mode note with the preset it resolves to — what
+ * the editor gutter shows. Mirrors `headingsToSlides`.
+ */
+export function headingOutline(
+    markdown: string,
+    levelPresets: string[],
+): HeadingSlide[] {
+    return splitSections(markdown)
+        .filter((section) => section.level > 0)
+        .map((section) => {
+            const { skip, preset } = readMarkers(section.lines);
+            return {
+                line: section.start,
+                level: section.level,
+                preset: preset ?? levelPreset(levelPresets, section.level),
+                skip,
+            };
+        });
+}
+
 /**
  * Splits a note at every heading (outside fenced code). Text before the first
  * heading becomes its own slide when non-blank. `%% … %%` lines directly under
@@ -64,6 +96,34 @@ export function headingsToSlides(
     markdown: string,
     levelPresets: string[],
 ): { markdown: string; starts: number[] } {
+    const slides: string[] = [];
+    const starts: number[] = [];
+    for (const section of splitSections(markdown)) {
+        if (section.level === 0) {
+            if (section.lines.join("").trim()) {
+                slides.push(section.lines.join("\n"));
+                starts.push(section.start);
+            }
+            continue;
+        }
+        const { lines, skip, preset } = readMarkers(section.lines);
+        if (skip) {
+            continue;
+        }
+        const name = preset ?? levelPreset(levelPresets, section.level);
+        slides.push(withPreset(lines.join("\n"), name));
+        starts.push(section.start);
+    }
+
+    return { markdown: slides.join(HEADING_SLIDE_SEPARATOR), starts };
+}
+
+function levelPreset(levelPresets: string[], level: number): string {
+    return levelPresets[level - 1]?.trim() ?? "";
+}
+
+// Section 0 (level 0) holds whatever comes before the first heading.
+function splitSections(markdown: string): Section[] {
     const sections: Section[] = [{ start: 0, level: 0, lines: [] }];
     let fence: string | null = null;
 
@@ -91,27 +151,7 @@ export function headingsToSlides(
         }
         sections[sections.length - 1].lines.push(line);
     });
-
-    const slides: string[] = [];
-    const starts: number[] = [];
-    for (const section of sections) {
-        if (section.level === 0) {
-            if (section.lines.join("").trim()) {
-                slides.push(section.lines.join("\n"));
-                starts.push(section.start);
-            }
-            continue;
-        }
-        const { lines, skip, preset } = readMarkers(section.lines);
-        if (skip) {
-            continue;
-        }
-        const name = preset ?? levelPresets[section.level - 1]?.trim() ?? "";
-        slides.push(withPreset(lines.join("\n"), name));
-        starts.push(section.start);
-    }
-
-    return { markdown: slides.join(HEADING_SLIDE_SEPARATOR), starts };
+    return sections;
 }
 
 // Consumes the `%% … %%` lines (and blank lines between them) right under the

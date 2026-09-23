@@ -2,6 +2,7 @@ import { addIcon, Notice, Plugin, type TAbstractFile } from "obsidian";
 import type { SlidesExtendedSettings } from "./@types";
 import { EmbeddedSlideProcessor } from "./obsidian/embeddedSlideProcessor";
 import { ObsidianUtils } from "./obsidian/obsidianUtils";
+import { presetGutter, refreshPresetGutters } from "./obsidian/presetGutter";
 import { AutoCompleteSuggest } from "./obsidian/suggesters/AutoCompleteSuggester";
 import { LineSelectionListener } from "./obsidian/suggesters/lineSelectionListener";
 import { upgradeStarterPresets } from "./presets";
@@ -54,6 +55,7 @@ export class SlidesExtendedPlugin extends Plugin {
             this.app.vault.on("modify", (file) => this.onChange(file)),
         );
         this.registerEditorSuggest(new LineSelectionListener(this.app, this));
+        this.registerEditorExtension(presetGutter(() => this.settings));
 
         this.addRibbonIcon("slides", "Show slide preview", async () => {
             await this.showView();
@@ -340,6 +342,7 @@ export class SlidesExtendedPlugin extends Plugin {
     async saveSettings() {
         await this.saveData(this.settings);
         console.debug("Slidey: settings saved");
+        refreshPresetGutters(this.app.workspace);
 
         await this.stopServer();
 

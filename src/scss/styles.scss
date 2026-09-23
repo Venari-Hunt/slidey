@@ -74,6 +74,53 @@ div.reveal-preview-view>iframe {
 
 
 
+/* Editor gutter dot per heading in `slides: headings` notes, colored by the
+   heading's preset (src/obsidian/presetGutter.ts). The settings list reuses the
+   dot as its legend. */
+.slidey-preset-gutter .cm-gutterElement {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Spacing on the dot, not the gutter, so non-deck notes get a 0-width gutter. */
+.slidey-preset-gutter .slidey-preset-dot {
+    margin: 0 4px;
+}
+
+.slidey-preset-dot {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+
+.slidey-preset-dot-preset {
+    background: var(--slidey-dot-color);
+}
+
+.setting-item-name > .slidey-preset-dot {
+    margin-right: 0.5em;
+}
+
+.slidey-preset-dot-none {
+    border: 1.5px solid var(--text-faint);
+}
+
+.slidey-preset-dot-unknown {
+    border: 1.5px dashed var(--text-error);
+}
+
+.slidey-preset-dot-skip {
+    width: 8px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--text-faint);
+}
+
 /* Settings → Slide presets: a miniature sample slide per preset. The preset's
    own CSS (scoped to [data-swatch="i"]) overrides these black-theme defaults.
    Font size mirrors a 960px-wide reveal slide shrunk to the swatch width. */

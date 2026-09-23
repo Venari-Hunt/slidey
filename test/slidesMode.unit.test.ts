@@ -3,6 +3,7 @@ import { PresetProcessor } from "../src/obsidian/processors/presetProcessor";
 import {
     applySlidesMode,
     HEADING_SLIDE_SEPARATOR,
+    headingOutline,
     headingsToSlides,
     slidesMode,
 } from "../src/obsidian/slidesMode";
@@ -126,5 +127,29 @@ describe("headings mode through PresetProcessor", () => {
         const [first, second] = slidesOf(out);
         expect(first).toContain('class="slidey-preset-cover"');
         expect(second).toBe("## Plain");
+    });
+});
+
+describe("headingOutline", () => {
+    it("resolves each heading's preset, override and skip", () => {
+        const note = [
+            "intro",
+            "# Title",
+            "## Plain",
+            "## Quote",
+            "",
+            "%% preset=quote %%",
+            "```",
+            "# not a heading",
+            "```",
+            "### Hidden",
+            "%% noslide %%",
+        ].join("\n");
+        expect(headingOutline(note, ["cover", "", "bullets"])).toEqual([
+            { line: 1, level: 1, preset: "cover", skip: false },
+            { line: 2, level: 2, preset: "", skip: false },
+            { line: 3, level: 2, preset: "quote", skip: false },
+            { line: 9, level: 3, preset: "bullets", skip: true },
+        ]);
     });
 });
