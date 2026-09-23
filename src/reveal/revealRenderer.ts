@@ -8,6 +8,7 @@ import {
     getMediaCollector,
     type ObsidianUtils,
 } from "../obsidian/obsidianUtils";
+import { applySlidesMode } from "../obsidian/slidesMode";
 import { buildPresetCss } from "../presets";
 import { DEFAULTS } from "../slidesExtended-constants";
 import { has, isEmpty } from "../util";
@@ -83,6 +84,7 @@ export class RevealRenderer {
     ): Promise<{ html: string; localAssetPaths: string[] }> {
         const { yamlOptions, markdown } = this.yaml.parseYamlFrontMatter(input);
         const options = this.yaml.getSlideOptions(yamlOptions, renderForPrint);
+        const deckMarkdown = applySlidesMode(markdown, options);
         const revealOptions = this.yaml.getRevealOptions(options);
 
         const { title } = options;
@@ -97,7 +99,7 @@ export class RevealRenderer {
 
         const slidifyOptions = this.yaml.getSlidifyOptions(options);
 
-        const prefetched = await this.utils.fetchRemoteMarkdown(markdown);
+        const prefetched = await this.utils.fetchRemoteMarkdown(deckMarkdown);
         const processedMarkdown = this.processor.process(prefetched, options);
         const rawSlides = this.slidify(processedMarkdown, slidifyOptions);
         // Stamp data-separator* attributes on every slide so reveal.js's

@@ -544,7 +544,52 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     });
             });
 
+        this.drawHeadingLevels(containerEl);
         this.drawPresets(containerEl);
+    }
+
+    /**
+     * Heading level → preset, for notes with `slides: headings` in their
+     * frontmatter. Blank = the deck's `preset:` default.
+     */
+    private drawHeadingLevels(containerEl: HTMLElement): void {
+        const levels = Array.isArray(this.newSettings.headingPresets)
+            ? this.newSettings.headingPresets
+            : [];
+        this.newSettings.headingPresets = levels;
+
+        new Setting(containerEl)
+            .setName("Heading levels")
+            .setHeading()
+            .setDesc(
+                'For notes with "slides: headings" in their frontmatter: every ' +
+                    "heading starts a slide, and its level picks the preset. " +
+                    'One slide can pick another with "%% preset=name %%" on the ' +
+                    'line under its heading; "%% noslide %%" leaves a section out.',
+            );
+
+        const names = (this.newSettings.presets ?? [])
+            .map((preset) => preset?.name)
+            .filter((name): name is string => !!name);
+
+        for (let level = 1; level <= 6; level++) {
+            const current = levels[level - 1] ?? "";
+            new Setting(containerEl)
+                .setName(`${"#".repeat(level)} Heading ${level}`)
+                .addDropdown((cb) => {
+                    cb.addOption("", "Deck default");
+                    for (const name of names) {
+                        cb.addOption(name, name);
+                    }
+                    if (current && !names.includes(current)) {
+                        cb.addOption(current, `${current} (missing)`);
+                    }
+                    cb.setValue(current).onChange((value) => {
+                        levels[level - 1] = value;
+                        void this.save();
+                    });
+                });
+        }
     }
 
     /**

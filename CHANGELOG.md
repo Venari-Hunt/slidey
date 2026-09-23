@@ -13,6 +13,10 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.4.0 — 2026-09-23
+
+- **Headings mode** — put `slides: headings` in a note's frontmatter and write a normal note: every heading starts a slide, and the heading level picks the preset (Settings → Heading levels; `#` → `cover` by default). `%% preset=quote %%` under a heading picks any other preset for that slide; `%% noslide %%` leaves a section out. `---` stays an ordinary horizontal rule. Notes without the key work exactly as before. The preview follows the editor cursor in both modes.
+
 ## 0.3.2 — 2026-09-23
 
 - **Preset auto-upgrades now tell you** — when Slidey swaps an unedited starter preset for its newer version on load, a notice names which preset(s) changed. Edited presets are still never touched.
