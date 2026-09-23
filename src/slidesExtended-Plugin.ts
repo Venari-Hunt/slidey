@@ -327,8 +327,13 @@ export class SlidesExtendedPlugin extends Plugin {
         if (data?.themeDirectory && !data?.assetsDirectory) {
             this.settings.assetsDirectory = data.themeDirectory;
         }
-        if (upgradeStarterPresets(this.settings.presets)) {
+        const upgraded = upgradeStarterPresets(this.settings.presets);
+        if (upgraded.length > 0) {
             await this.saveData(this.settings);
+            new Notice(
+                `Slidey: updated the unedited starter preset(s) ${upgraded.join(", ")} to the latest layout.`,
+                8000,
+            );
         }
     }
 

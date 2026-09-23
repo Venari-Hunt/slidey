@@ -5,6 +5,8 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 
 ## [Unreleased]
 
+- **Preset auto-upgrades now tell you** — when Slidey swaps an unedited starter preset for its newer version on load, a notice names which preset(s) changed. Edited presets are still never touched.
+
 ### Known gaps
 
 - Preset tuning (the 7 starters are a first cut).
