@@ -1,6 +1,6 @@
 {
     "name": "slidey",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "Turn a markdown note into a controllable, preset-styled slide deck. Fork of Slides Extended.",
     "author": "joaovenari",
     "license": "MIT",

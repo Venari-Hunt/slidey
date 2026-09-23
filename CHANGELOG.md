@@ -5,18 +5,20 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 
 ## [Unreleased]
 
-- **Present mode** — a "Present slides (fullscreen)" command (bind it a hotkey in Settings → Hotkeys) puts the deck into true fullscreen, hiding all Obsidian chrome. Moving the mouse fades in a small "Exit presentation" button (top-right); it fades back out after 2s idle, or press Escape. Exiting returns the pane to its normal split/tab/sidebar layout — nothing is torn down. *Needs one manual hotkey-press pass to confirm — the Fullscreen API requires a real user gesture, which CDP-driven test scripts can't fake.*
-- **Slide presets** — a named look a slide opts into with `preset: <name>` in the note frontmatter (deck default) or `<!-- slide preset="quote" -->` per slide (`preset: none` opts a slide out). Ships 7 starters: `cover`, `section`, `quote`, `image-left`, `bullets`, `code`, `image-bg` (full-bleed). Each preset has structured fields — background, text/accent colour, font scale, alignment — plus a raw-CSS escape hatch (`&` = the slide selector); all editable in Settings → Slide presets. Verified live.
-- **Presentation-clicker robustness** — the preview view now grabs keyboard focus for the deck iframe on load and on any click in the pane, and forwards PageUp/PageDown/arrows/Space to reveal.js over `postMessage` when focus is on the Obsidian chrome instead of the slides. A physical clicker (or the arrow keys) now drives the deck without having to click the slides first. Verified live: every nav key navigates correctly, including through vertical slide stacks.
-
-### Not yet done
+### Known gaps
 
 - Preset tuning (the 7 starters are a first cut) and a preview/thumbnail in the settings UI.
 - `image-left` layout is a CSS-grid approximation; `image-bg` needs a real image on the slide.
 - Image-layout defaults, PDF/PPTX export polish.
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
-- Automated `release.yml` reworked for the flat repo but not yet exercised (0.1.0 was cut locally). Private-repo `slidey.zip` download needs the repo public or a token before non-dev installs work.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
+
+## 0.2.0 — 2026-09-23
+
+- **Present mode** — a "Present slides (fullscreen)" command (bind it a hotkey in Settings → Hotkeys) puts the deck into true fullscreen, hiding all Obsidian chrome. Moving the mouse fades in a small "Exit presentation" button (top-right); it fades back out after 2s idle, or press Escape. Exiting returns the pane to its normal split/tab/sidebar layout — nothing is torn down. Confirmed working live.
+- **Slide presets** — a named look a slide opts into with `preset: <name>` in the note frontmatter (deck default) or `<!-- slide preset="quote" -->` per slide (`preset: none` opts a slide out). Ships 7 starters: `cover`, `section`, `quote`, `image-left`, `bullets`, `code`, `image-bg` (full-bleed). Each preset has structured fields — background, text/accent colour, font scale, alignment — plus a raw-CSS escape hatch (`&` = the slide selector); all editable in Settings → Slide presets. Verified live.
+- **Presentation-clicker robustness** — the preview view now grabs keyboard focus for the deck iframe on load and on any click in the pane, and forwards PageUp/PageDown/arrows/Space to reveal.js over `postMessage` when focus is on the Obsidian chrome instead of the slides. A physical clicker (or the arrow keys) now drives the deck without having to click the slides first. Verified live: every nav key navigates correctly, including through vertical slide stacks.
+- First release to exercise the reworked `release.yml` end to end (0.1.0 was cut locally).
 
 ## 0.1.0 — 2026-09-07
 
