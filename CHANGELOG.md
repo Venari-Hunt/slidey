@@ -5,8 +5,6 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 
 ## [Unreleased]
 
-- **Preset preview swatches** — Settings → Slide presets now shows a miniature sample slide above each preset, styled by the exact CSS the deck uses (`buildPresetCss` gained a selector override). It updates live as you edit the fields or custom CSS. Presets whose CSS styles images get a placeholder picture. Unset fields show the default black theme.
-
 ### Known gaps
 
 - Preset tuning (the 7 starters are a first cut).
@@ -14,6 +12,10 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Image-layout defaults, PDF/PPTX export polish.
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
+
+## 0.3.0 — 2026-09-23
+
+- **Preset preview swatches** — Settings → Slide presets now shows a miniature sample slide above each preset, styled by the exact CSS the deck uses (`buildPresetCss` gained a selector override). It updates live as you edit the fields or custom CSS. Presets whose CSS styles images get a placeholder picture. Unset fields show the default black theme. Verified live over CDP for all 7 starters.
 
 ## 0.2.0 — 2026-09-23
 
