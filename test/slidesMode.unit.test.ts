@@ -4,6 +4,7 @@ import {
     applySlidesMode,
     blockOutline,
     blocksToSlides,
+    HEADING_NOTES_SEPARATOR,
     HEADING_SLIDE_SEPARATOR,
     headingOutline,
     headingsToSlides,
@@ -206,9 +207,72 @@ describe("blocksToSlides", () => {
     });
 
     it("applySlidesMode switches to sentinels", () => {
-        const options = getSlideOptions({ slides: "blocks" } as Partial<Options>);
+        const options = getSlideOptions({
+            slides: "blocks",
+        } as Partial<Options>);
         const out = applySlidesMode("%% slide %%\nA\n%% slide %%\nB", options);
         expect(options.separator).toBe(HEADING_SLIDE_SEPARATOR);
         expect(slidesOf(out)).toEqual(["A", "B"]);
+    });
+});
+
+describe("speaker notes and backgrounds", () => {
+    const N = HEADING_NOTES_SEPARATOR;
+
+    it("turns %% notes %% into the notes sentinel (headings)", () => {
+        const { markdown } = headingsToSlides(
+            "# A\nshown\n%% notes %%\nsay this\n%% note %%\nand this",
+            [],
+        );
+        expect(slidesOf(markdown)).toEqual([
+            `# A\nshown\n${N}\nsay this\nand this`,
+        ]);
+    });
+
+    it("turns %% notes %% into the notes sentinel (blocks), not in code", () => {
+        const { markdown } = blocksToSlides(
+            "%% slide %%\nA\n```\n%% notes %%\n```\n%% Notes %%\nhi",
+        );
+        expect(slidesOf(markdown)).toEqual([
+            `A\n\`\`\`\n%% notes %%\n\`\`\`\n${N}\nhi`,
+        ]);
+    });
+
+    it("reads bg under a heading, alone or with a preset", () => {
+        const { markdown } = headingsToSlides(
+            "# A\n%% bg=photo.jpg %%\nx\n# B\n%% preset=quote bg=[[My pic.png|alt]] %%\n# C\n%% bg=#112233 %%",
+            [],
+        );
+        expect(slidesOf(markdown)).toEqual([
+            '<!-- slide bg="[[photo.jpg]]" -->\n# A\nx',
+            '<!-- slide preset="quote" bg="[[My pic.png]]" -->\n# B',
+            '<!-- slide bg="#112233" -->\n# C',
+        ]);
+    });
+
+    it("reads bg on the %% slide %% line and passes URLs through", () => {
+        const { markdown } = blocksToSlides(
+            '%% slide preset=cover bg="https://x.io/a.jpg" %%\nA',
+        );
+        expect(slidesOf(markdown)).toEqual([
+            '<!-- slide preset="cover" bg="https://x.io/a.jpg" -->\nA',
+        ]);
+    });
+
+    it("keeps markers with unknown keys, and an explicit bg wins", () => {
+        const { markdown } = headingsToSlides(
+            '# A\n%% bg=a.jpg foo=1 %%\n# B\n%% bg=a.jpg %%\n<!-- slide bg="red" -->',
+            [],
+        );
+        expect(slidesOf(markdown)).toEqual([
+            "# A\n%% bg=a.jpg foo=1 %%",
+            '# B\n<!-- slide bg="red" -->',
+        ]);
+    });
+
+    it("applySlidesMode points notesSeparator at the sentinel", () => {
+        const options = getSlideOptions({ slides: "headings" });
+        applySlidesMode("# A", options);
+        expect(options.notesSeparator).toBe(N);
     });
 });
