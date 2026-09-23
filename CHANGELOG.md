@@ -13,6 +13,10 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.5.0 — 2026-09-23
+
+- **Preset dots in the editor** — in `slides: headings` notes, a colored dot sits in the gutter beside every heading, showing which preset that slide will use (hover for the name). A hollow ring = no preset, a dashed red ring = a preset name that doesn't exist, a short dash = `%% noslide %%`. Settings → Slide presets shows the same dot next to each preset as the color legend. Notes without `slides: headings` show no gutter.
+
 ## 0.4.0 — 2026-09-23
 
 - **Headings mode** — put `slides: headings` in a note's frontmatter and write a normal note: every heading starts a slide, and the heading level picks the preset (Settings → Heading levels; `#` → `cover` by default). `%% preset=quote %%` under a heading picks any other preset for that slide; `%% noslide %%` leaves a section out. `---` stays an ordinary horizontal rule. Notes without the key work exactly as before. The preview follows the editor cursor in both modes.
@@ -34,7 +38,7 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 ## 0.2.0 — 2026-09-23
 
 - **Present mode** — a "Present slides (fullscreen)" command (bind it a hotkey in Settings → Hotkeys) puts the deck into true fullscreen, hiding all Obsidian chrome. Moving the mouse fades in a small "Exit presentation" button (top-right); it fades back out after 2s idle, or press Escape. Exiting returns the pane to its normal split/tab/sidebar layout — nothing is torn down. Confirmed working live.
-- **Slide presets** — a named look a slide opts into with `preset: <name>` in the note frontmatter (deck default) or `<!-- slide preset="quote" -->` per slide (`preset: none` opts a slide out). Ships 7 starters: `cover`, `section`, `quote`, `image-left`, `bullets`, `code`, `image-bg` (full-bleed). Each preset has structured fields — background, text/accent colour, font scale, alignment — plus a raw-CSS escape hatch (`&` = the slide selector); all editable in Settings → Slide presets. Verified live.
+- **Slide presets** — a named look a slide opts into with `preset: <name>` in the note frontmatter (deck default) or `<!-- slide preset="quote" -->` per slide (`preset: none` opts a slide out). Ships 7 starters: `cover`, `section`, `quote`, `image-left`, `bullets`, `code`, `image-bg` (full-bleed). Each preset has structured fields — background, text/accent color, font scale, alignment — plus a raw-CSS escape hatch (`&` = the slide selector); all editable in Settings → Slide presets. Verified live.
 - **Presentation-clicker robustness** — the preview view now grabs keyboard focus for the deck iframe on load and on any click in the pane, and forwards PageUp/PageDown/arrows/Space to reveal.js over `postMessage` when focus is on the Obsidian chrome instead of the slides. A physical clicker (or the arrow keys) now drives the deck without having to click the slides first. Verified live: every nav key navigates correctly, including through vertical slide stacks.
 - First release to exercise the reworked `release.yml` end to end (0.1.0 was cut locally).
 
