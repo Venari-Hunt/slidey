@@ -5,10 +5,12 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 
 ## [Unreleased]
 
+- **Preset preview swatches** — Settings → Slide presets now shows a miniature sample slide above each preset, styled by the exact CSS the deck uses (`buildPresetCss` gained a selector override). It updates live as you edit the fields or custom CSS. Presets whose CSS styles images get a placeholder picture. Unset fields show the default black theme.
+
 ### Known gaps
 
-- Preset tuning (the 7 starters are a first cut) and a preview/thumbnail in the settings UI.
-- `image-left` layout is a CSS-grid approximation; `image-bg` needs a real image on the slide.
+- Preset tuning (the 7 starters are a first cut).
+- `image-left` layout is broken-ish: its `grid-row:1/999` spawns 999 implicit rows, so the image collapses (visible in its swatch). `image-bg` needs a real image on the slide.
 - Image-layout defaults, PDF/PPTX export polish.
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.

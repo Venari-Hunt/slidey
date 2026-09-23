@@ -45,16 +45,25 @@ function cleanRawCss(css: string): string {
     return css.replace(/<(\s*\/?\s*(?:style|script))/gi, "$1");
 }
 
-export function buildPresetCss(presets: SlidePreset[] | undefined): string {
+/**
+ * Build the scoped CSS for every preset. `selectorFor` overrides the slide
+ * selector (default: the reveal <section> carrying the preset class) — the
+ * settings UI uses it to render live preview swatches from the same rules.
+ */
+export function buildPresetCss(
+    presets: SlidePreset[] | undefined,
+    selectorFor: (preset: SlidePreset, index: number) => string = (p) =>
+        `.reveal .slides section.${presetClass(p.name)}`,
+): string {
     if (!presets || presets.length === 0) {
         return "";
     }
     const blocks: string[] = [];
-    for (const preset of presets) {
+    presets.forEach((preset, index) => {
         if (!preset?.name) {
-            continue;
+            return;
         }
-        const sel = `.reveal .slides section.${presetClass(preset.name)}`;
+        const sel = selectorFor(preset, index);
         const decls: string[] = [];
         if (preset.background) {
             const bg = cleanValue(preset.background);
@@ -94,7 +103,7 @@ export function buildPresetCss(presets: SlidePreset[] | undefined): string {
         if (preset.css?.trim()) {
             blocks.push(cleanRawCss(preset.css).split("&").join(sel));
         }
-    }
+    });
     return blocks.join("\n");
 }
 

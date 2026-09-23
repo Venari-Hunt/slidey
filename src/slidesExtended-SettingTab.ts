@@ -12,7 +12,7 @@ import {
     getThemeFiles,
     ThemeInputSuggest,
 } from "./obsidian/suggesters/ThemeSuggester";
-import { type SlidePreset, STARTER_PRESETS } from "./presets";
+import { buildPresetCss, type SlidePreset, STARTER_PRESETS } from "./presets";
 import { DEFAULT_SETTINGS } from "./slidesExtended-constants";
 import type { SlidesExtendedPlugin } from "./slidesExtended-Plugin";
 
@@ -588,8 +588,20 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                 }),
             );
 
+        // Live preview swatches: one <style> holding every preset's CSS, scoped
+        // to its swatch instead of the reveal slide, regenerated on each edit.
+        const swatchStyle = containerEl.createEl("style");
+        const refreshSwatches = () => {
+            swatchStyle.textContent = buildPresetCss(
+                this.newSettings.presets,
+                (_, i) => `.slidey-preset-swatch[data-swatch="${i}"]`,
+            );
+        };
+        refreshSwatches();
+
         this.newSettings.presets.forEach((preset, index) => {
             const box = containerEl.createDiv({ cls: "slidey-preset-editor" });
+            this.drawPresetSwatch(box, preset, index);
 
             new Setting(box)
                 .setName(preset.label || preset.name || `Preset ${index + 1}`)
@@ -600,6 +612,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                         .setValue(preset.name ?? "")
                         .onChange((v) => {
                             preset.name = v.trim();
+                            refreshSwatches();
                         }),
                 )
                 .addExtraButton((btn) =>
@@ -623,6 +636,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                         .setValue(preset[key] ?? "")
                         .onChange((v) => {
                             preset[key] = v.trim() || undefined;
+                            refreshSwatches();
                         }),
                 );
             color("Background", "background");
@@ -637,6 +651,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                         const n = Number.parseFloat(v);
                         preset.fontScale =
                             Number.isFinite(n) && n > 0 ? n : undefined;
+                        refreshSwatches();
                     }),
             );
 
@@ -649,6 +664,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     .setValue(preset.align ?? "")
                     .onChange((v) => {
                         preset.align = (v || undefined) as SlidePreset["align"];
+                        refreshSwatches();
                     }),
             );
 
@@ -658,6 +674,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                 .addTextArea((area) => {
                     area.setValue(preset.css ?? "").onChange((v) => {
                         preset.css = v || undefined;
+                        refreshSwatches();
                     });
                     area.inputEl.rows = 4;
                     area.inputEl.style.width = "100%";
@@ -665,4 +682,37 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                 });
         });
     }
+
+    /**
+     * A miniature sample slide styled by the preset's generated CSS. Unset
+     * fields fall back to the default (black) theme's colors.
+     */
+    private drawPresetSwatch(
+        box: HTMLElement,
+        preset: SlidePreset,
+        index: number,
+    ): void {
+        const swatch = box.createDiv({
+            cls: "slidey-preset-swatch",
+            attr: { "data-swatch": String(index), "aria-hidden": "true" },
+        });
+        if (/\bimg\b/.test(preset.css ?? "")) {
+            swatch.createEl("img", { attr: { src: SWATCH_IMAGE, alt: "" } });
+        }
+        swatch.createEl("h1", { text: preset.label || preset.name || "Title" });
+        swatch.createEl("p", { text: "Body text looks like this." });
+        const list = swatch.createEl("ul");
+        list.createEl("li", { text: "A bullet point" });
+        list.createEl("li", { text: "Another one" });
+    }
 }
+
+/** Placeholder picture for presets whose CSS styles images. */
+const SWATCH_IMAGE =
+    "data:image/svg+xml," +
+    encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 90">' +
+            '<rect width="160" height="90" fill="#5c7cfa"/>' +
+            '<circle cx="120" cy="25" r="12" fill="#ffd43b"/>' +
+            '<path d="M0 90 50 40 90 75 115 55 160 90Z" fill="#2b8a3e"/></svg>',
+    );

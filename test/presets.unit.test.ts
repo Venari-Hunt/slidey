@@ -52,6 +52,19 @@ describe("buildPresetCss", () => {
         );
     });
 
+    it("accepts a selector override (settings preview swatches)", () => {
+        const css = buildPresetCss(
+            [
+                { name: "a", css: "& h1{color:red}" },
+                { name: "b", align: "left" },
+            ],
+            (_, i) => `.swatch[data-swatch="${i}"]`,
+        );
+        expect(css).toContain('.swatch[data-swatch="0"] h1{color:red}');
+        expect(css).toContain('.swatch[data-swatch="1"]{text-align:left;}');
+        expect(css).not.toContain(".reveal");
+    });
+
     it("neutralises attempts to close the style element", () => {
         const css = buildPresetCss([
             { name: "x", css: "&{}</style><script>alert(1)" },
