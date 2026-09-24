@@ -9,9 +9,15 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 
 - Preset tuning (the 7 starters are a first cut).
 - `image-bg` needs a real image on the slide to look like anything.
-- Image-layout defaults, PDF/PPTX export polish.
+- PDF/PPTX export polish.
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
+
+## 0.14.0 — 2026-09-24
+
+- **Pictures always fit on the slide.** A big or tall picture under a heading used to run off the bottom; now it shrinks to fit, keeping its shape.
+- **Several pictures on one slide sit side by side** in a row, instead of stacking off the slide. Text and headings stay above or below the row. Layouts like `image-left` keep their own arrangement.
+- **Background pictures can be fitted and dimmed.** Next to `bg=`, add `fit=contain` to show the whole picture instead of filling the slide (`cover`, the default, fills and crops), and `dim=40%` to darken it so text on top stays readable: `%% bg=photo.jpg fit=contain dim=40% %%`. Works in all three modes.
 
 ## 0.13.0 — 2026-09-24
 
