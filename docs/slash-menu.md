@@ -22,7 +22,7 @@ Obsidian's `editorSuggest.trigger` asks each suggest in `suggests` order and the
 - New slide per mode: `## ` (headings), `---` and vertical `--` (separators), `%% slide %%` … `%% endslide %%` (blocks); `%% noslide %%` (headings), `%% endslide %%` (blocks).
 - `Layout: …` (fixed `LAYOUTS`), `Style: …` and `Preset: …` (from settings) → `%% layout=x %%` etc.
 - Background picture / darkened / whole picture / color, speaker notes, text color, accent, font, size, step by step (`<!-- element class="fragment" -->`).
-- Commands: open preview, present, export PDF.
+- Commands: present, export PDF (both call `showView()` first). **Open slide preview** uses `showPreview` → the plugin's `showView()`, not the `open-preview` command, which toggles and would close an open preview (0.16.1).
 
 `CURSOR` (`{|}`) in an item's `insert` marks where the cursor lands. `selectSuggestion` replaces from the `/` to the **live cursor**, not `context.end`: the stored end lagged the last typed letter in a live test and left it behind.
 
