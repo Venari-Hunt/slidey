@@ -39,6 +39,10 @@ export function styleClass(name: string): string {
     return `slidey-style-${slug(name)}`;
 }
 
+export function layoutClass(name: string): string {
+    return `slidey-layout-${slug(name)}`;
+}
+
 function slug(name: string): string {
     return name
         .toLowerCase()
@@ -49,7 +53,7 @@ function slug(name: string): string {
 // `Open Sans` → `"Open Sans"`; lists and quoted names pass through.
 function fontValue(value: string): string {
     const font = cleanValue(value);
-    return /s/.test(font) && !/[,"']/.test(font) ? `"${font}"` : font;
+    return /\s/.test(font) && !/[,"']/.test(font) ? `"${font}"` : font;
 }
 
 /** Strip characters that could break out of a value or the surrounding <style>. */
@@ -290,5 +294,79 @@ export const STARTER_STYLES: SlideStyle[] = [
         background: "#0b3954",
         color: "#e0fbfc",
         accent: "#7bdff2",
+    },
+];
+
+// Slide layouts — the structure half of a slide (where the title, text and
+// image go), a fixed set shipped with the plugin rather than edited in
+// Settings. Picked with `layout:` in the frontmatter or `%% layout=two-column %%`
+// on a slide, and stamped as `slidey-layout-<name>`. Layouts leave colors and
+// fonts to styles. Content usually sits in a full-size wrapper <div> inside the
+// <section> (see docs/presets.md), so rules reach through it.
+export type SlideLayout = Pick<SlidePreset, "name" | "label" | "css">;
+
+export function buildLayoutCss(): string {
+    return buildPresetCss(
+        LAYOUTS,
+        (l) => `.reveal .slides section.${layoutClass(l.name)}`,
+    );
+}
+
+// Headings span both columns; everything after flows down one, then the other.
+const TWO_COLUMN_CSS = `&:not(:has(> div)),& > div{display:block!important;column-count:2;column-gap:1.5em;column-fill:balance;text-align:left}
+& :is(h1,h2,h3){column-span:all}
+& :is(ul,ol){display:block}
+& :is(p,li,img,pre,blockquote){break-inside:avoid}`;
+
+const IMAGE_RIGHT_CSS = IMAGE_LEFT_CSS.replace("order:-1", "order:99");
+
+export const LAYOUTS: SlideLayout[] = [
+    {
+        name: "title",
+        label: "Title",
+        css: `&{text-align:center}
+& h1{font-size:2.4em;margin-bottom:.2em}
+& h1 ~ *{opacity:.85;font-size:.9em}`,
+    },
+    {
+        name: "section",
+        label: "Section divider",
+        css: `&{text-align:center}
+& h1,& h2{font-size:2.6em;letter-spacing:.02em}`,
+    },
+    {
+        name: "two-column",
+        label: "Two columns",
+        css: TWO_COLUMN_CSS,
+    },
+    {
+        name: "image-left",
+        label: "Image left, text right",
+        css: IMAGE_LEFT_CSS,
+    },
+    {
+        name: "image-right",
+        label: "Text left, image right",
+        css: IMAGE_RIGHT_CSS,
+    },
+    {
+        name: "image-full",
+        label: "Full-slide image, text on top",
+        css: `&{text-align:center}
+& img{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;object-fit:cover!important;margin:0;border:0;box-shadow:none;filter:brightness(.6)}
+& :is(h1,h2,h3,h4,ul,ol,blockquote),& p:not(:has(img)){position:relative;z-index:1;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.6)}`,
+    },
+    {
+        name: "quote",
+        label: "Quote",
+        css: `&{text-align:left}
+& blockquote{width:85%;font-size:1.25em;font-style:italic;background:none;box-shadow:none;border-left:.15em solid var(--r-link-color,#4dabf7);padding-left:.6em}`,
+    },
+    {
+        name: "code",
+        label: "Code focus",
+        css: `&{text-align:left}
+& pre{width:100%;font-size:.8em}
+& pre code{max-height:70vh;padding:1em}`,
     },
 ];

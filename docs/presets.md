@@ -1,4 +1,4 @@
-# Slide presets and styles
+# Slide presets, styles and layouts
 
 Code: `src/presets.ts`, `src/obsidian/processors/presetProcessor.ts`, settings UI in `src/slidesExtended-SettingTab.ts` (`drawPresets`).
 
@@ -19,6 +19,18 @@ A style is the look half of a slide (colors, fonts, size, align, raw css), split
 - CSS: `buildStyleCss()` = `buildPresetCss` scoped to `section.slidey-style-<name>`, appended after preset CSS in the same `presetStyles` template slot (so no `slidey.zip` template change was needed). Same specificity, later wins → style beats preset on color/font.
 - Fonts: `bodyFont` → `--r-main-font` + `font-family`; `headingFont` → `--r-heading-font` + `font-family` on h1–h4. A bare name with spaces gets quoted. No web-font loading: the font must be installed.
 - Settings: `drawLooks(containerEl, STYLE_LIST | PRESET_LIST)` draws both editors; swatch ids are `<list>-<index>`. `settings.styles` seeded from `STARTER_STYLES`.
+
+## Slide layouts (0.11.0)
+
+A layout is the structure half of a slide: where the title, text and image go. Unlike presets and styles, layouts are a **fixed set in code** (`LAYOUTS` in `presets.ts`: title, section, two-column, image-left, image-right, image-full, quote, code), not settings, so fixing one reaches every install with no migration.
+
+- Picked with `layout:` frontmatter or `%% layout=x %%`; the slide comment carries `layout="x"` (no upstream attribute of that name).
+- `new PresetProcessor(LAYOUTS_KIND)` — `LookKind.fixed` supplies the list instead of an options key. Runs before the style and preset processors.
+- CSS: `buildLayoutCss()` goes **first** in the `presetStyles` slot, so presets and styles override it. Layout CSS must never set colors or fonts (image-full's white text over the dimmed picture is the one exception).
+- Heading levels: `settings.headingLayouts` / `headingStyles` (index 0 = `#`), beside `headingPresets`.
+- Gotchas found live: reveal.js makes `ul`/`ol` `inline-block`, which can't split across CSS columns (two-column sets them `block`); images carry an inline `object-fit: scale-down`, so image-full needs `object-fit:cover!important`.
+
+**Test note:** `_slidey-layouts-test.md` (all 8 layouts, `style: night` deck default, one `style=paper` override).
 
 ## Deck DOM — what `&` actually wraps
 

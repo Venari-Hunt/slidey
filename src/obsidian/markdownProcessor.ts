@@ -20,7 +20,11 @@ import { InternalLinkProcessor } from "./processors/internalLinkProcessor";
 import { LatexProcessor } from "./processors/latexProcessor";
 import { MediaProcessor } from "./processors/mediaProcessor";
 import { MultipleFileProcessor } from "./processors/multipleFileProcessor";
-import { PresetProcessor, STYLES } from "./processors/presetProcessor";
+import {
+    LAYOUTS_KIND,
+    PresetProcessor,
+    STYLES,
+} from "./processors/presetProcessor";
 import { ReferenceProcessor } from "./processors/referenceProcessor";
 import { SkipSlideProcessor } from "./processors/skipSlideProcessor";
 import { TemplateProcessor } from "./processors/templateProcessor";
@@ -52,6 +56,7 @@ export class MarkdownProcessor {
     private defaultBackgroundProcessor: DefaultBackgroundProcessor;
     private presetProcessor: PresetProcessor;
     private styleProcessor: PresetProcessor;
+    private layoutProcessor: PresetProcessor;
     private referenceProcessor: ReferenceProcessor;
     private skipSlideProcessor: SkipSlideProcessor;
     private stripLatexBackTicks: Processor;
@@ -78,6 +83,7 @@ export class MarkdownProcessor {
         this.defaultBackgroundProcessor = new DefaultBackgroundProcessor();
         this.presetProcessor = new PresetProcessor();
         this.styleProcessor = new PresetProcessor(STYLES);
+        this.layoutProcessor = new PresetProcessor(LAYOUTS_KIND);
         this.referenceProcessor = new ReferenceProcessor();
         this.skipSlideProcessor = new SkipSlideProcessor();
         this.stripLatexBackTicks = {
@@ -192,6 +198,11 @@ export class MarkdownProcessor {
             {
                 name: "defaultBackgroundProcessor",
                 processor: this.defaultBackgroundProcessor,
+            },
+            // Stamp layout classes onto slides
+            {
+                name: "layoutProcessor",
+                processor: this.layoutProcessor,
             },
             // Stamp style classes onto slides; first, so a style's
             // background wins over a preset's

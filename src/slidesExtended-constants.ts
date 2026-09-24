@@ -37,7 +37,9 @@ export const DEFAULT_SETTINGS: SlidesExtendedSettings = {
     verticalSeparator: "",
     presets: STARTER_PRESETS,
     styles: STARTER_STYLES,
-    headingPresets: ["cover", "", "", "", "", ""],
+    headingPresets: ["", "", "", "", "", ""],
+    headingLayouts: ["title", "", "", "", "", ""],
+    headingStyles: ["", "", "", "", "", ""],
 };
 export const DEFAULTS: Options = {
     bg: "",
@@ -46,6 +48,7 @@ export const DEFAULTS: Options = {
     defaultTemplate: "",
     preset: "",
     style: "",
+    layout: "",
     enableCustomControls: true,
     enableLinks: false,
     height: 700,

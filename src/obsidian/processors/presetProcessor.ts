@@ -1,15 +1,23 @@
 import type { Options, Processor } from "../../@types";
 import { CommentParser } from "../../obsidian/comment";
-import { presetClass, type SlidePreset, styleClass } from "../../presets";
+import {
+    LAYOUTS,
+    layoutClass,
+    presetClass,
+    type SlidePreset,
+    styleClass,
+} from "../../presets";
 
 /** Which list a processor resolves: presets, or the styles split from them. */
 interface LookKind {
     /** Slide comment attribute naming the look per slide. */
     attr: string;
     /** Options key of the deck default (note frontmatter). */
-    deckKey: "preset" | "style";
+    deckKey: "preset" | "style" | "layout";
     /** Options key of the definitions list (plugin settings). */
-    listKey: "presets" | "styles";
+    listKey?: "presets" | "styles";
+    /** A fixed list shipped with the plugin, used instead of `listKey`. */
+    fixed?: SlidePreset[];
     classFor: (name: string) => string;
 }
 
@@ -28,6 +36,14 @@ export const STYLES: LookKind = {
     classFor: styleClass,
 };
 
+// Layouts are a fixed set, not settings.
+export const LAYOUTS_KIND: LookKind = {
+    attr: "layout",
+    deckKey: "layout",
+    fixed: LAYOUTS,
+    classFor: layoutClass,
+};
+
 // Resolves each slide's preset — a per-slide `<!-- slide preset="x" -->` wins
 // over the deck-wide `preset:` frontmatter, and `preset="none"` opts a slide
 // out of the deck default — and stamps the matching CSS class onto the slide's
@@ -41,8 +57,11 @@ export class PresetProcessor implements Processor {
     private parser = new CommentParser();
 
     process(markdown: string, options: Options): string {
-        const { attr, deckKey, listKey } = this.kind;
-        const presets = (options[listKey] as SlidePreset[] | undefined) ?? [];
+        const { attr, deckKey, listKey, fixed } = this.kind;
+        const presets =
+            fixed ??
+            ((listKey && options[listKey]) as SlidePreset[] | undefined) ??
+            [];
         const deck = options[deckKey];
         const deckPreset = typeof deck === "string" ? deck.trim() : "";
 

@@ -15,10 +15,13 @@ import {
 } from "./obsidian/suggesters/ThemeSuggester";
 import {
     buildPresetCss,
+    LAYOUTS,
     type SlidePreset,
     STARTER_PRESETS,
     STARTER_STYLES,
 } from "./presets";
+
+type HeadingLevelKey = "headingLayouts" | "headingStyles" | "headingPresets";
 
 /** What differs between the presets and styles editors in Settings. */
 interface LookList {
@@ -601,46 +604,60 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
     }
 
     /**
-     * Heading level → preset, for notes with `slides: headings` in their
-     * frontmatter. Blank = the deck's `preset:` default.
+     * Heading level → layout, style and preset, for notes with
+     * `slides: headings` in their frontmatter. Blank = the deck's default.
      */
     private drawHeadingLevels(containerEl: HTMLElement): void {
-        const levels = Array.isArray(this.newSettings.headingPresets)
-            ? this.newSettings.headingPresets
-            : [];
-        this.newSettings.headingPresets = levels;
+        const settings = this.newSettings;
+        const listFor = (key: HeadingLevelKey): string[] => {
+            if (!Array.isArray(settings[key])) {
+                settings[key] = [];
+            }
+            return settings[key];
+        };
 
         new Setting(containerEl)
             .setName("Heading levels")
             .setHeading()
             .setDesc(
                 'For notes with "slides: headings" in their frontmatter: every ' +
-                    "heading starts a slide, and its level picks the preset. " +
-                    'One slide can pick another with "%% preset=name %%" on the ' +
-                    'line under its heading; "%% noslide %%" leaves a section out.',
+                    "heading starts a slide, and its level picks the layout, " +
+                    'style and preset. One slide can pick others with "%% ' +
+                    'layout=two-column style=night %%" on the line under its ' +
+                    'heading; "%% noslide %%" leaves a section out.',
             );
 
-        const names = (this.newSettings.presets ?? [])
-            .map((preset) => preset?.name)
-            .filter((name): name is string => !!name);
+        const namesOf = (looks: { name?: string }[] | undefined): string[] =>
+            (looks ?? [])
+                .map((look) => look?.name)
+                .filter((name): name is string => !!name);
+        const choices: [HeadingLevelKey, string, string[]][] = [
+            ["headingLayouts", "Layout", namesOf(LAYOUTS)],
+            ["headingStyles", "Style", namesOf(settings.styles)],
+            ["headingPresets", "Preset", namesOf(settings.presets)],
+        ];
 
         for (let level = 1; level <= 6; level++) {
-            const current = levels[level - 1] ?? "";
-            new Setting(containerEl)
-                .setName(`${"#".repeat(level)} Heading ${level}`)
-                .addDropdown((cb) => {
-                    cb.addOption("", "Deck default");
+            const row = new Setting(containerEl).setName(
+                `${"#".repeat(level)} Heading ${level}`,
+            );
+            for (const [key, noun, names] of choices) {
+                const levels = listFor(key);
+                const current = levels[level - 1] ?? "";
+                row.addDropdown((cb) => {
+                    cb.addOption("", `${noun}: deck default`);
                     for (const name of names) {
-                        cb.addOption(name, name);
+                        cb.addOption(name, `${noun}: ${name}`);
                     }
                     if (current && !names.includes(current)) {
-                        cb.addOption(current, `${current} (missing)`);
+                        cb.addOption(current, `${noun}: ${current} (missing)`);
                     }
                     cb.setValue(current).onChange((value) => {
                         levels[level - 1] = value;
                         void this.save();
                     });
                 });
+            }
         }
     }
 

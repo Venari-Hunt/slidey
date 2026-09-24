@@ -13,6 +13,12 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.11.0 — 2026-09-23
+
+- **Slide layouts: where things go on a slide, apart from its look.** Eight layouts ship with the plugin: `title`, `section`, `two-column`, `image-left`, `image-right`, `image-full` (picture fills the slide, text on top), `quote`, `code`. Pick one with `%% layout=two-column %%` at the top of a slide, or `layout: title` in the note's properties for the whole deck. Combine it with a style: `%% layout=image-left style=paper %%`. Layouts never change colors or fonts, so any layout works with any style.
+- **Heading levels pick a layout and a style too.** Settings → Heading levels now has three dropdowns per level: layout, style and preset. New installs start with `#` → `title` layout.
+- Fix: a font name was put in quotes whenever it contained the letter "s", not only when it had a space. Harmless, but now correct.
+
 ## 0.10.0 — 2026-09-23
 
 - **Slide styles: the look of a slide, apart from its layout.** A style is a set of colors and fonts: background, text color, accent color, heading font, body font, text size, alignment. Put `style: paper` in a note's properties to style the whole deck, or `%% style=night %%` at the top of one slide (headings and blocks mode too). It combines with a preset: `%% preset=cover style=bold %%` takes the preset's layout and the style's look. Five starters (night, paper, clean, bold, ocean) live in Settings → Slide styles, where you can edit them, add your own, and see a live preview of each. Fonts must be installed on your computer.
