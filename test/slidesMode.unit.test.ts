@@ -276,3 +276,47 @@ describe("speaker notes and backgrounds", () => {
         expect(options.notesSeparator).toBe(N);
     });
 });
+
+describe("separator mode markers", () => {
+    const deck = (markdown: string, extra: Partial<Options> = {}) => {
+        const options = getSlideOptions(extra);
+        return { markdown: applySlidesMode(markdown, options), options };
+    };
+
+    it("reads markers at the top of each slide and keeps the separators", () => {
+        const { markdown, options } = deck(
+            "%% preset=cover %%\n# Hi\n\n---\n\n%% preset=quote bg=#224466 %%\n> Q\n--\n%% bg=photo.jpg %%\nText",
+        );
+        expect(options.separator).toBe("\r?\n---\r?\n");
+        expect(markdown).toBe(
+            '<!-- slide preset="cover" -->\n# Hi\n\n---\n<!-- slide preset="quote" bg="#224466" -->\n\n> Q\n--\n<!-- slide bg="[[photo.jpg]]" -->\nText',
+        );
+    });
+
+    it("leaves markers below slide content alone", () => {
+        const { markdown } = deck("# Hi\n%% preset=quote %%");
+        expect(markdown).toBe("# Hi\n%% preset=quote %%");
+    });
+
+    it("merges into an existing slide comment above the markers", () => {
+        const { markdown } = deck(
+            '<!-- slide class="x" -->\n%% preset=quote %%\n# Hi',
+        );
+        expect(markdown).toBe('<!-- slide preset="quote" class="x" -->\n# Hi');
+    });
+
+    it("turns %% notes %% into the deck's notes separator", () => {
+        expect(deck("# A\n%% notes %%\nsay this").markdown).toBe(
+            "# A\nnote:\nsay this",
+        );
+        expect(
+            deck("# A\n%% notes %%\nsay this", { notesSeparator: "Notes:" })
+                .markdown,
+        ).toBe("# A\nNotes:\nsay this");
+    });
+
+    it("leaves a note without markers unchanged", () => {
+        const note = "# A\n\n---\n\n## B\n--\nC\n%% just a comment %%";
+        expect(deck(note).markdown).toBe(note);
+    });
+});
