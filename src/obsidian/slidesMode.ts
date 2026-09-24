@@ -1,4 +1,5 @@
 import type { Options } from "../@types";
+import { overrideStyle, type SlideOverrides } from "../presets";
 
 // How a note is cut into slides, picked by the `slides:` frontmatter key.
 // "separators" is upstream's `---` / `--` behaviour and the default when the
@@ -29,6 +30,8 @@ const SLIDE_COMMENT = /<!--\s*\.?slide\b/;
 const BLOCK_START = /^\s*%%\s*slide(?=\s|%)(.*?)%%\s*$/i;
 const BLOCK_END = /^\s*%%\s*(?:end\s*slide|\/\s*slide)\s*%%\s*$/i;
 const ATTR = /\b(\w+)\s*=\s*("[^"]*"|\[\[[^\]]*\]\]|[^\s"]+)/g;
+// A slide comment's inline CSS (not `slidey-style`).
+const INLINE_STYLE = /(^|[^-\w])style\s*=\s*"([^"]*)"/;
 const WIKILINK = /^\[\[([^\]|]+)(?:\|[^\]]*)?\]\]$/;
 const IMAGE_FILE = /\.(?:png|jpe?g|gif|webp|svg|bmp|avif)$/i;
 
@@ -38,7 +41,7 @@ const NO_BLOCKS_HINT =
     "No slides yet. Put a line reading <code>&#37;&#37; slide &#37;&#37;</code> above the part of the note you want as a slide, and <code>&#37;&#37; endslide &#37;&#37;</code> after it.";
 
 /** Per-slide settings read from `%% … %%` markers. */
-interface SlideAttrs {
+interface SlideAttrs extends SlideOverrides {
     preset?: string;
     style?: string;
     layout?: string;
@@ -369,7 +372,8 @@ function readMarkers(
     return { lines: kept.concat(lines.slice(index)), skip, attrs };
 }
 
-// Reads `preset=quote layout=two-column style=night bg=[[My photo.jpg]]`. `rest` is whatever wasn't a known
+// Reads `preset=quote layout=two-column style=night bg=[[My photo.jpg]]`,
+// plus the one-off overrides `font= color= accent= size=`. `rest` is whatever wasn't a known
 // attribute, so a marker holding anything else can be left alone.
 function readAttrs(text: string): { attrs: SlideAttrs; rest: string } {
     const attrs: SlideAttrs = {};
@@ -387,6 +391,12 @@ function readAttrs(text: string): { attrs: SlideAttrs; rest: string } {
                 return "";
             case "bg":
                 attrs.bg = bgValue(value);
+                return "";
+            case "font":
+            case "color":
+            case "accent":
+            case "size":
+                attrs[key.toLowerCase() as keyof SlideOverrides] = value;
                 return "";
             default:
                 return match;
@@ -444,12 +454,32 @@ function withAttrs(slide: string, attrs: SlideAttrs): string {
         .filter(([key, , taken]) => attrs[key] && !taken.test(existing))
         .map(([key, name]) => `${name}="${attrs[key]?.replace(/"/g, "")}"`)
         .join(" ");
-    if (!added) {
+    const inline = overrideStyle(attrs);
+    if (!added && !inline) {
         return slide;
     }
     if (!comment) {
-        return `<!-- slide ${added} -->\n${slide}`;
+        const style = inline ? `style="${inline}"` : "";
+        return `<!-- slide ${[added, style].filter(Boolean).join(" ")} -->\n${slide}`;
+    }
+    let out = slide;
+    if (inline) {
+        // Overrides go before inline CSS already on the comment, which wins.
+        const end = out.indexOf("-->", comment.index);
+        const head = out.substring(comment.index, end);
+        const own = INLINE_STYLE.exec(head);
+        const merged = own
+            ? head.replace(
+                  INLINE_STYLE,
+                  (_, before: string) =>
+                      `${before}style="${inline}; ${own[2]}"`,
+              )
+            : `${head.trimEnd()} style="${inline}" `;
+        out = out.substring(0, comment.index) + merged + out.substring(end);
+    }
+    if (!added) {
+        return out;
     }
     const at = comment.index + comment[0].length;
-    return `${slide.substring(0, at)} ${added}${slide.substring(at)}`;
+    return `${out.substring(0, at)} ${added}${out.substring(at)}`;
 }

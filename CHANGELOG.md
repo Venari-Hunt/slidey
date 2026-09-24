@@ -13,6 +13,11 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.12.0 — 2026-09-23
+
+- **One-off changes on a single slide.** Change one slide without making a new style: put `%% font="Open Sans" color=#eeeeee accent=red size=1.4 %%` at the top of a slide. `font` sets the font for headings and text, `color` the text color, `accent` the heading and link color, `size` the text size (`1.4` = 1.4 times bigger, or `36px`). These always win over the slide's style and preset. Works in all three modes and on the same line as `layout=` / `style=`.
+- Fix: a style's or preset's text size (like the quote preset's) had no effect on the slide itself, only on the settings preview. It now really enlarges the text.
+
 ## 0.11.0 — 2026-09-23
 
 - **Slide layouts: where things go on a slide, apart from its look.** Eight layouts ship with the plugin: `title`, `section`, `two-column`, `image-left`, `image-right`, `image-full` (picture fills the slide, text on top), `quote`, `code`. Pick one with `%% layout=two-column %%` at the top of a slide, or `layout: title` in the note's properties for the whole deck. Combine it with a style: `%% layout=image-left style=paper %%`. Layouts never change colors or fonts, so any layout works with any style.

@@ -379,3 +379,44 @@ describe("layout markers", () => {
         ).toBe('<!-- slide layout="image-left" -->\nB');
     });
 });
+
+describe("per-slide overrides", () => {
+    it("turns font/color/accent/size into inline CSS", () => {
+        const options = getSlideOptions({});
+        expect(
+            applySlidesMode(
+                '%% style=night font="Open Sans" color=#eee accent=red size=1.5 %%\n# Hi',
+                options,
+            ),
+        ).toBe(
+            "<!-- slide slidey-style=\"night\" style=\"--r-main-color:#eee; color:#eee; --r-heading-color:red; --r-link-color:red; --r-link-color-hover:red; --r-main-font:'Open Sans'; --r-heading-font:'Open Sans'; font-family:'Open Sans'; --r-main-font-size:63px; font-size:63px\" -->\n# Hi",
+        );
+    });
+
+    it("merges with inline CSS already on the slide comment, which wins", () => {
+        expect(
+            headingsToSlides(
+                '# A\n<!-- slide style="color:blue" -->\n%% color=red %%',
+                [],
+            ).markdown,
+        ).toBe(
+            '# A\n<!-- slide style="--r-main-color:red; color:red; color:blue" -->',
+        );
+    });
+
+    it("works in a block; bad sizes are dropped", () => {
+        expect(blocksToSlides("%% slide size=36px %%\nB").markdown).toBe(
+            '<!-- slide style="--r-main-font-size:36px; font-size:36px" -->\nB',
+        );
+        expect(blocksToSlides("%% slide size=huge %%\nB").markdown).toBe("B");
+    });
+
+    it("can't break out of the attribute or the style", () => {
+        expect(
+            blocksToSlides("%% slide color=red;background:url(x)> %%\nB")
+                .markdown,
+        ).toBe(
+            '<!-- slide style="--r-main-color:redbackground:url(x); color:redbackground:url(x)" -->\nB',
+        );
+    });
+});

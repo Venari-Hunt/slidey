@@ -67,6 +67,63 @@ function cleanRawCss(css: string): string {
     return css.replace(/<(\s*\/?\s*(?:style|script))/gi, "$1");
 }
 
+/** One-off per-slide changes from `%% font=… color=… accent=… size=… %%`. */
+export interface SlideOverrides {
+    font?: string;
+    color?: string;
+    accent?: string;
+    size?: string;
+}
+
+// `1.2` → 1.2 × the theme size; `36px`, `1.5em`, `120%` pass through.
+function sizeValue(value: string): string {
+    const size = value.trim();
+    if (/^\d*\.?\d+$/.test(size)) {
+        return Number(size) > 0
+            ? `${Math.round(BASE_FONT_PX * Number(size))}px`
+            : "";
+    }
+    return /^\d*\.?\d+(?:px|em|rem|%|pt|vw|vh)$/i.test(size) ? size : "";
+}
+
+/**
+ * Inline CSS for a slide's one-off overrides, written into the slide
+ * comment's `style` attribute. Inline custom properties beat the ones a
+ * style or preset sets on the same <section>, and headings read them
+ * through `var()`, so an override always wins. Single quotes only: the
+ * result sits inside `style="…"`.
+ */
+export function overrideStyle(overrides: SlideOverrides): string {
+    const clean = (value: string) => cleanValue(value).replace(/"/g, "");
+    const decls: string[] = [];
+    if (overrides.color) {
+        const c = clean(overrides.color);
+        decls.push(`--r-main-color:${c}`, `color:${c}`);
+    }
+    if (overrides.accent) {
+        const a = clean(overrides.accent);
+        decls.push(
+            `--r-heading-color:${a}`,
+            `--r-link-color:${a}`,
+            `--r-link-color-hover:${a}`,
+        );
+    }
+    if (overrides.font) {
+        const font = clean(overrides.font).replace(/'/g, "");
+        const f = /\s/.test(font) && !font.includes(",") ? `'${font}'` : font;
+        decls.push(
+            `--r-main-font:${f}`,
+            `--r-heading-font:${f}`,
+            `font-family:${f}`,
+        );
+    }
+    const size = overrides.size ? sizeValue(overrides.size) : "";
+    if (size) {
+        decls.push(`--r-main-font-size:${size}`, `font-size:${size}`);
+    }
+    return decls.join("; ");
+}
+
 /**
  * Build the scoped CSS for every preset. `selectorFor` overrides the slide
  * selector (default: the reveal <section> carrying the preset class) — the
@@ -108,9 +165,9 @@ export function buildPresetCss(
             preset.fontScale > 0 &&
             preset.fontScale !== 1
         ) {
-            decls.push(
-                `--r-main-font-size:${Math.round(BASE_FONT_PX * preset.fontScale)}px`,
-            );
+            // The theme reads the variable on .reveal only, so set the size too.
+            const size = `${Math.round(BASE_FONT_PX * preset.fontScale)}px`;
+            decls.push(`--r-main-font-size:${size}`, `font-size:${size}`);
         }
         if (preset.bodyFont) {
             const f = fontValue(preset.bodyFont);
@@ -125,14 +182,16 @@ export function buildPresetCss(
         if (decls.length > 0) {
             blocks.push(`${sel}{${decls.join(";")};}`);
         }
+        // Headings read the variables set above rather than a fixed value,
+        // so a per-slide override (inline, see overrideStyle) still wins.
         if (preset.accent) {
-            const a = cleanValue(preset.accent);
-            blocks.push(`${sel} h1,${sel} h2,${sel} h3,${sel} h4{color:${a};}`);
+            blocks.push(
+                `${sel} h1,${sel} h2,${sel} h3,${sel} h4{color:var(--r-heading-color);}`,
+            );
         }
         if (preset.headingFont) {
-            const f = fontValue(preset.headingFont);
             blocks.push(
-                `${sel} h1,${sel} h2,${sel} h3,${sel} h4{font-family:${f};}`,
+                `${sel} h1,${sel} h2,${sel} h3,${sel} h4{font-family:var(--r-heading-font);}`,
             );
         }
         if (preset.css?.trim()) {

@@ -16,6 +16,7 @@ A note's frontmatter `slides:` key picks how it is cut into slides. Code: `src/o
   - `%% noslide %%` — leave the section out.
   - `%% preset=quote %%` (or `%% slide preset=quote %%`) — override the level preset. `preset=none` opts out of the deck default.
   - `%% style=night %%` — pick a slide style (0.10.0; see `docs/presets.md`). Works in every mode and on the same line as `preset=` / `bg=`.
+  - `%% font=… color=… accent=… size=… %%` — one-off overrides for this slide (0.12.0; see `docs/presets.md`). Works in every mode.
   - `%% layout=two-column %%` — pick a slide layout (0.11.0; see `docs/presets.md`). Works in every mode; travels to the processors as `layout="x"` on the slide comment. In headings mode, Settings → Heading levels also maps each level to a layout and a style (`headingLayouts` / `headingStyles`, passed as `headingsToSlides`' third argument).
 - An explicit `<!-- slide preset="x" -->` in the section wins; one without `preset` gets the level preset merged in.
 - `---` and `--` lines stay ordinary text (horizontal rules).
