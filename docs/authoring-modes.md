@@ -31,22 +31,29 @@ Editor → slide sync: `RevealPreviewView.getSlideLines` uses `headingsToSlides(
 
 Tests: `test/slidesMode.unit.test.ts`. Live test note: `02 - Projetos/Slidey/_slidey-headings-test.md` in Vault Claude.
 
-### Preset dots and pills (editor)
+### Look dots and pills (editor)
 
-`src/obsidian/presetGutter.ts` — one CM6 `StateField` registered with `registerEditorExtension`, drawn two ways: a `gutter` dot and, at the end of the heading line, a pill widget (`Decoration.widget`, `side: 1`) naming the preset. `markFor()` gives both the same kind/text/color. In a `slides: headings` note each heading line (in `slides: blocks`, each `%% slide %%` line) gets a dot for the preset it resolves to (`headingOutline()` in `slidesMode.ts`, which shares `splitSections` + `readMarkers` with `headingsToSlides`, so the dot and the deck can't disagree). Blank level preset falls back to the frontmatter `preset:`.
+`src/obsidian/presetGutter.ts` — one CM6 `StateField` registered with `registerEditorExtension`, drawn two ways: a `gutter` dot and, at the end of the line, a pill widget (`Decoration.widget`, `side: 1`) naming the slide's **layout · style** (plus preset, if any). `markFor(skip, {preset, layout, style}, known)` gives both the same kind/text/color. Where the marks go, per mode (outlines in `slidesMode.ts`, each sharing its parser with the deck builder so the marks and the deck can't disagree):
+
+- `slides: headings` — each heading line (`headingOutline()`, level → layout/style/preset from Settings → Heading levels).
+- `slides: blocks` — each `%% slide %%` line (`blockOutline()`).
+- `---` notes — the first non-blank line of each slide (`separatorOutline()`, honoring `separator:` / `verticalSeparator:`). Only when the frontmatter has one of `slides`, `layout`, `style`, `preset`, `theme` — otherwise every note with a horizontal rule would get marks.
+
+A blank pick falls back to the frontmatter `layout:` / `style:` / `preset:`. `preset=` keeps working everywhere, alone or next to `layout=`/`style=`.
 
 | Dot | Meaning |
 |---|---|
-| filled, colored | preset N in Settings → Slide presets, color `presetDotColor(N)` (8-color palette, cycles) |
-| hollow gray ring | no preset (or `preset=none`) |
-| dashed red ring | preset name that doesn't exist |
+| filled, colored | style N in Settings → Slide styles (else preset N in Slide presets), color `presetDotColor(N)` (8-color palette, cycles) |
+| filled, muted | layout only, no style or preset |
+| hollow gray ring | nothing picked (or `=none`) |
+| dashed red ring | a name that doesn't exist |
 | short dash | `%% noslide %%` |
 
-Pill text: the preset name (in its color), `no preset`, `name?` (red dashed), `not a slide` (struck through).
+Pill text: `two-column · night` (in the dot color), `plain`, `nigth?` for an unknown name (red dashed), `not a slide` (struck through). Hover shows `Slide · layout: …, style: …`.
 
 - Rebuilt on every doc change (parses the frontmatter with `getFrontMatterInfo` + `parseYaml`, not the metadata cache, so toggling `slides:` updates instantly).
 - `saveSettings` calls `refreshPresetGutters()`, which dispatches a `refreshMarks` effect to every open editor so dots and pills recolor after settings edits.
-- The settings preset list prepends the same dot to each preset name as the legend.
+- The settings style and preset lists prepend the same dot to each name as the legend.
 - Spacing lives on the dot, not the gutter, so non-deck notes get a 0-width gutter.
 - `@codemirror/state` / `@codemirror/view` are devDependencies pinned to Obsidian's versions and external in esbuild (Obsidian provides them at runtime).
 

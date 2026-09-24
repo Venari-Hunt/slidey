@@ -8,6 +8,7 @@ import {
     HEADING_SLIDE_SEPARATOR,
     headingOutline,
     headingsToSlides,
+    separatorOutline,
     slidesMode,
 } from "../src/obsidian/slidesMode";
 import { YamlStore } from "../src/yaml/yamlStore";
@@ -141,18 +142,87 @@ describe("headingOutline", () => {
             "## Plain",
             "## Quote",
             "",
-            "%% preset=quote %%",
+            "%% preset=quote style=paper %%",
             "```",
             "# not a heading",
             "```",
             "### Hidden",
             "%% noslide %%",
         ].join("\n");
-        expect(headingOutline(note, ["cover", "", "bullets"])).toEqual([
-            { line: 1, level: 1, preset: "cover", skip: false },
-            { line: 2, level: 2, preset: "", skip: false },
-            { line: 3, level: 2, preset: "quote", skip: false },
-            { line: 9, level: 3, preset: "bullets", skip: true },
+        const looks = { layouts: ["title"], styles: ["night", "night"] };
+        expect(headingOutline(note, ["cover", "", "bullets"], looks)).toEqual([
+            {
+                line: 1,
+                level: 1,
+                preset: "cover",
+                layout: "title",
+                style: "night",
+                skip: false,
+            },
+            {
+                line: 2,
+                level: 2,
+                preset: "",
+                layout: "",
+                style: "night",
+                skip: false,
+            },
+            {
+                line: 3,
+                level: 2,
+                preset: "quote",
+                layout: "",
+                style: "paper",
+                skip: false,
+            },
+            {
+                line: 9,
+                level: 3,
+                preset: "bullets",
+                layout: "",
+                style: "",
+                skip: true,
+            },
+        ]);
+    });
+});
+
+describe("separatorOutline", () => {
+    it("marks each slide's first line with its picks", () => {
+        const note = [
+            "# One", // 0
+            "---",
+            "",
+            "%% layout=two-column style=night %%", // 3
+            "text",
+            "--",
+            "vertical", // 6
+        ].join("\n");
+        expect(separatorOutline(note)).toEqual([
+            {
+                line: 0,
+                level: 0,
+                preset: "",
+                layout: "",
+                style: "",
+                skip: false,
+            },
+            {
+                line: 3,
+                level: 0,
+                preset: "",
+                layout: "two-column",
+                style: "night",
+                skip: false,
+            },
+            {
+                line: 6,
+                level: 0,
+                preset: "",
+                layout: "",
+                style: "",
+                skip: false,
+            },
         ]);
     });
 });
@@ -201,8 +271,22 @@ describe("blocksToSlides", () => {
         expect(
             blockOutline("x\n%% slide preset=cover %%\ny\n%% slide %%"),
         ).toEqual([
-            { line: 1, level: 0, preset: "cover", skip: false },
-            { line: 3, level: 0, preset: "", skip: false },
+            {
+                line: 1,
+                level: 0,
+                preset: "cover",
+                layout: "",
+                style: "",
+                skip: false,
+            },
+            {
+                line: 3,
+                level: 0,
+                preset: "",
+                layout: "",
+                style: "",
+                skip: false,
+            },
         ]);
     });
 

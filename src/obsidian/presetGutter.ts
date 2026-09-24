@@ -15,15 +15,21 @@ import {
 } from "@codemirror/view";
 import { getFrontMatterInfo, parseYaml, type Workspace } from "obsidian";
 import type { Options, SlidesExtendedSettings } from "../@types";
-import { blockOutline, headingOutline, slidesMode } from "./slidesMode";
+import { LAYOUTS } from "../presets";
+import {
+    blockOutline,
+    headingOutline,
+    separatorOutline,
+    slidesMode,
+} from "./slidesMode";
 
-// Editor marks for `slides: headings` / `slides: blocks` notes, so the slide
-// each heading (or `%% slide %%` line) becomes is visible while writing: a dot
-// in the gutter, in its preset's color, and a pill with the preset name at the
-// end of the line. Hover shows the full label.
+// Editor marks so the slide each heading, `%% slide %%` line or `---` slide
+// becomes is visible while writing: a dot in the gutter, in its style's (or
+// preset's) color, and a pill naming its layout · style at the end of the
+// line. Hover shows the full label.
 
-// One color per preset, by its position in Settings → Slide presets. Also
-// shown next to each preset there as the legend.
+// One color per style (or preset), by its position in Settings. Also shown
+// next to each one there as the legend.
 const DOT_COLORS = [
     "#4dabf7",
     "#fd7e14",
@@ -127,29 +133,51 @@ function buildMarks(
         return NO_MARKS;
     }
     const mode = slidesMode(frontmatter as Partial<Options>);
-    if (mode === "separators") {
+    // A plain `---` note only counts as a deck once its frontmatter says so;
+    // otherwise every note with a horizontal rule would get marks.
+    if (mode === "separators" && !DECK_KEYS.some((key) => key in frontmatter)) {
         return NO_MARKS;
     }
 
-    const deckPreset =
-        typeof frontmatter.preset === "string" ? frontmatter.preset.trim() : "";
-    const presets = (settings.presets ?? []).map((preset) => preset?.name);
+    const deckLook = (key: string): string =>
+        typeof frontmatter[key] === "string"
+            ? (frontmatter[key] as string).trim()
+            : "";
+    const known: KnownLooks = {
+        presets: namesOf(settings.presets),
+        layouts: namesOf(LAYOUTS),
+        styles: namesOf(settings.styles),
+    };
     const lineOffset = state.doc.lineAt(info.contentStart).number - 1;
-    const levels = Array.isArray(settings.headingPresets)
-        ? settings.headingPresets
-        : [];
 
     const dots = [];
     const pills = [];
     const body = text.substring(info.contentStart);
     const outline =
-        mode === "blocks" ? blockOutline(body) : headingOutline(body, levels);
+        mode === "blocks"
+            ? blockOutline(body)
+            : mode === "headings"
+              ? headingOutline(body, stringList(settings.headingPresets), {
+                    layouts: stringList(settings.headingLayouts),
+                    styles: stringList(settings.headingStyles),
+                })
+              : separatorOutline(
+                    body,
+                    deckLook("separator") || settings.separator || undefined,
+                    deckLook("verticalSeparator") ||
+                        settings.verticalSeparator ||
+                        undefined,
+                );
     for (const heading of outline) {
         const line = state.doc.line(heading.line + lineOffset + 1);
         const mark = markFor(
             heading.skip,
-            heading.preset || deckPreset,
-            presets,
+            {
+                preset: heading.preset || deckLook("preset"),
+                layout: heading.layout || deckLook("layout"),
+                style: heading.style || deckLook("style"),
+            },
+            known,
         );
         dots.push(new PresetDot(mark).range(line.from));
         pills.push(
@@ -161,10 +189,32 @@ function buildMarks(
     return { dots: RangeSet.of(dots), pills: Decoration.set(pills) };
 }
 
+/** What one slide picks; "" for nothing. */
+export interface SlideLook {
+    preset: string;
+    layout: string;
+    style: string;
+}
+
+/** Names that exist, in Settings order (the order sets the dot color). */
+export interface KnownLooks {
+    presets: (string | undefined)[];
+    layouts: (string | undefined)[];
+    styles: (string | undefined)[];
+}
+
+// Shown in this order on the pill: "two-column · night".
+const LOOK_KINDS = ["layout", "style", "preset"] as const;
+
+/**
+ * The dot + pill for one slide. The pill names its layout · style (· preset);
+ * the dot takes the style's color, else the preset's. A misspelled name gets
+ * a "?" and a dashed red mark.
+ */
 export function markFor(
     skip: boolean,
-    name: string,
-    presets: (string | undefined)[],
+    look: SlideLook,
+    known: KnownLooks,
 ): HeadingMark {
     if (skip) {
         return {
@@ -174,29 +224,49 @@ export function markFor(
             color: "",
         };
     }
-    if (!name || name.toLowerCase() === "none") {
+    const picks = LOOK_KINDS.map((kind) => {
+        const name = look[kind];
+        const index = known[`${kind}s`].indexOf(name);
+        return { kind, name, index };
+    }).filter(({ name }) => name && name.toLowerCase() !== "none");
+    if (!picks.length) {
         return {
             kind: "none",
-            text: "no preset",
-            label: "Slide · no preset",
+            text: "plain",
+            label: "Slide · no layout, style or preset",
             color: "",
         };
     }
-    const index = presets.indexOf(name);
-    if (index < 0) {
-        return {
-            kind: "unknown",
-            text: `${name}?`,
-            label: `Slide · unknown preset "${name}"`,
-            color: "",
-        };
-    }
+    const unknown = picks.some(({ index }) => index < 0);
+    const colorFrom = picks.find(
+        ({ kind, index }) => kind !== "layout" && index >= 0,
+    );
     return {
-        kind: "preset",
-        text: name,
-        label: `Slide · preset: ${name}`,
-        color: presetDotColor(index),
+        kind: unknown ? "unknown" : "preset",
+        text: picks
+            .map(({ name, index }) => (index < 0 ? `${name}?` : name))
+            .join(" · "),
+        label: `Slide · ${picks
+            .map(
+                ({ kind, name, index }) =>
+                    `${kind}: ${name}${index < 0 ? " (unknown)" : ""}`,
+            )
+            .join(", ")}`,
+        color: colorFrom
+            ? presetDotColor(colorFrom.index)
+            : "var(--text-muted)",
     };
+}
+
+// Frontmatter keys that mark a plain `---` note as a deck.
+const DECK_KEYS = ["slides", "layout", "style", "preset", "theme"];
+
+function namesOf(looks: { name?: string }[] | undefined): string[] {
+    return (looks ?? []).map((look) => look?.name ?? "");
+}
+
+function stringList(value: unknown): string[] {
+    return Array.isArray(value) ? (value as string[]) : [];
 }
 
 export function presetGutter(

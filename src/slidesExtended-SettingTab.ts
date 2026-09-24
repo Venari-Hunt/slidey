@@ -64,7 +64,7 @@ const STYLE_LIST: LookList = {
     classPrefix: "slidey-style-",
     starters: STARTER_STYLES,
     fonts: true,
-    dots: false,
+    dots: true,
 };
 
 import { DEFAULT_SETTINGS } from "./slidesExtended-constants";

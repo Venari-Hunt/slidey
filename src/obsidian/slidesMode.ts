@@ -132,17 +132,22 @@ export interface HeadingSlide {
     level: number;
     /** Resolved preset name; "" means the deck default (`preset:` frontmatter). */
     preset: string;
+    /** Resolved layout name; "" means the deck default (`layout:`). */
+    layout: string;
+    /** Resolved style name; "" means the deck default (`style:`). */
+    style: string;
     /** `%% noslide %%` — left out of the deck. */
     skip: boolean;
 }
 
 /**
- * Every heading of a headings-mode note with the preset it resolves to — what
- * the editor gutter shows. Mirrors `headingsToSlides`.
+ * Every heading of a headings-mode note with the preset, layout and style it
+ * resolves to — what the editor gutter shows. Mirrors `headingsToSlides`.
  */
 export function headingOutline(
     markdown: string,
     levelPresets: string[],
+    levelLooks: LevelLooks = {},
 ): HeadingSlide[] {
     return splitSections(markdown)
         .filter((section) => section.level > 0)
@@ -153,9 +158,49 @@ export function headingOutline(
                 level: section.level,
                 preset:
                     attrs.preset ?? levelPreset(levelPresets, section.level),
+                layout:
+                    attrs.layout ??
+                    levelPreset(levelLooks.layouts ?? [], section.level),
+                style:
+                    attrs.style ??
+                    levelPreset(levelLooks.styles ?? [], section.level),
                 skip,
             };
         });
+}
+
+/**
+ * Every slide of a `---` note with its `%% … %%` picks — what the editor
+ * gutter shows. The mark goes on the slide's first non-blank line. Mirrors
+ * `separatorMarkers`.
+ */
+export function separatorOutline(
+    markdown: string,
+    separator = DEFAULT_SEPARATOR,
+    vertical = DEFAULT_VERTICAL_SEPARATOR,
+): HeadingSlide[] {
+    const parts = markdown.split(
+        new RegExp(`(${separator}|${vertical})`, "gm"),
+    );
+    const slides: HeadingSlide[] = [];
+    let line = 0;
+    parts.forEach((part, index) => {
+        const lines = (part ?? "").split(/\r?\n/);
+        if (index % 2 === 0) {
+            const { attrs } = readMarkers(lines, 0);
+            const first = lines.findIndex((text) => text.trim());
+            slides.push({
+                line: line + Math.max(first, 0),
+                level: 0,
+                preset: attrs.preset ?? "",
+                layout: attrs.layout ?? "",
+                style: attrs.style ?? "",
+                skip: false,
+            });
+        }
+        line += lines.length - 1;
+    });
+    return slides;
 }
 
 /**
@@ -241,12 +286,14 @@ export function blocksToSlides(markdown: string): {
     };
 }
 
-/** Every `%% slide %%` line with its preset — what the editor gutter shows. */
+/** Every `%% slide %%` line with its picks — what the editor gutter shows. */
 export function blockOutline(markdown: string): HeadingSlide[] {
     return splitBlocks(markdown).map((block) => ({
         line: block.start,
         level: 0,
         preset: block.attrs.preset ?? "",
+        layout: block.attrs.layout ?? "",
+        style: block.attrs.style ?? "",
         skip: false,
     }));
 }
