@@ -320,3 +320,31 @@ describe("separator mode markers", () => {
         expect(deck(note).markdown).toBe(note);
     });
 });
+
+describe("style markers", () => {
+    it("hands style= to the processors as slidey-style", () => {
+        const options = getSlideOptions({});
+        expect(
+            applySlidesMode("%% preset=cover style=night %%\n# Hi", options),
+        ).toBe('<!-- slide preset="cover" slidey-style="night" -->\n# Hi');
+    });
+
+    it("works under a heading and in a block", () => {
+        expect(
+            headingsToSlides("# A\n%% style=paper %%\nText", []).markdown,
+        ).toBe('<!-- slide slidey-style="paper" -->\n# A\nText');
+        expect(blocksToSlides("%% slide style=bold %%\nB").markdown).toBe(
+            '<!-- slide slidey-style="bold" -->\nB',
+        );
+    });
+
+    it("keeps an inline style= on an existing slide comment", () => {
+        const options = getSlideOptions({});
+        expect(
+            applySlidesMode(
+                '<!-- slide style="color:red" -->\n%% style=night %%\n# Hi',
+                options,
+            ),
+        ).toBe('<!-- slide slidey-style="night" style="color:red" -->\n# Hi');
+    });
+});

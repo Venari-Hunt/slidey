@@ -1,4 +1,4 @@
-# Slide presets
+# Slide presets and styles
 
 Code: `src/presets.ts`, `src/obsidian/processors/presetProcessor.ts`, settings UI in `src/slidesExtended-SettingTab.ts` (`drawPresets`).
 
@@ -9,6 +9,16 @@ A preset = a named look a slide opts into via `preset:` in the note frontmatter 
 - `PresetProcessor` (phase 2, after `defaultBackgroundProcessor`) stamps a `slidey-preset-<name>` class onto the slide annotation and routes any preset `background` through the `bg` attribute (→ `data-background-color`, so reveal's background layer paints it).
 - `buildPresetCss(presets, selectorFor?)` turns each preset's structured fields (background/color/accent/fontScale/align) + raw `css` (with `&` = the slide selector) into CSS scoped to `.reveal .slides section.slidey-preset-<name>`. `revealRenderer` injects it as `<style id="slidey-presets">` in both templates (cascades below the theme, above user CSS).
 - Presets live in plugin settings (`settings.presets`), seeded from `STARTER_PRESETS` (7 starters), edited in Settings → Slide presets.
+
+## Slide styles (0.10.0)
+
+A style is the look half of a slide (colors, fonts, size, align, raw css), split from presets so layout and look change independently. `SlideStyle` is the same shape as `SlidePreset` (both have `headingFont` / `bodyFont`; only the styles editor shows them).
+
+- Picked with `style:` frontmatter (deck default) or `%% style=x %%` on a slide. `readAttrs` reads `style=`; `withAttrs` writes it to the slide comment as **`slidey-style="x"`**, because `style=` on a slide comment is upstream's inline CSS.
+- `PresetProcessor` is shared: `new PresetProcessor(STYLES)` resolves `slidey-style` / `options.style` / `options.styles` → class `slidey-style-<name>`. It runs **before** the preset processor, so a style's background wins the `bg` attribute.
+- CSS: `buildStyleCss()` = `buildPresetCss` scoped to `section.slidey-style-<name>`, appended after preset CSS in the same `presetStyles` template slot (so no `slidey.zip` template change was needed). Same specificity, later wins → style beats preset on color/font.
+- Fonts: `bodyFont` → `--r-main-font` + `font-family`; `headingFont` → `--r-heading-font` + `font-family` on h1–h4. A bare name with spaces gets quoted. No web-font loading: the font must be installed.
+- Settings: `drawLooks(containerEl, STYLE_LIST | PRESET_LIST)` draws both editors; swatch ids are `<list>-<index>`. `settings.styles` seeded from `STARTER_STYLES`.
 
 ## Deck DOM — what `&` actually wraps
 

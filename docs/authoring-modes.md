@@ -15,6 +15,7 @@ A note's frontmatter `slides:` key picks how it is cut into slides. Code: `src/o
 - `%% … %%` lines directly under a heading (blank lines allowed between) configure that slide and are removed:
   - `%% noslide %%` — leave the section out.
   - `%% preset=quote %%` (or `%% slide preset=quote %%`) — override the level preset. `preset=none` opts out of the deck default.
+  - `%% style=night %%` — pick a slide style (0.10.0; see `docs/presets.md`). Works in every mode and on the same line as `preset=` / `bg=`.
 - An explicit `<!-- slide preset="x" -->` in the section wins; one without `preset` gets the level preset merged in.
 - `---` and `--` lines stay ordinary text (horizontal rules).
 

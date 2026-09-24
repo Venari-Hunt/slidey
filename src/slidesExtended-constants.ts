@@ -1,5 +1,5 @@
 import type { MediaCollector, Options, SlidesExtendedSettings } from "./@types";
-import { STARTER_PRESETS } from "./presets";
+import { STARTER_PRESETS, STARTER_STYLES } from "./presets";
 
 export const ICON_DATA =
     '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><path fill="currentColor" stroke="currentColor" d="M100 74.242V1.516H0v72.726h45.453v15.153H31.816v9.09h36.368v-9.09H54.547V74.242Zm-90.91-9.09V10.605h81.82v54.547Zm0 0"/><path fill="currentColor" stroke="currentColor" d="M54.547 19.695h9.09V56.06h-9.09ZM72.727 25.758h9.09v30.305h-9.09ZM36.363 31.816h9.09V56.06h-9.09ZM18.184 22.727h9.09v33.335h-9.09Zm0 0"/></svg>';
@@ -36,6 +36,7 @@ export const DEFAULT_SETTINGS: SlidesExtendedSettings = {
     separator: "",
     verticalSeparator: "",
     presets: STARTER_PRESETS,
+    styles: STARTER_STYLES,
     headingPresets: ["cover", "", "", "", "", ""],
 };
 export const DEFAULTS: Options = {
@@ -44,6 +45,7 @@ export const DEFAULTS: Options = {
     css: "",
     defaultTemplate: "",
     preset: "",
+    style: "",
     enableCustomControls: true,
     enableLinks: false,
     height: 700,

@@ -40,6 +40,7 @@ const NO_BLOCKS_HINT =
 /** Per-slide settings read from `%% … %%` markers. */
 interface SlideAttrs {
     preset?: string;
+    style?: string;
     bg?: string;
 }
 
@@ -337,7 +338,7 @@ function readMarkers(
             continue;
         }
         const read = readAttrs(body.replace(/^slide\s+/i, ""));
-        if (!read.rest && (read.attrs.preset || read.attrs.bg)) {
+        if (!read.rest && Object.keys(read.attrs).length) {
             Object.assign(attrs, read.attrs);
             continue;
         }
@@ -346,7 +347,7 @@ function readMarkers(
     return { lines: kept.concat(lines.slice(index)), skip, attrs };
 }
 
-// Reads `preset=quote bg=[[My photo.jpg]]`. `rest` is whatever wasn't a known
+// Reads `preset=quote style=night bg=[[My photo.jpg]]`. `rest` is whatever wasn't a known
 // attribute, so a marker holding anything else can be left alone.
 function readAttrs(text: string): { attrs: SlideAttrs; rest: string } {
     const attrs: SlideAttrs = {};
@@ -355,6 +356,9 @@ function readAttrs(text: string): { attrs: SlideAttrs; rest: string } {
         switch (key.toLowerCase()) {
             case "preset":
                 attrs.preset = value;
+                return "";
+            case "style":
+                attrs.style = value;
                 return "";
             case "bg":
                 attrs.bg = bgValue(value);
@@ -397,20 +401,22 @@ function withNotes(
     return out;
 }
 
-// Hands preset and background to the processors via the slide comment they
-// already read. Attributes already on an existing slide comment win.
+// Hands preset, style and background to the processors via the slide comment
+// they already read. Attributes already on an existing slide comment win.
+// Style travels as `slidey-style`: `style` there is inline CSS.
 function withAttrs(slide: string, attrs: SlideAttrs): string {
-    const owned: [keyof SlideAttrs, RegExp][] = [
-        ["preset", /\bpreset\s*=/],
-        ["bg", /\b(?:bg|data-background-\w+)\s*=/],
+    const owned: [keyof SlideAttrs, string, RegExp][] = [
+        ["preset", "preset", /\bpreset\s*=/],
+        ["style", "slidey-style", /\bslidey-style\s*=/],
+        ["bg", "bg", /\b(?:bg|data-background-\w+)\s*=/],
     ];
     const comment = SLIDE_COMMENT.exec(slide);
     const existing = comment
         ? slide.substring(comment.index, slide.indexOf("-->", comment.index))
         : "";
     const added = owned
-        .filter(([key, taken]) => attrs[key] && !taken.test(existing))
-        .map(([key]) => `${key}="${attrs[key]?.replace(/"/g, "")}"`)
+        .filter(([key, , taken]) => attrs[key] && !taken.test(existing))
+        .map(([key, name]) => `${name}="${attrs[key]?.replace(/"/g, "")}"`)
         .join(" ");
     if (!added) {
         return slide;

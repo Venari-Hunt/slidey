@@ -37,6 +37,7 @@ export interface SlidesExtendedSettings {
     separator: string;
     verticalSeparator: string;
     presets: import("../presets").SlidePreset[];
+    styles: import("../presets").SlideStyle[];
     /** Preset per heading level (index 0 = `#`) for `slides: headings`. */
     headingPresets: string[];
 }
@@ -80,6 +81,10 @@ export type Options = {
     preset?: string;
     /** Preset definitions, from plugin settings. */
     presets?: import("../presets").SlidePreset[];
+    /** Deck-wide default style (note frontmatter `style:`). */
+    style?: string;
+    /** Style definitions, from plugin settings. */
+    styles?: import("../presets").SlideStyle[];
     /** How the note is cut into slides (note frontmatter `slides:`). */
     slides?: string;
     /** Preset per heading level, from plugin settings. */

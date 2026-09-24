@@ -20,7 +20,7 @@ import { InternalLinkProcessor } from "./processors/internalLinkProcessor";
 import { LatexProcessor } from "./processors/latexProcessor";
 import { MediaProcessor } from "./processors/mediaProcessor";
 import { MultipleFileProcessor } from "./processors/multipleFileProcessor";
-import { PresetProcessor } from "./processors/presetProcessor";
+import { PresetProcessor, STYLES } from "./processors/presetProcessor";
 import { ReferenceProcessor } from "./processors/referenceProcessor";
 import { SkipSlideProcessor } from "./processors/skipSlideProcessor";
 import { TemplateProcessor } from "./processors/templateProcessor";
@@ -51,6 +51,7 @@ export class MarkdownProcessor {
     private chartProcessor: ChartProcessor;
     private defaultBackgroundProcessor: DefaultBackgroundProcessor;
     private presetProcessor: PresetProcessor;
+    private styleProcessor: PresetProcessor;
     private referenceProcessor: ReferenceProcessor;
     private skipSlideProcessor: SkipSlideProcessor;
     private stripLatexBackTicks: Processor;
@@ -76,6 +77,7 @@ export class MarkdownProcessor {
         this.chartProcessor = new ChartProcessor();
         this.defaultBackgroundProcessor = new DefaultBackgroundProcessor();
         this.presetProcessor = new PresetProcessor();
+        this.styleProcessor = new PresetProcessor(STYLES);
         this.referenceProcessor = new ReferenceProcessor();
         this.skipSlideProcessor = new SkipSlideProcessor();
         this.stripLatexBackTicks = {
@@ -190,6 +192,12 @@ export class MarkdownProcessor {
             {
                 name: "defaultBackgroundProcessor",
                 processor: this.defaultBackgroundProcessor,
+            },
+            // Stamp style classes onto slides; first, so a style's
+            // background wins over a preset's
+            {
+                name: "styleProcessor",
+                processor: this.styleProcessor,
             },
             // Stamp preset classes onto slides
             {
