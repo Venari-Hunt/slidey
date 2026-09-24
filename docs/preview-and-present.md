@@ -17,6 +17,8 @@ Command `present-active-presentation` ("Present slides (fullscreen)", no default
 
 `src/reveal/pdfExporter.ts`. `exportDeckToPdf(deckUrl, outFile)` opens a hidden Electron `BrowserWindow` (via `require("electron").remote`, which Obsidian desktop exposes) on the deck URL with `?print-pdf`, waits in-page for reveal's print layout (`.pdf-page` count > 0, `Reveal.isReady()`, all images complete, `document.fonts.ready`; 15 s cap), then `webContents.printToPDF({printBackground, preferCSSPageSize})` — reveal's print CSS sets the page size to the slide size, so one slide = one page. Output: `<exportDirectory>/<note name>.pdf` (setting default `/export`), opened with `shell.openPath`. `RevealPreviewView.exportAsPdf()` wraps it with a working/done Notice.
 
+Hung windows (0.15.1): a hidden export window that never finished blocked the preview server, so every preview went black. Each step (`loadURL`, the layout wait, `printToPDF`) is now raced against a 30 s limit (`STEP_TIMEOUT_MS`) and the window is destroyed in `finally`. `closeLeftoverExportWindows()` runs on plugin load and unload: it destroys any hidden `BrowserWindow` whose URL contains `?print-pdf`.
+
 Gotcha: headless Chrome's `--print-to-pdf` flag prints before reveal lays out → blank 1 KB PDF. Always wait for `.pdf-page` first.
 
 ## Commands

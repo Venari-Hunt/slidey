@@ -13,6 +13,10 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.15.1 — 2026-09-24
+
+- **Fixed: the slide preview could go black and stay black.** If a PDF export got stuck, its hidden window kept running and blocked every preview until Obsidian restarted. Each export step now has a 30-second limit, the hidden window always closes afterward, and any stuck window left from an earlier export closes when Slidey starts.
+
 ## 0.15.0 — 2026-09-24
 
 - **Save your slides as a PDF in one step.** Run **Export active presentation as PDF** from the command palette (or the preview pane's `⋯` menu → Export as PDF). Slidey saves one page per slide, with backgrounds, styles and layouts, to the `export` folder in your vault as `<note name>.pdf`, then opens it. No browser print dialog, no margin or background settings to fix.

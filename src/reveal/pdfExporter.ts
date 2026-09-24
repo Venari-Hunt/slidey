@@ -7,7 +7,10 @@ import path from "node:path";
 interface HiddenWindow {
     loadURL(url: string): Promise<void>;
     destroy(): void;
+    isDestroyed(): boolean;
+    isVisible(): boolean;
     webContents: {
+        getURL(): string;
         executeJavaScript(code: string): Promise<unknown>;
         printToPDF(options: {
             printBackground: boolean;
@@ -16,12 +19,19 @@ interface HiddenWindow {
     };
 }
 interface ElectronRemote {
-    BrowserWindow: new (options: {
-        show: boolean;
-        width: number;
-        height: number;
-    }) => HiddenWindow;
+    BrowserWindow: {
+        new (options: {
+            show: boolean;
+            width: number;
+            height: number;
+        }): HiddenWindow;
+        getAllWindows(): HiddenWindow[];
+    };
 }
+
+// A hung export window blocks the preview server, so every preview goes black.
+// Each step gets a time limit, after which the window is closed regardless.
+const STEP_TIMEOUT_MS = 30000;
 
 // Runs inside the deck page: resolves once reveal.js has laid the slides out
 // as print pages, fonts are loaded and every image has finished loading.
@@ -39,6 +49,54 @@ const WAIT_FOR_PRINT_LAYOUT = `new Promise((resolve) => {
     check();
 })`;
 
+function getRemote(): ElectronRemote | undefined {
+    return (require("electron") as { remote?: ElectronRemote }).remote;
+}
+
+function withTimeout<T>(step: string, work: Promise<T>): Promise<T> {
+    let timer: number | undefined;
+    const limit = new Promise<never>((_, reject) => {
+        timer = window.setTimeout(
+            () =>
+                reject(
+                    new Error(
+                        `${step} took longer than ${STEP_TIMEOUT_MS / 1000} seconds.`,
+                    ),
+                ),
+            STEP_TIMEOUT_MS,
+        );
+    });
+    return Promise.race([work, limit]).finally(() =>
+        window.clearTimeout(timer),
+    );
+}
+
+function closeWindow(win: HiddenWindow): void {
+    if (!win.isDestroyed()) {
+        win.destroy();
+    }
+}
+
+/**
+ * Closes hidden export windows left open by an earlier export (for example one
+ * that hung before this fix, or that outlived a plugin reload).
+ */
+export function closeLeftoverExportWindows(): void {
+    const remote = getRemote();
+    if (!remote) {
+        return;
+    }
+    for (const win of remote.BrowserWindow.getAllWindows()) {
+        if (
+            !win.isDestroyed() &&
+            !win.isVisible() &&
+            win.webContents.getURL().includes("?print-pdf")
+        ) {
+            win.destroy();
+        }
+    }
+}
+
 /**
  * Renders the deck at `deckUrl` in its print layout (one slide per page) in a
  * hidden window and writes it to `outFile` as a PDF. Returns the page count.
@@ -47,7 +105,7 @@ export async function exportDeckToPdf(
     deckUrl: URL,
     outFile: string,
 ): Promise<number> {
-    const remote = (require("electron") as { remote?: ElectronRemote }).remote;
+    const remote = getRemote();
     if (!remote) {
         throw new Error("PDF export needs the Obsidian desktop app.");
     }
@@ -62,19 +120,25 @@ export async function exportDeckToPdf(
         height: 960,
     });
     try {
-        await win.loadURL(printUrl.toString());
+        await withTimeout("Loading the deck", win.loadURL(printUrl.toString()));
         const pages = Number(
-            await win.webContents.executeJavaScript(WAIT_FOR_PRINT_LAYOUT),
+            await withTimeout(
+                "Laying out the slides",
+                win.webContents.executeJavaScript(WAIT_FOR_PRINT_LAYOUT),
+            ),
         );
-        const pdf = await win.webContents.printToPDF({
-            printBackground: true,
-            preferCSSPageSize: true,
-        });
+        const pdf = await withTimeout(
+            "Printing the PDF",
+            win.webContents.printToPDF({
+                printBackground: true,
+                preferCSSPageSize: true,
+            }),
+        );
         await mkdir(path.dirname(outFile), { recursive: true });
         await writeFile(outFile, pdf);
         return pages;
     } finally {
-        win.destroy();
+        closeWindow(win);
     }
 }
 
