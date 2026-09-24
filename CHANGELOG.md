@@ -13,6 +13,10 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.10.0 — 2026-09-23
+
+- **Slide styles: the look of a slide, apart from its layout.** A style is a set of colors and fonts: background, text color, accent color, heading font, body font, text size, alignment. Put `style: paper` in a note's properties to style the whole deck, or `%% style=night %%` at the top of one slide (headings and blocks mode too). It combines with a preset: `%% preset=cover style=bold %%` takes the preset's layout and the style's look. Five starters (night, paper, clean, bold, ocean) live in Settings → Slide styles, where you can edit them, add your own, and see a live preview of each. Fonts must be installed on your computer.
+
 ## 0.9.0 — 2026-09-23
 
 - **Slide markers in ordinary `---` notes.** The same `%% … %%` lines that headings and blocks mode use now work in a plain note split by `---`: put them at the top of a slide, e.g. `%% preset=quote bg=#224466 %%`, to pick its preset and background. A `%% notes %%` line starts the slide's speaker notes. Markers further down a slide are left alone. First step of splitting presets into layouts and styles.

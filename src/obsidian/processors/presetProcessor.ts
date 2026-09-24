@@ -1,25 +1,52 @@
 import type { Options, Processor } from "../../@types";
 import { CommentParser } from "../../obsidian/comment";
-import { presetClass, type SlidePreset } from "../../presets";
+import { presetClass, type SlidePreset, styleClass } from "../../presets";
+
+/** Which list a processor resolves: presets, or the styles split from them. */
+interface LookKind {
+    /** Slide comment attribute naming the look per slide. */
+    attr: string;
+    /** Options key of the deck default (note frontmatter). */
+    deckKey: "preset" | "style";
+    /** Options key of the definitions list (plugin settings). */
+    listKey: "presets" | "styles";
+    classFor: (name: string) => string;
+}
+
+const PRESETS: LookKind = {
+    attr: "preset",
+    deckKey: "preset",
+    listKey: "presets",
+    classFor: presetClass,
+};
+
+// `style` is taken on slide comments (inline CSS), hence `slidey-style`.
+export const STYLES: LookKind = {
+    attr: "slidey-style",
+    deckKey: "style",
+    listKey: "styles",
+    classFor: styleClass,
+};
 
 // Resolves each slide's preset — a per-slide `<!-- slide preset="x" -->` wins
 // over the deck-wide `preset:` frontmatter, and `preset="none"` opts a slide
 // out of the deck default — and stamps the matching CSS class onto the slide's
 // comment annotation (creating one when absent). The CSS for each class is
-// injected separately by the renderer (see buildPresetCss).
+// injected separately by the renderer (see buildPresetCss). The same logic
+// resolves styles (`style:` / `slidey-style="x"`) when built with STYLES.
 export class PresetProcessor implements Processor {
+    constructor(private kind: LookKind = PRESETS) {}
+
     private slideCommentRegex = /<!--\s*(?:\.)?slide.*-->/;
     private parser = new CommentParser();
 
     process(markdown: string, options: Options): string {
-        const presets = (options.presets as SlidePreset[] | undefined) ?? [];
-        const deckPreset =
-            typeof options.preset === "string" ? options.preset.trim() : "";
+        const { attr, deckKey, listKey } = this.kind;
+        const presets = (options[listKey] as SlidePreset[] | undefined) ?? [];
+        const deck = options[deckKey];
+        const deckPreset = typeof deck === "string" ? deck.trim() : "";
 
-        if (
-            presets.length === 0 ||
-            (!deckPreset && !markdown.includes("preset"))
-        ) {
+        if (presets.length === 0 || (!deckPreset && !markdown.includes(attr))) {
             return markdown;
         }
 
@@ -61,7 +88,7 @@ export class PresetProcessor implements Processor {
             ? this.parser.parseLine(this.slideCommentRegex.exec(slide)?.[0])
             : null;
 
-        const perSlide = comment?.getAttribute("preset")?.trim();
+        const perSlide = comment?.getAttribute(this.kind.attr)?.trim();
         let name: string;
         if (perSlide != null) {
             // An explicit per-slide preset. Unknown names are left untouched —
@@ -80,7 +107,7 @@ export class PresetProcessor implements Processor {
         }
 
         const preset = name ? byName.get(name) : undefined;
-        const clazz = name ? presetClass(name) : "";
+        const clazz = name ? this.kind.classFor(name) : "";
 
         if (!comment) {
             if (!clazz) {
@@ -91,7 +118,7 @@ export class PresetProcessor implements Processor {
             return `${this.parser.commentToString(comment)}\n${slide}`;
         }
 
-        comment.deleteAttribute("preset");
+        comment.deleteAttribute(this.kind.attr);
         if (clazz && !comment.hasClass(clazz)) {
             comment.addClass(clazz);
         }

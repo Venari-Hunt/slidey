@@ -13,7 +13,57 @@ import {
     getThemeFiles,
     ThemeInputSuggest,
 } from "./obsidian/suggesters/ThemeSuggester";
-import { buildPresetCss, type SlidePreset, STARTER_PRESETS } from "./presets";
+import {
+    buildPresetCss,
+    type SlidePreset,
+    STARTER_PRESETS,
+    STARTER_STYLES,
+} from "./presets";
+
+/** What differs between the presets and styles editors in Settings. */
+interface LookList {
+    key: "presets" | "styles";
+    title: string;
+    desc: string;
+    /** Singular noun for buttons and fallback names. */
+    noun: string;
+    classPrefix: string;
+    starters: SlidePreset[];
+    /** Show the heading/body font fields. */
+    fonts: boolean;
+    /** Show the editor-gutter dot color. */
+    dots: boolean;
+}
+
+const PRESET_LIST: LookList = {
+    key: "presets",
+    title: "Slide presets",
+    desc:
+        'Use one with "preset: <name>" in a note’s frontmatter, or ' +
+        '"%% preset=<name> %%" at the top of a single slide. ' +
+        '"preset=none" on a slide opts out of the deck default.',
+    noun: "preset",
+    classPrefix: "slidey-preset-",
+    starters: STARTER_PRESETS,
+    fonts: false,
+    dots: true,
+};
+
+const STYLE_LIST: LookList = {
+    key: "styles",
+    title: "Slide styles",
+    desc:
+        "The look of a slide: colors and fonts. Use one with " +
+        '"style: <name>" in a note’s frontmatter, or "%% style=<name> %%" ' +
+        "at the top of a single slide. Works together with a preset. " +
+        "Fonts must be installed on this computer.",
+    noun: "style",
+    classPrefix: "slidey-style-",
+    starters: STARTER_STYLES,
+    fonts: true,
+    dots: false,
+};
+
 import { DEFAULT_SETTINGS } from "./slidesExtended-constants";
 import type { SlidesExtendedPlugin } from "./slidesExtended-Plugin";
 
@@ -546,7 +596,8 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
             });
 
         this.drawHeadingLevels(containerEl);
-        this.drawPresets(containerEl);
+        this.drawLooks(containerEl, STYLE_LIST);
+        this.drawLooks(containerEl, PRESET_LIST);
     }
 
     /**
@@ -594,31 +645,28 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
     }
 
     /**
-     * Slide presets — a named look a slide opts into with `preset:` in the note
-     * frontmatter or `<!-- slide preset="name" -->` per slide. The structured
-     * fields cover the common case without CSS; "Custom CSS" is the escape hatch
+     * Slide presets and styles — a named look a slide opts into from the note
+     * frontmatter or a `%% … %%` marker. The structured fields cover the
+     * common case without CSS; "Custom CSS" is the escape hatch
      * (`&` = the slide selector).
      */
-    private drawPresets(containerEl: HTMLElement): void {
-        if (!Array.isArray(this.newSettings.presets)) {
-            this.newSettings.presets = JSON.parse(
-                JSON.stringify(STARTER_PRESETS),
+    private drawLooks(containerEl: HTMLElement, list: LookList): void {
+        if (!Array.isArray(this.newSettings[list.key])) {
+            this.newSettings[list.key] = JSON.parse(
+                JSON.stringify(list.starters),
             ) as SlidePreset[];
         }
+        const looks = this.newSettings[list.key];
 
         new Setting(containerEl)
-            .setName("Slide presets")
+            .setName(list.title)
             .setHeading()
-            .setDesc(
-                'Use one with "preset: <name>" in a note\'s frontmatter, or ' +
-                    '"<!-- slide preset=\\"<name>\\" -->" on a single slide. ' +
-                    '"preset: none" on a slide opts out of the deck default.',
-            )
+            .setDesc(list.desc)
             .addButton((btn) =>
-                btn.setButtonText("Add preset").onClick(() => {
-                    this.newSettings.presets.push({
-                        name: `preset-${this.newSettings.presets.length + 1}`,
-                        align: "center",
+                btn.setButtonText(`Add ${list.noun}`).onClick(() => {
+                    looks.push({
+                        name: `${list.noun}-${looks.length + 1}`,
+                        align: list.fonts ? undefined : "center",
                     });
                     void this.save();
                     this.display();
@@ -626,8 +674,8 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
             )
             .addButton((btn) =>
                 btn.setButtonText("Reset to starters").onClick(() => {
-                    this.newSettings.presets = JSON.parse(
-                        JSON.stringify(STARTER_PRESETS),
+                    this.newSettings[list.key] = JSON.parse(
+                        JSON.stringify(list.starters),
                     ) as SlidePreset[];
                     void this.save();
                     this.display();
@@ -639,28 +687,33 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
         const swatchStyle = containerEl.createEl("style");
         const refreshSwatches = () => {
             swatchStyle.textContent = buildPresetCss(
-                this.newSettings.presets,
-                (_, i) => `.slidey-preset-swatch[data-swatch="${i}"]`,
+                looks,
+                (_, i) =>
+                    `.slidey-preset-swatch[data-swatch="${list.key}-${i}"]`,
             );
         };
         refreshSwatches();
 
-        this.newSettings.presets.forEach((preset, index) => {
+        looks.forEach((preset, index) => {
             const box = containerEl.createDiv({ cls: "slidey-preset-editor" });
-            this.drawPresetSwatch(box, preset, index);
+            this.drawPresetSwatch(box, preset, `${list.key}-${index}`);
 
             const row = new Setting(box)
-                .setName(preset.label || preset.name || `Preset ${index + 1}`)
-                .setDesc(`class: .slidey-preset-${preset.name || "?"}`);
-            // Same color as this preset's dot in the editor gutter.
-            row.nameEl.prepend(
-                createSpan({
-                    cls: "slidey-preset-dot slidey-preset-dot-preset",
-                    attr: {
-                        style: `--slidey-dot-color:${presetDotColor(index)}`,
-                    },
-                }),
-            );
+                .setName(
+                    preset.label || preset.name || `${list.noun} ${index + 1}`,
+                )
+                .setDesc(`class: .${list.classPrefix}${preset.name || "?"}`);
+            if (list.dots) {
+                // Same color as this preset's dot in the editor gutter.
+                row.nameEl.prepend(
+                    createSpan({
+                        cls: "slidey-preset-dot slidey-preset-dot-preset",
+                        attr: {
+                            style: `--slidey-dot-color:${presetDotColor(index)}`,
+                        },
+                    }),
+                );
+            }
             row.addText((text) =>
                 text
                     .setPlaceholder("name (used in markdown)")
@@ -672,9 +725,9 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
             ).addExtraButton((btn) =>
                 btn
                     .setIcon("trash")
-                    .setTooltip("Delete preset")
+                    .setTooltip(`Delete ${list.noun}`)
                     .onClick(() => {
-                        this.newSettings.presets.splice(index, 1);
+                        looks.splice(index, 1);
                         void this.save();
                         this.display();
                     }),
@@ -708,6 +761,21 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                         refreshSwatches();
                     }),
             );
+
+            if (list.fonts) {
+                const font = (label: string, key: "headingFont" | "bodyFont") =>
+                    new Setting(box).setName(label).addText((text) =>
+                        text
+                            .setPlaceholder("e.g. Georgia (blank = theme)")
+                            .setValue(preset[key] ?? "")
+                            .onChange((v) => {
+                                preset[key] = v.trim() || undefined;
+                                refreshSwatches();
+                            }),
+                    );
+                font("Heading font", "headingFont");
+                font("Body font", "bodyFont");
+            }
 
             new Setting(box).setName("Alignment").addDropdown((cb) =>
                 cb
@@ -744,11 +812,11 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
     private drawPresetSwatch(
         box: HTMLElement,
         preset: SlidePreset,
-        index: number,
+        id: string,
     ): void {
         const swatch = box.createDiv({
             cls: "slidey-preset-swatch",
-            attr: { "data-swatch": String(index), "aria-hidden": "true" },
+            attr: { "data-swatch": id, "aria-hidden": "true" },
         });
         if (/\bimg\b/.test(preset.css ?? "")) {
             swatch.createEl("img", { attr: { src: SWATCH_IMAGE, alt: "" } });

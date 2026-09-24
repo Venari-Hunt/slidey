@@ -1,9 +1,15 @@
 import type { Options } from "../src/@types";
-import { PresetProcessor } from "../src/obsidian/processors/presetProcessor";
+import {
+    PresetProcessor,
+    STYLES,
+} from "../src/obsidian/processors/presetProcessor";
 import {
     buildPresetCss,
+    buildStyleCss,
     presetClass,
     STARTER_PRESETS,
+    STARTER_STYLES,
+    styleClass,
     upgradeStarterPresets,
 } from "../src/presets";
 import { YamlStore } from "../src/yaml/yamlStore";
@@ -109,9 +115,7 @@ describe("PresetProcessor", () => {
         const out = run("# One\n\n---\n\n# Two", { preset: "cover" });
         const matches = out.match(/slidey-preset-cover/g) ?? [];
         expect(matches).toHaveLength(2);
-        expect(out).toMatch(
-            /<!-- \.?slide:? class="slidey-preset-cover" -->/,
-        );
+        expect(out).toMatch(/<!-- \.?slide:? class="slidey-preset-cover" -->/);
     });
 
     it("lets a per-slide preset override the deck default", () => {
@@ -165,8 +169,73 @@ describe("upgradeStarterPresets", () => {
     });
 
     it("leaves user-edited CSS alone", () => {
-        const presets = [{ name: "image-left", css: `${oldImageLeft}\n& h2{}` }];
+        const presets = [
+            { name: "image-left", css: `${oldImageLeft}\n& h2{}` },
+        ];
         expect(upgradeStarterPresets(presets)).toEqual([]);
         expect(presets[0].css).toContain("& h2{}");
+    });
+});
+
+describe("styles", () => {
+    const styleOptions = (over: Partial<Options>): Options =>
+        baseOptions({
+            styles: [
+                { name: "night", background: "#0f172a" },
+                { name: "paper", headingFont: "Open Sans" },
+            ],
+            ...over,
+        });
+    const styles = new PresetProcessor(STYLES);
+
+    it("builds font CSS, quoting names with spaces", () => {
+        const css = buildStyleCss([
+            {
+                name: "paper",
+                headingFont: "Open Sans",
+                bodyFont: "Georgia, serif",
+            },
+        ]);
+        expect(css).toContain(".reveal .slides section.slidey-style-paper{");
+        expect(css).toContain("--r-main-font:Georgia, serif");
+        expect(css).toContain('--r-heading-font:"Open Sans"');
+        expect(css).toContain(
+            '.reveal .slides section.slidey-style-paper h1,.reveal .slides section.slidey-style-paper h2,.reveal .slides section.slidey-style-paper h3,.reveal .slides section.slidey-style-paper h4{font-family:"Open Sans";}',
+        );
+    });
+
+    it("applies the frontmatter default style with its background", () => {
+        const out = styles.process("# A", styleOptions({ style: "night" }));
+        expect(out).toContain(styleClass("night"));
+        expect(out).toContain('data-background-color="#0f172a"');
+    });
+
+    it("per-slide slidey-style wins and is removed from the comment", () => {
+        const out = styles.process(
+            '<!-- slide slidey-style="paper" -->\n# A',
+            styleOptions({ style: "night" }),
+        );
+        expect(out).toContain(styleClass("paper"));
+        expect(out).not.toContain("slidey-style=");
+        expect(out).not.toContain(styleClass("night"));
+    });
+
+    it("leaves a preset alone and runs beside it", () => {
+        const options = styleOptions({});
+        const out = new PresetProcessor().process(
+            styles.process(
+                '<!-- slide preset="cover" slidey-style="night" -->\n# A',
+                options,
+            ),
+            options,
+        );
+        expect(out).toContain(presetClass("cover"));
+        expect(out).toContain(styleClass("night"));
+    });
+
+    it("ships starter styles with unique names", () => {
+        const names = STARTER_STYLES.map((s) => s.name);
+        expect(new Set(names).size).toBe(names.length);
+        expect(names.length).toBeGreaterThan(0);
     });
 });

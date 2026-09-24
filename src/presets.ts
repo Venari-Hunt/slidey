@@ -19,6 +19,10 @@ export interface SlidePreset {
     accent?: string;
     /** Body font size multiplier (1 = theme default). */
     fontScale?: number;
+    /** Heading font family (fonts installed on this computer). */
+    headingFont?: string;
+    /** Body text font family. */
+    bodyFont?: string;
     /** Text alignment for the slide body. */
     align?: "left" | "center" | "right";
     /** Raw CSS. `&` is replaced with the slide selector. */
@@ -28,10 +32,24 @@ export interface SlidePreset {
 const BASE_FONT_PX = 42;
 
 export function presetClass(name: string): string {
-    return `slidey-preset-${name
+    return `slidey-preset-${slug(name)}`;
+}
+
+export function styleClass(name: string): string {
+    return `slidey-style-${slug(name)}`;
+}
+
+function slug(name: string): string {
+    return name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "")}`;
+        .replace(/^-+|-+$/g, "");
+}
+
+// `Open Sans` → `"Open Sans"`; lists and quoted names pass through.
+function fontValue(value: string): string {
+    const font = cleanValue(value);
+    return /s/.test(font) && !/[,"']/.test(font) ? `"${font}"` : font;
 }
 
 /** Strip characters that could break out of a value or the surrounding <style>. */
@@ -90,6 +108,13 @@ export function buildPresetCss(
                 `--r-main-font-size:${Math.round(BASE_FONT_PX * preset.fontScale)}px`,
             );
         }
+        if (preset.bodyFont) {
+            const f = fontValue(preset.bodyFont);
+            decls.push(`--r-main-font:${f}`, `font-family:${f}`);
+        }
+        if (preset.headingFont) {
+            decls.push(`--r-heading-font:${fontValue(preset.headingFont)}`);
+        }
         if (preset.align) {
             decls.push(`text-align:${cleanValue(preset.align)}`);
         }
@@ -99,6 +124,12 @@ export function buildPresetCss(
         if (preset.accent) {
             const a = cleanValue(preset.accent);
             blocks.push(`${sel} h1,${sel} h2,${sel} h3,${sel} h4{color:${a};}`);
+        }
+        if (preset.headingFont) {
+            const f = fontValue(preset.headingFont);
+            blocks.push(
+                `${sel} h1,${sel} h2,${sel} h3,${sel} h4{font-family:${f};}`,
+            );
         }
         if (preset.css?.trim()) {
             blocks.push(cleanRawCss(preset.css).split("&").join(sel));
@@ -202,5 +233,62 @@ export const STARTER_PRESETS: SlidePreset[] = [
 & img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;margin:0;border:0;box-shadow:none}
 & > *:not(img){position:relative;z-index:1;text-shadow:0 2px 12px rgba(0,0,0,.6)}
 &::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.35);z-index:0}`,
+    },
+];
+
+// Slide styles — the look half of a slide (colors, fonts, sizes), kept apart
+// from its layout so either can change on its own. Same fields and CSS
+// generation as presets; picked with `style:` in the frontmatter or
+// `%% style=night %%` on a slide, and stamped as `slidey-style-<name>`.
+export type SlideStyle = SlidePreset;
+
+export function buildStyleCss(styles: SlideStyle[] | undefined): string {
+    return buildPresetCss(
+        styles,
+        (s) => `.reveal .slides section.${styleClass(s.name)}`,
+    );
+}
+
+export const STARTER_STYLES: SlideStyle[] = [
+    {
+        name: "night",
+        label: "Night",
+        background: "#0f172a",
+        color: "#e2e8f0",
+        accent: "#38bdf8",
+    },
+    {
+        name: "paper",
+        label: "Paper",
+        background: "#fbf8f1",
+        color: "#2b2b2b",
+        accent: "#b5542d",
+        headingFont: "Georgia, serif",
+        bodyFont: "Georgia, serif",
+    },
+    {
+        name: "clean",
+        label: "Clean white",
+        background: "#ffffff",
+        color: "#222222",
+        accent: "#1c7ed6",
+        headingFont: "Helvetica, Arial, sans-serif",
+        bodyFont: "Helvetica, Arial, sans-serif",
+    },
+    {
+        name: "bold",
+        label: "Bold",
+        background: "#111111",
+        color: "#ffffff",
+        accent: "#ffd43b",
+        headingFont: '"Arial Black", Arial, sans-serif',
+        fontScale: 1.1,
+    },
+    {
+        name: "ocean",
+        label: "Ocean",
+        background: "#0b3954",
+        color: "#e0fbfc",
+        accent: "#7bdff2",
     },
 ];

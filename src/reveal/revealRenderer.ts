@@ -9,7 +9,7 @@ import {
     type ObsidianUtils,
 } from "../obsidian/obsidianUtils";
 import { applySlidesMode } from "../obsidian/slidesMode";
-import { buildPresetCss } from "../presets";
+import { buildPresetCss, buildStyleCss } from "../presets";
 import { DEFAULTS } from "../slidesExtended-constants";
 import { has, isEmpty } from "../util";
 import { YamlParser } from "../yaml/yamlParser";
@@ -180,7 +180,13 @@ export class RevealRenderer {
             isKaTeX,
             isMathJax,
             revealOptionsStr: JSON.stringify(revealOptions),
-            presetStyles: buildPresetCss(options.presets),
+            // Styles go last so their look wins over a preset's.
+            presetStyles: [
+                buildPresetCss(options.presets),
+                buildStyleCss(options.styles),
+            ]
+                .filter(Boolean)
+                .join("\n"),
         });
 
         const localAssetPaths = [
