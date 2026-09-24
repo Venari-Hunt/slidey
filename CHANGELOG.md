@@ -13,6 +13,13 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.13.0 — 2026-09-24
+
+- **The colored labels beside your slides now show layout and style.** The pill at the end of a slide's line reads like `two-column · night`, and the dot takes the style's color. A misspelled name shows up red with a `?` (`nigth?`).
+- **Plain `---` notes get the labels too**, on the first line of each slide, once the note's properties include `theme:`, `style:`, `layout:`, `preset:` or `slides:`. Before, only headings and blocks notes had them.
+- `preset=` keeps working as before, alone or next to `layout=` / `style=`.
+- Settings → Slide styles shows each style's dot color, like Slide presets does.
+
 ## 0.12.0 — 2026-09-23
 
 - **One-off changes on a single slide.** Change one slide without making a new style: put `%% font="Open Sans" color=#eeeeee accent=red size=1.4 %%` at the top of a slide. `font` sets the font for headings and text, `color` the text color, `accent` the heading and link color, `size` the text size (`1.4` = 1.4 times bigger, or `36px`). These always win over the slide's style and preset. Works in all three modes and on the same line as `layout=` / `style=`.
