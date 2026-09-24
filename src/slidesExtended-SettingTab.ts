@@ -268,6 +268,17 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
             });
 
         new Setting(containerEl)
+            .setName("Slide menu (/)")
+            .setDesc(
+                "In a slide note, type / to insert a new slide, layout, style, background, speaker notes and more. In other notes, type /slides to turn the note into slides.",
+            )
+            .addToggle((value) =>
+                value.setValue(this.newSettings.slashMenu).onChange((value) => {
+                    this.newSettings.slashMenu = value;
+                }),
+            );
+
+        new Setting(containerEl)
             .setName("Export directory")
             .setDesc(
                 "Specify the directory where Slidey should export presentations.",

@@ -17,6 +17,7 @@ Obsidian community plugin: a markdown note → a controllable, preset-styled rev
 
 - `docs/authoring-modes.md` — `slides:` frontmatter dispatch, headings mode.
 - `docs/presets.md` — preset pipeline, deck DOM shape, changing starters, swatches.
+- `docs/slash-menu.md` — the `/` slide menu, priority over other `/` menus.
 - `docs/preview-and-present.md` — preview pane, clicker key forwarding, present mode, commands.
 - `docs/development.md` — build, dev vault, live testing over CDP + its gotchas.
 - `docs/releasing.md` — `release.yml`, runtime `slidey.zip` download.

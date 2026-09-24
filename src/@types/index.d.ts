@@ -28,6 +28,7 @@ export interface SlidesExtendedSettings {
     slideNumber: boolean;
     showGrid: boolean;
     autoComplete: string;
+    slashMenu: boolean;
     paneMode: "split" | "tab" | "sidebar";
     assetsDirectory: string;
     center: boolean;

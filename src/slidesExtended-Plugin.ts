@@ -5,6 +5,7 @@ import { ObsidianUtils } from "./obsidian/obsidianUtils";
 import { presetGutter, refreshPresetGutters } from "./obsidian/presetGutter";
 import { AutoCompleteSuggest } from "./obsidian/suggesters/AutoCompleteSuggester";
 import { LineSelectionListener } from "./obsidian/suggesters/lineSelectionListener";
+import { SlashMenuSuggest } from "./obsidian/suggesters/SlashMenuSuggester";
 import { upgradeStarterPresets } from "./presets";
 import { closeLeftoverExportWindows } from "./reveal/pdfExporter";
 import {
@@ -198,7 +199,24 @@ export class SlidesExtendedPlugin extends Plugin {
             this.autoCompleteSuggester.activate();
         }
         this.registerEditorSuggest(this.autoCompleteSuggester);
+        this.registerSlashMenu();
     };
+
+    // Obsidian asks each `/` menu in turn and the first to answer wins, so the
+    // slide menu goes to the front; it steps aside when nothing matches.
+    private registerSlashMenu() {
+        const menu = new SlashMenuSuggest(this.app, () => this.settings);
+        this.registerEditorSuggest(menu);
+        const suggests = (
+            this.app.workspace as unknown as {
+                editorSuggest?: { suggests?: unknown[] };
+            }
+        ).editorSuggest?.suggests;
+        if (Array.isArray(suggests) && suggests.includes(menu)) {
+            suggests.splice(suggests.indexOf(menu), 1);
+            suggests.unshift(menu);
+        }
+    }
 
     getViewInstance(): RevealPreviewView | null {
         for (const leaf of this.app.workspace.getLeavesOfType(
