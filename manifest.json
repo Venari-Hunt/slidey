@@ -1,7 +1,7 @@
 {
   "id": "slidey",
   "name": "Slidey",
-  "version": "0.15.1",
+  "version": "0.16.0",
   "minAppVersion": "1.10.0",
   "description": "Turn a markdown note into a controllable, preset-styled slide deck. Fork of Slides Extended.",
   "author": "joaovenari",
