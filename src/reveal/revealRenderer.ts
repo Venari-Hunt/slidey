@@ -9,7 +9,12 @@ import {
     type ObsidianUtils,
 } from "../obsidian/obsidianUtils";
 import { applySlidesMode } from "../obsidian/slidesMode";
-import { buildLayoutCss, buildPresetCss, buildStyleCss } from "../presets";
+import {
+    buildLayoutCss,
+    buildPresetCss,
+    buildStyleCss,
+    IMAGE_FIT_CSS,
+} from "../presets";
 import { DEFAULTS } from "../slidesExtended-constants";
 import { has, isEmpty } from "../util";
 import { YamlParser } from "../yaml/yamlParser";
@@ -182,6 +187,7 @@ export class RevealRenderer {
             revealOptionsStr: JSON.stringify(revealOptions),
             // Layouts first, styles last so their look wins over a preset's.
             presetStyles: [
+                IMAGE_FIT_CSS,
                 buildLayoutCss(),
                 buildPresetCss(options.presets),
                 buildStyleCss(options.styles),

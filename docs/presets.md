@@ -47,6 +47,10 @@ A layout is the structure half of a slide: where the title, text and image go. U
 
 Slide content is **not** a direct child of `<section>`: it sits inside an absolutely-positioned, full-size (960×700) flex `<div absolute>` wrapper. Images are direct children of that wrapper (not wrapped in `<p>`). Any preset CSS that lays out content must target the wrapper — e.g. `image-left` uses `&:has(> img), & > div:has(> img)` with a column flex-wrap (image = first column, the rest flows to the second). Verified 2026-09-23 (0.3.1).
 
+## Image fit and gallery rows (0.14.0)
+
+`IMAGE_FIT_CSS` in `presets.ts`, injected first in the `presetStyles` slot (before layouts, presets, styles). Images that are direct children of the drop wrapper (or the section) get `flex:0 1 auto; min-height:0; max-height:100%; object-fit:contain`, so a heading + tall picture shrinks the picture instead of overflowing the 700 px slide. A wrapper with 2+ direct `img` switches to `flex-flow:row wrap`: non-images take a full row, images share one row (`flex:1 1 0`, max 60% of the slide height). Images on one line and on separate lines are indistinguishable after DropProcessor, so both become a row. Selectors are `.reveal .slides section > div > img` (0,2,3), which loses to layout/preset rules (`section.slidey-… img`, 0,3,2); the gallery row also skips sections whose class contains `image-`. Live test note: `02 - Projetos/Slidey/_slidey-images-test.md`.
+
 ## Changing a starter preset
 
 Stored presets are *copies* of the starters, so editing `STARTER_PRESETS` doesn't reach existing installs. Add the old CSS to `RETIRED_STARTER_CSS` in `presets.ts`; `upgradeStarterPresets()` (called from `loadSettings`) swaps it for the new CSS only where the user never edited it, and returns the upgraded names so `loadSettings` shows a Notice (no silent changes).

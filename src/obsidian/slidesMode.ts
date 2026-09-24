@@ -46,6 +46,10 @@ interface SlideAttrs extends SlideOverrides {
     style?: string;
     layout?: string;
     bg?: string;
+    /** reveal's `data-background-size`: cover (default), contain, 50%… */
+    fit?: string;
+    /** reveal's `data-background-opacity`, from `dim=40%` → 0.6. */
+    opacity?: string;
 }
 
 /** Layout and style per heading level (index 0 = `#`), from settings. */
@@ -439,6 +443,17 @@ function readAttrs(text: string): { attrs: SlideAttrs; rest: string } {
             case "bg":
                 attrs.bg = bgValue(value);
                 return "";
+            case "fit":
+                attrs.fit = value;
+                return "";
+            case "dim": {
+                const opacity = dimOpacity(value);
+                if (opacity === undefined) {
+                    return match;
+                }
+                attrs.opacity = opacity;
+                return "";
+            }
             case "font":
             case "color":
             case "accent":
@@ -459,6 +474,17 @@ function bgValue(value: string): string {
     return IMAGE_FILE.test(target) && !target.includes("://")
         ? `[[${target}]]`
         : target;
+}
+
+// `dim=40%` or `dim=0.4` darkens the background picture by that much, i.e.
+// opacity 0.6. Anything else isn't a dim value.
+function dimOpacity(value: string): string | undefined {
+    const m = /^(\d+(?:\.\d+)?)(%)?$/.exec(value);
+    if (!m) {
+        return undefined;
+    }
+    const dim = m[2] || Number(m[1]) > 1 ? Number(m[1]) / 100 : Number(m[1]);
+    return String(Math.round((1 - Math.min(dim, 1)) * 100) / 100);
 }
 
 // The first `%% notes %%` line (outside code) becomes the notes separator;
@@ -492,6 +518,8 @@ function withAttrs(slide: string, attrs: SlideAttrs): string {
         ["layout", "layout", /\blayout\s*=/],
         ["style", "slidey-style", /\bslidey-style\s*=/],
         ["bg", "bg", /\b(?:bg|data-background-\w+)\s*=/],
+        ["fit", "data-background-size", /\bdata-background-size\s*=/],
+        ["opacity", "data-background-opacity", /\bdata-background-opacity\s*=/],
     ];
     const comment = SLIDE_COMMENT.exec(slide);
     const existing = comment

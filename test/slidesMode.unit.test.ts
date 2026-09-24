@@ -343,6 +343,18 @@ describe("speaker notes and backgrounds", () => {
         ]);
     });
 
+    it("reads fit= and dim= for the background", () => {
+        const { markdown } = headingsToSlides(
+            "# A\n%% bg=a.jpg fit=contain dim=40% %%\n# B\n%% bg=a.jpg dim=0.25 %%\n# C\n%% bg=a.jpg dim=lots %%",
+            [],
+        );
+        expect(slidesOf(markdown)).toEqual([
+            '<!-- slide bg="[[a.jpg]]" data-background-size="contain" data-background-opacity="0.6" -->\n# A',
+            '<!-- slide bg="[[a.jpg]]" data-background-opacity="0.75" -->\n# B',
+            "# C\n%% bg=a.jpg dim=lots %%",
+        ]);
+    });
+
     it("keeps markers with unknown keys, and an explicit bg wins", () => {
         const { markdown } = headingsToSlides(
             '# A\n%% bg=a.jpg foo=1 %%\n# B\n%% bg=a.jpg %%\n<!-- slide bg="red" -->',

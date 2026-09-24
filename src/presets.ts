@@ -371,6 +371,14 @@ export function buildLayoutCss(): string {
     );
 }
 
+// Images on every slide: shrink to fit the 960×700 slide instead of spilling
+// off it, and 2+ pictures side by side as a row with any text above/below.
+// Layout and preset rules (`section.slidey-…`) are more specific, so they win.
+export const IMAGE_FIT_CSS = `.reveal .slides section > div > img,.reveal .slides section > img{flex:0 1 auto;min-height:0;min-width:0;max-width:100%;max-height:100%;object-fit:contain}
+.reveal .slides section:not([class*="image-"]) > div:has(> img ~ img){flex-flow:row wrap!important;align-content:center;align-items:center;column-gap:.5em}
+.reveal .slides section:not([class*="image-"]) > div:has(> img ~ img) > :not(img){flex:0 0 100%}
+.reveal .slides section:not([class*="image-"]) > div:has(> img ~ img) > img{flex:1 1 0;width:0;height:auto;max-height:60%}`;
+
 // Headings span both columns; everything after flows down one, then the other.
 const TWO_COLUMN_CSS = `&:not(:has(> div)),& > div{display:block!important;column-count:2;column-gap:1.5em;column-fill:balance;text-align:left}
 & :is(h1,h2,h3){column-span:all}
