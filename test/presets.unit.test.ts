@@ -1,11 +1,15 @@
 import type { Options } from "../src/@types";
 import {
+    LAYOUTS_KIND,
     PresetProcessor,
     STYLES,
 } from "../src/obsidian/processors/presetProcessor";
 import {
+    buildLayoutCss,
     buildPresetCss,
     buildStyleCss,
+    LAYOUTS,
+    layoutClass,
     presetClass,
     STARTER_PRESETS,
     STARTER_STYLES,
@@ -237,5 +241,58 @@ describe("styles", () => {
         const names = STARTER_STYLES.map((s) => s.name);
         expect(new Set(names).size).toBe(names.length);
         expect(names.length).toBeGreaterThan(0);
+    });
+});
+
+describe("layouts", () => {
+    const layouts = new PresetProcessor(LAYOUTS_KIND);
+
+    it("builds CSS for every layout, scoped to its class", () => {
+        const css = buildLayoutCss();
+        for (const layout of LAYOUTS) {
+            expect(css).toContain(
+                `.reveal .slides section.${layoutClass(layout.name)}`,
+            );
+        }
+        expect(css).not.toContain("&");
+    });
+
+    it("ships layouts with unique names", () => {
+        const names = LAYOUTS.map((l) => l.name);
+        expect(new Set(names).size).toBe(names.length);
+        expect(names).toEqual(
+            expect.arrayContaining(["title", "two-column", "image-left"]),
+        );
+    });
+
+    it("applies the frontmatter layout without needing settings", () => {
+        const out = layouts.process("# A", baseOptions({ layout: "title" }));
+        expect(out).toContain(layoutClass("title"));
+        expect(out).not.toContain("data-background-color");
+    });
+
+    it("per-slide layout wins and is removed from the comment", () => {
+        const out = layouts.process(
+            '<!-- slide layout="two-column" -->\n# A',
+            baseOptions({ layout: "title" }),
+        );
+        expect(out).toContain(layoutClass("two-column"));
+        expect(out).not.toContain(layoutClass("title"));
+        expect(out).not.toContain("layout=");
+    });
+
+    it("leaves an unknown layout name alone", () => {
+        const slide = '<!-- slide layout="nope" -->\n# A';
+        expect(layouts.process(slide, baseOptions({}))).toBe(slide);
+    });
+});
+
+describe("fonts", () => {
+    it("quotes only font names with spaces", () => {
+        const css = buildStyleCss([
+            { name: "a", bodyFont: "Consolas", headingFont: "Open Sans" },
+        ]);
+        expect(css).toContain("--r-main-font:Consolas;");
+        expect(css).toContain('--r-heading-font:"Open Sans"');
     });
 });

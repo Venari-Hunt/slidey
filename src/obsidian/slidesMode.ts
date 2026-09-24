@@ -41,7 +41,14 @@ const NO_BLOCKS_HINT =
 interface SlideAttrs {
     preset?: string;
     style?: string;
+    layout?: string;
     bg?: string;
+}
+
+/** Layout and style per heading level (index 0 = `#`), from settings. */
+export interface LevelLooks {
+    layouts?: string[];
+    styles?: string[];
 }
 
 export function slidesMode(options: Partial<Options>): SlidesMode {
@@ -74,7 +81,10 @@ export function applySlidesMode(markdown: string, options: Options): string {
     const levelPresets = Array.isArray(options.headingPresets)
         ? (options.headingPresets as string[])
         : [];
-    return headingsToSlides(markdown, levelPresets).markdown;
+    return headingsToSlides(markdown, levelPresets, {
+        layouts: stringList(options.headingLayouts),
+        styles: stringList(options.headingStyles),
+    }).markdown;
 }
 
 /**
@@ -151,6 +161,7 @@ export function headingOutline(
  * a heading configure that slide and are removed:
  *   `%% noslide %%`        — leave this section out of the deck
  *   `%% preset=quote %%`   — use this preset instead of the level's one
+ *   `%% layout=two-column style=night %%` — same, for layout and style
  *   `%% bg=photo.jpg %%`   — background picture (or color) for this slide
  * A `%% notes %%` line anywhere in the section starts its speaker notes.
  *
@@ -160,6 +171,7 @@ export function headingOutline(
 export function headingsToSlides(
     markdown: string,
     levelPresets: string[],
+    levelLooks: LevelLooks = {},
 ): { markdown: string; starts: number[] } {
     const slides: string[] = [];
     const starts: number[] = [];
@@ -180,6 +192,12 @@ export function headingsToSlides(
                 ...attrs,
                 preset:
                     attrs.preset ?? levelPreset(levelPresets, section.level),
+                layout:
+                    attrs.layout ??
+                    levelPreset(levelLooks.layouts ?? [], section.level),
+                style:
+                    attrs.style ??
+                    levelPreset(levelLooks.styles ?? [], section.level),
             }),
         );
         starts.push(section.start);
@@ -259,6 +277,10 @@ function splitBlocks(markdown: string): Block[] {
 
 function levelPreset(levelPresets: string[], level: number): string {
     return levelPresets[level - 1]?.trim() ?? "";
+}
+
+function stringList(value: unknown): string[] {
+    return Array.isArray(value) ? (value as string[]) : [];
 }
 
 // Section 0 (level 0) holds whatever comes before the first heading.
@@ -347,7 +369,7 @@ function readMarkers(
     return { lines: kept.concat(lines.slice(index)), skip, attrs };
 }
 
-// Reads `preset=quote style=night bg=[[My photo.jpg]]`. `rest` is whatever wasn't a known
+// Reads `preset=quote layout=two-column style=night bg=[[My photo.jpg]]`. `rest` is whatever wasn't a known
 // attribute, so a marker holding anything else can be left alone.
 function readAttrs(text: string): { attrs: SlideAttrs; rest: string } {
     const attrs: SlideAttrs = {};
@@ -359,6 +381,9 @@ function readAttrs(text: string): { attrs: SlideAttrs; rest: string } {
                 return "";
             case "style":
                 attrs.style = value;
+                return "";
+            case "layout":
+                attrs.layout = value;
                 return "";
             case "bg":
                 attrs.bg = bgValue(value);
@@ -401,12 +426,13 @@ function withNotes(
     return out;
 }
 
-// Hands preset, style and background to the processors via the slide comment
-// they already read. Attributes already on an existing slide comment win.
-// Style travels as `slidey-style`: `style` there is inline CSS.
+// Hands preset, layout, style and background to the processors via the slide
+// comment they already read. Attributes already on an existing slide comment
+// win. Style travels as `slidey-style`: `style` there is inline CSS.
 function withAttrs(slide: string, attrs: SlideAttrs): string {
     const owned: [keyof SlideAttrs, string, RegExp][] = [
         ["preset", "preset", /\bpreset\s*=/],
+        ["layout", "layout", /\blayout\s*=/],
         ["style", "slidey-style", /\bslidey-style\s*=/],
         ["bg", "bg", /\b(?:bg|data-background-\w+)\s*=/],
     ];

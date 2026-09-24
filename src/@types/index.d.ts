@@ -40,6 +40,10 @@ export interface SlidesExtendedSettings {
     styles: import("../presets").SlideStyle[];
     /** Preset per heading level (index 0 = `#`) for `slides: headings`. */
     headingPresets: string[];
+    /** Layout per heading level (index 0 = `#`). */
+    headingLayouts: string[];
+    /** Style per heading level (index 0 = `#`). */
+    headingStyles: string[];
 }
 
 export type ChartJsOptions = {
@@ -85,10 +89,16 @@ export type Options = {
     style?: string;
     /** Style definitions, from plugin settings. */
     styles?: import("../presets").SlideStyle[];
+    /** Deck-wide default layout (note frontmatter `layout:`). */
+    layout?: string;
     /** How the note is cut into slides (note frontmatter `slides:`). */
     slides?: string;
     /** Preset per heading level, from plugin settings. */
     headingPresets?: string[];
+    /** Layout per heading level, from plugin settings. */
+    headingLayouts?: string[];
+    /** Style per heading level, from plugin settings. */
+    headingStyles?: string[];
     [key: string]: unknown;
 };
 

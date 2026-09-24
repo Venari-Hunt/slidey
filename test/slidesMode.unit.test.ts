@@ -348,3 +348,34 @@ describe("style markers", () => {
         ).toBe('<!-- slide slidey-style="night" style="color:red" -->\n# Hi');
     });
 });
+
+describe("layout markers", () => {
+    it("hands layout= to the processors", () => {
+        const options = getSlideOptions({});
+        expect(
+            applySlidesMode(
+                "%% layout=two-column style=night %%\n# Hi",
+                options,
+            ),
+        ).toBe('<!-- slide layout="two-column" slidey-style="night" -->\n# Hi');
+    });
+
+    it("heading levels pick layout and style; a marker wins", () => {
+        const levels = {
+            layouts: ["title", "two-column"],
+            styles: ["", "paper"],
+        };
+        const note = "# A\n## B\n## C\n%% layout=quote %%";
+        expect(slidesOf(headingsToSlides(note, [], levels).markdown)).toEqual([
+            '<!-- slide layout="title" -->\n# A',
+            '<!-- slide layout="two-column" slidey-style="paper" -->\n## B',
+            '<!-- slide layout="quote" slidey-style="paper" -->\n## C',
+        ]);
+    });
+
+    it("works in a block", () => {
+        expect(
+            blocksToSlides("%% slide layout=image-left %%\nB").markdown,
+        ).toBe('<!-- slide layout="image-left" -->\nB');
+    });
+});

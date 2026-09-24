@@ -9,7 +9,7 @@ import {
     type ObsidianUtils,
 } from "../obsidian/obsidianUtils";
 import { applySlidesMode } from "../obsidian/slidesMode";
-import { buildPresetCss, buildStyleCss } from "../presets";
+import { buildLayoutCss, buildPresetCss, buildStyleCss } from "../presets";
 import { DEFAULTS } from "../slidesExtended-constants";
 import { has, isEmpty } from "../util";
 import { YamlParser } from "../yaml/yamlParser";
@@ -180,8 +180,9 @@ export class RevealRenderer {
             isKaTeX,
             isMathJax,
             revealOptionsStr: JSON.stringify(revealOptions),
-            // Styles go last so their look wins over a preset's.
+            // Layouts first, styles last so their look wins over a preset's.
             presetStyles: [
+                buildLayoutCss(),
                 buildPresetCss(options.presets),
                 buildStyleCss(options.styles),
             ]
