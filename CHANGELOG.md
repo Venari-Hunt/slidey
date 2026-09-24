@@ -13,6 +13,10 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.16.1 — 2026-09-24
+
+- Fix: picking **Open slide preview** from the `/` menu closed the preview when it was already open. It now always shows the current note's slides.
+
 ## 0.16.0 — 2026-09-24
 
 - **Type `/` for a slide menu.** In a slide note, type `/` to pick from a list: a new slide, a layout, a style, a background picture (plain, darkened, or whole), speaker notes, text color, font and size, step-by-step bullets, and more. Keep typing to filter (`/two`, `/bg`). The menu also opens the preview, starts presenting, or saves a PDF.

@@ -34,6 +34,7 @@ export class SlashMenuSuggest extends EditorSuggest<SlashItem> {
     constructor(
         app: App,
         private getSettings: () => SlidesExtendedSettings,
+        private showPreview: () => Promise<void>,
     ) {
         super(app);
         this.limit = 50;
@@ -122,6 +123,9 @@ export class SlashMenuSuggest extends EditorSuggest<SlashItem> {
         );
         this.close();
 
+        if (item.showPreview) {
+            void this.showPreview();
+        }
         if (item.command) {
             (
                 this.app as App & {

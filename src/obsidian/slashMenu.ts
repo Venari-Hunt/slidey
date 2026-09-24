@@ -18,6 +18,11 @@ export interface SlashItem {
     insert?: string;
     /** Obsidian command id to run instead of inserting text. */
     command?: string;
+    /**
+     * Shows this note in the preview. Not the `open-preview` command: that
+     * one toggles, so it would close a preview that is already open.
+     */
+    showPreview?: boolean;
     /** Sets the note's `slides:` frontmatter (non-deck notes only). */
     makeDeck?: SlidesMode;
 }
@@ -170,9 +175,9 @@ const SLIDE_ITEMS: SlashItem[] = [
 const ACTION_ITEMS: SlashItem[] = [
     {
         title: "Open slide preview",
-        hint: "Runs a command",
+        hint: "Shows this note's slides",
         keywords: "preview show",
-        command: "slidey:open-preview",
+        showPreview: true,
     },
     {
         title: "Present full screen",

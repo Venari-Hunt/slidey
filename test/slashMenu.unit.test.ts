@@ -63,6 +63,14 @@ describe("slashItems", () => {
     });
 });
 
+test("preview item shows the note instead of toggling the preview", () => {
+    const item = slashItems("headings", looks).find(
+        (i) => i.title === "Open slide preview",
+    );
+    expect(item?.showPreview).toBe(true);
+    expect(item?.command).toBeUndefined();
+});
+
 describe("filterSlashItems", () => {
     const items = slashItems("headings", looks);
 
