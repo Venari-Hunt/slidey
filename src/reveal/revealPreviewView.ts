@@ -1,3 +1,4 @@
+import path from "node:path";
 import {
     ItemView,
     MarkdownView,
@@ -13,6 +14,7 @@ import {
 } from "../obsidian/slidesMode";
 import type { SlidesExtendedPlugin } from "../slidesExtended-Plugin";
 import { YamlParser } from "../yaml/yamlParser";
+import { exportDeckToPdf, openInDefaultApp } from "./pdfExporter";
 
 export const REVEAL_PREVIEW_VIEW = "reveal-preview-view";
 
@@ -220,6 +222,11 @@ export class RevealPreviewView extends ItemView {
                 .onClick(() => this.printPresentation());
         });
         menu.addItem((item) => {
+            item.setIcon("file-down")
+                .setTitle("Export as PDF")
+                .onClick(() => this.exportAsPdf());
+        });
+        menu.addItem((item) => {
             item.setIcon("install")
                 .setTitle("Export as HTML")
                 .onClick(() => this.exportAsHtml());
@@ -232,6 +239,29 @@ export class RevealPreviewView extends ItemView {
 
     printPresentation() {
         window.open(`${this.home.toString()}?print-pdf`);
+    }
+
+    async exportAsPdf() {
+        const name = this.plugin.getTargetName().replace(/\.md$/, "");
+        if (!name) {
+            return;
+        }
+        const outFile = path.join(
+            this.plugin.obsidianUtils.exportDirectory,
+            `${name}.pdf`,
+        );
+        const working = new Notice("Saving slides as PDF…", 0);
+        try {
+            const pages = await exportDeckToPdf(this.home, outFile);
+            working.hide();
+            new Notice(`Saved ${pages} slides as PDF:\n${outFile}`, 8000);
+            openInDefaultApp(outFile);
+        } catch (error) {
+            working.hide();
+            const msg = error instanceof Error ? error.message : String(error);
+            new Notice(`PDF export failed: ${msg}`, 8000);
+            console.error("Slidey PDF export failed", error);
+        }
     }
 
     exportAsHtml() {
