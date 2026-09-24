@@ -13,6 +13,7 @@ OUTDIR="<dev-vault>/.obsidian/plugins/slidey" corepack pnpm dev
 - `corepack pnpm build` = Biome check (`prebuild`) → esbuild production → Jest (`postbuild`). **Output lands in `build/`** (`build/main.js`, `build/styles.css`), not the repo-root `main.js`.
 - Styles source: `src/scss/styles.scss`.
 - `pnpm dev:vault` assembles a complete plugin folder into `se-test-vault/` (upstream's dev vault, with render test notes: `media-test.md`, `math-test.md`, `mermaid-test.md`, …). `.hotreload` in the output dir makes the Hot-Reload plugin pick up rebuilds.
+- Live test notes + their images live in `C:\Claude\Vault Claude\02 - Projetos\Slidey\Tests\` (`_slidey-*-test.md`). Put new ones there, never loose in the project folder.
 - Quick install into the real vault: copy `build/main.js` + `build/styles.css` into `C:\Claude\Vault Claude\.obsidian\plugins\slidey\`, then `app.plugins.disablePlugin('slidey')` / `enablePlugin('slidey')` over CDP.
 
 ## Live testing over CDP

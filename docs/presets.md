@@ -65,4 +65,4 @@ Settings shows a mini sample slide per preset: one `<style>` with `buildPresetCs
 - Literal `<!-- slide ... -->` text anywhere in slide content (inline code included) is parsed as a real annotation — inherited footgun; `protectFencedCode` only shields fenced blocks.
 - `image-bg` needs a real image on the slide to look like anything.
 
-**Test note:** `C:\Claude\Vault Claude\02 - Projetos\Slidey\_slidey-smoke-test.md` exercises all presets, including two `image-left` slides (markdown + wiki-embed image syntax) using `_slidey-test-image.svg`.
+**Test note:** `C:\Claude\Vault Claude\02 - Projetos\Slidey\Tests\_slidey-smoke-test.md` exercises all presets, including two `image-left` slides (markdown + wiki-embed image syntax) using `_slidey-test-image.svg`.
