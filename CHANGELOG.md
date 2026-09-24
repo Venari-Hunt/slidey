@@ -13,6 +13,10 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.9.0 — 2026-09-23
+
+- **Slide markers in ordinary `---` notes.** The same `%% … %%` lines that headings and blocks mode use now work in a plain note split by `---`: put them at the top of a slide, e.g. `%% preset=quote bg=#224466 %%`, to pick its preset and background. A `%% notes %%` line starts the slide's speaker notes. Markers further down a slide are left alone. First step of splitting presets into layouts and styles.
+
 ## 0.8.0 — 2026-09-23
 
 - **Speaker notes and slide backgrounds in headings and blocks mode.** A `%% notes %%` line starts the slide's speaker notes: everything after it, up to the next slide, is shown in the speaker view (press `S`), not on the slide. `%% bg=photo.jpg %%` under a heading (or `%% slide bg=photo.jpg %%` in blocks mode) puts a picture from your vault behind the slide. `[[Photo name.png]]`, a web address, or a color like `#224466` also work. Combine with a preset: `%% preset=quote bg=#224466 %%`. In these two modes a line that happens to start with `note:` no longer starts notes by accident.

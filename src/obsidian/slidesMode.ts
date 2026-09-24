@@ -18,6 +18,9 @@ export const HEADING_VERTICAL_SEPARATOR = "\n<!-- @slidey:vertical -->\n";
 // sentinel rather than upstream's `note:` so prose can't start notes by accident.
 export const HEADING_NOTES_SEPARATOR = "<!-- @slidey:notes -->";
 
+const DEFAULT_SEPARATOR = "\r?\n---\r?\n";
+const DEFAULT_VERTICAL_SEPARATOR = "\r?\n--\r?\n";
+const SLIDE_COMMENT_LINE = /^\s*<!--\s*\.?slide\b.*-->\s*$/;
 const HEADING = /^(#{1,6})[ \t]+\S/;
 const FENCE = /^[ \t]{0,3}(`{3,}|~{3,})/;
 const MARKER = /^\s*%%\s*(.*?)\s*%%\s*$/;
@@ -59,7 +62,7 @@ export function slidesMode(options: Partial<Options>): SlidesMode {
 export function applySlidesMode(markdown: string, options: Options): string {
     const mode = slidesMode(options);
     if (mode === "separators") {
-        return markdown;
+        return separatorMarkers(markdown, options);
     }
     options.separator = HEADING_SLIDE_SEPARATOR;
     options.verticalSeparator = HEADING_VERTICAL_SEPARATOR;
@@ -71,6 +74,34 @@ export function applySlidesMode(markdown: string, options: Options): string {
         ? (options.headingPresets as string[])
         : [];
     return headingsToSlides(markdown, levelPresets).markdown;
+}
+
+/**
+ * Separator mode: `%% … %%` lines at the top of each `---` / `--` slide
+ * (blank lines and a `<!-- slide … -->` comment allowed between) configure
+ * it and are removed, as under a heading:
+ *   `%% preset=quote bg=photo.jpg %%`
+ * A `%% notes %%` line starts the slide's speaker notes (it becomes the
+ * deck's notes separator, `note:` by default). Slide count and order are
+ * unchanged, so the editor → slide sync still lines up.
+ */
+export function separatorMarkers(markdown: string, options: Options): string {
+    const separator = options.separator || DEFAULT_SEPARATOR;
+    const vertical = options.verticalSeparator || DEFAULT_VERTICAL_SEPARATOR;
+    const notes = options.notesSeparator || "note:";
+    // A capture group keeps the separators in the split result (odd indexes).
+    const parts = markdown.split(
+        new RegExp(`(${separator}|${vertical})`, "gm"),
+    );
+    return parts
+        .map((part, index) => {
+            if (index % 2 || part === undefined) {
+                return part ?? "";
+            }
+            const { lines, attrs } = readMarkers(part.split(/\r?\n/), 0);
+            return withAttrs(withNotes(lines, notes).join("\n"), attrs);
+        })
+        .join("");
 }
 
 interface Section {
@@ -274,18 +305,25 @@ function fenceTracker(): (line: string) => boolean {
 
 // Consumes the `%% … %%` lines (and blank lines between them) right under the
 // heading. Other `%%` comments are left for the format processor to strip.
-function readMarkers(lines: string[]): {
+function readMarkers(
+    lines: string[],
+    from = 1,
+): {
     lines: string[];
     skip: boolean;
     attrs: SlideAttrs;
 } {
     let skip = false;
     const attrs: SlideAttrs = {};
-    const kept = [lines[0]];
-    let index = 1;
+    const kept = lines.slice(0, from);
+    let index = from;
     for (; index < lines.length; index++) {
         const line = lines[index];
         if (!line.trim()) {
+            kept.push(line);
+            continue;
+        }
+        if (SLIDE_COMMENT_LINE.test(line)) {
             kept.push(line);
             continue;
         }
@@ -339,14 +377,17 @@ function bgValue(value: string): string {
 
 // The first `%% notes %%` line (outside code) becomes the notes separator;
 // later ones are dropped, since reveal.js takes a single split.
-function withNotes(lines: string[]): string[] {
+function withNotes(
+    lines: string[],
+    separator = HEADING_NOTES_SEPARATOR,
+): string[] {
     const inCode = fenceTracker();
     let found = false;
     const out: string[] = [];
     for (const line of lines) {
         if (!inCode(line) && NOTES_MARKER.test(line)) {
             if (!found) {
-                out.push(HEADING_NOTES_SEPARATOR);
+                out.push(separator);
             }
             found = true;
             continue;
