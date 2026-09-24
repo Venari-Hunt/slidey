@@ -29,7 +29,7 @@ Sentinel rules: no regex metacharacters (processors `split` on the separator as 
 
 Editor → slide sync: `RevealPreviewView.getSlideLines` uses `headingsToSlides(...).starts` (source line per slide) in headings mode.
 
-Tests: `test/slidesMode.unit.test.ts`. Live test note: `02 - Projetos/Slidey/_slidey-headings-test.md` in Vault Claude.
+Tests: `test/slidesMode.unit.test.ts`. Live test note: `02 - Projetos/Slidey/Tests/_slidey-headings-test.md` in Vault Claude.
 
 ### Look dots and pills (editor)
 
@@ -68,7 +68,7 @@ Pill text: `two-column · night` (in the dot color), `plain`, `nigth?` for an un
 - A note with no regions renders one hint slide explaining the markers (HTML entities, so the `%%` isn't read as a comment).
 - Uses the same sentinel separators as headings mode; `getSlideLines` uses `blocksToSlides(...).starts` for cursor sync. The dots and pills (above) sit on each `%% slide %%` line.
 
-Live test note: `02 - Projetos/Slidey/_slidey-blocks-test.md` in Vault Claude.
+Live test note: `02 - Projetos/Slidey/Tests/_slidey-blocks-test.md` in Vault Claude.
 
 ## Markers in separator mode
 
@@ -80,7 +80,7 @@ Live test note: `02 - Projetos/Slidey/_slidey-blocks-test.md` in Vault Claude.
 - `%% noslide %%` is consumed but does nothing here (dropping a slide would break cursor sync).
 - Markers below slide content stay as plain Obsidian comments.
 
-Live test note: `02 - Projetos/Slidey/_slidey-separator-markers-test.md` in Vault Claude.
+Live test note: `02 - Projetos/Slidey/Tests/_slidey-separator-markers-test.md` in Vault Claude.
 
 ## Speaker notes and backgrounds (both modes)
 
@@ -91,7 +91,7 @@ Handled in `slidesMode.ts` for headings and blocks mode; separator decks get the
 - **Background fit and dim** (0.14.0) — `fit=` → `data-background-size` (`cover` default, `contain`, any CSS size); `dim=40%` / `dim=0.4` → `data-background-opacity` = 1 − dim (`dimOpacity()`; a non-number keeps the marker as text). Same `withAttrs()` path as `bg=`; an explicit `data-background-size` / `-opacity` on the slide comment wins.
 - A heading marker with any unknown key (`%% bg=a.jpg foo=1 %%`) is left in place as a plain comment.
 
-Live test note: `02 - Projetos/Slidey/_slidey-notes-bg-test.md` in Vault Claude.
+Live test note: `02 - Projetos/Slidey/Tests/_slidey-notes-bg-test.md` in Vault Claude.
 
 ## Next
 
