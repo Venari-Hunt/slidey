@@ -99,6 +99,14 @@ export class SlidesExtendedPlugin extends Plugin {
             },
         });
         this.addCommand({
+            id: "export-active-presentation-pdf",
+            name: "Export active presentation as PDF",
+            callback: async () => {
+                await this.showView();
+                await this.getViewInstance()?.exportAsPdf();
+            },
+        });
+        this.addCommand({
             id: "export-active-presentation-html",
             name: "Export active presentation as HTML",
             callback: async () => {

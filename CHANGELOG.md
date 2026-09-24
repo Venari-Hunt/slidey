@@ -9,9 +9,14 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 
 - Preset tuning (the 7 starters are a first cut).
 - `image-bg` needs a real image on the slide to look like anything.
-- PDF/PPTX export polish.
+- PPTX export (PDF export is in).
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
+
+## 0.15.0 — 2026-09-24
+
+- **Save your slides as a PDF in one step.** Run **Export active presentation as PDF** from the command palette (or the preview pane's `⋯` menu → Export as PDF). Slidey saves one page per slide, with backgrounds, styles and layouts, to the `export` folder in your vault as `<note name>.pdf`, then opens it. No browser print dialog, no margin or background settings to fix.
+- The old **Print active presentation** still opens the print view in your browser, if you prefer printing by hand.
 
 ## 0.14.0 — 2026-09-24
 
