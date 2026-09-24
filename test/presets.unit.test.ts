@@ -204,7 +204,7 @@ describe("styles", () => {
         expect(css).toContain("--r-main-font:Georgia, serif");
         expect(css).toContain('--r-heading-font:"Open Sans"');
         expect(css).toContain(
-            '.reveal .slides section.slidey-style-paper h1,.reveal .slides section.slidey-style-paper h2,.reveal .slides section.slidey-style-paper h3,.reveal .slides section.slidey-style-paper h4{font-family:"Open Sans";}',
+            ".reveal .slides section.slidey-style-paper h1,.reveal .slides section.slidey-style-paper h2,.reveal .slides section.slidey-style-paper h3,.reveal .slides section.slidey-style-paper h4{font-family:var(--r-heading-font);}",
         );
     });
 

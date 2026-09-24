@@ -32,6 +32,17 @@ A layout is the structure half of a slide: where the title, text and image go. U
 
 **Test note:** `_slidey-layouts-test.md` (all 8 layouts, `style: night` deck default, one `style=paper` override).
 
+## Per-slide overrides (0.12.0)
+
+`%% font="Open Sans" color=#eee accent=red size=1.4 %%` changes one slide without a new style. `readAttrs` reads them (`SlideAttrs extends SlideOverrides`); `withAttrs` turns them into inline CSS with `overrideStyle()` (presets.ts) and writes it to the slide comment's upstream `style="…"` attribute, in front of any inline CSS already there (which wins).
+
+- Declarations are the variables styles set (`--r-main-color`, `--r-heading-color`, `--r-link-color`, `--r-main-font` / `--r-heading-font`, `--r-main-font-size`) plus `color` / `font-family` / `font-size`. Inline beats the stylesheet on the same `<section>`.
+- So that reaches headings, `buildPresetCss` heading rules read `var(--r-heading-color)` / `var(--r-heading-font)` instead of fixed values.
+- `size`: a bare number = × 42px; `px/em/rem/%/pt/vw/vh` pass through; anything else is dropped. Fonts are single-quoted (the value sits inside `style="…"`).
+- Fixed alongside: the theme reads `--r-main-font-size` only on `.reveal`, so a look's `fontScale` now also sets `font-size`. The swatch keeps its third-size with `font-size … !important` in styles.scss.
+
+**Test note:** `_slidey-overrides-test.md` (night style; accent + color, font + size, quote preset).
+
 ## Deck DOM — what `&` actually wraps
 
 Slide content is **not** a direct child of `<section>`: it sits inside an absolutely-positioned, full-size (960×700) flex `<div absolute>` wrapper. Images are direct children of that wrapper (not wrapped in `<p>`). Any preset CSS that lays out content must target the wrapper — e.g. `image-left` uses `&:has(> img), & > div:has(> img)` with a column flex-wrap (image = first column, the rest flows to the second). Verified 2026-09-23 (0.3.1).
