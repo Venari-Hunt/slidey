@@ -205,3 +205,16 @@ div.reveal-preview-view>iframe {
         max-width: 100%;
     }
 }
+
+// `/` slide menu (SlashMenuSuggester.ts)
+.slidey-slash-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.slidey-slash-hint {
+    color: var(--text-muted);
+    font-family: var(--font-monospace);
+    font-size: var(--font-ui-smaller);
+}

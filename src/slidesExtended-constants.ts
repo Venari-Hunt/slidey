@@ -27,6 +27,7 @@ export const DEFAULT_SETTINGS: SlidesExtendedSettings = {
     slideNumber: false,
     showGrid: false,
     autoComplete: "inPreview",
+    slashMenu: true,
     paneMode: "split",
     assetsDirectory: "",
     center: true,

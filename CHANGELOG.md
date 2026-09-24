@@ -13,6 +13,12 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.16.0 — 2026-09-24
+
+- **Type `/` for a slide menu.** In a slide note, type `/` to pick from a list: a new slide, a layout, a style, a background picture (plain, darkened, or whole), speaker notes, text color, font and size, step-by-step bullets, and more. Keep typing to filter (`/two`, `/bg`). The menu also opens the preview, starts presenting, or saves a PDF.
+- **Turn any note into slides with `/slides`.** In a note that isn't slides yet, type `/slides` and pick how it should be split.
+- Works alongside Slash Commander: when nothing in the slide menu matches what you type (like `/table`), your usual `/` menu shows instead. You can turn the slide menu off in Settings → Slide menu (/).
+
 ## 0.15.1 — 2026-09-24
 
 - **Fixed: the slide preview could go black and stay black.** If a PDF export got stuck, its hidden window kept running and blocked every preview until Obsidian restarted. Each export step now has a 30-second limit, the hidden window always closes afterward, and any stuck window left from an earlier export closes when Slidey starts.
