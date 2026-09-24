@@ -6,6 +6,7 @@ import { presetGutter, refreshPresetGutters } from "./obsidian/presetGutter";
 import { AutoCompleteSuggest } from "./obsidian/suggesters/AutoCompleteSuggester";
 import { LineSelectionListener } from "./obsidian/suggesters/lineSelectionListener";
 import { upgradeStarterPresets } from "./presets";
+import { closeLeftoverExportWindows } from "./reveal/pdfExporter";
 import {
     REVEAL_PREVIEW_VIEW,
     RevealPreviewView,
@@ -33,6 +34,7 @@ export class SlidesExtendedPlugin extends Plugin {
 
     async onload() {
         await this.loadSettings();
+        closeLeftoverExportWindows();
 
         addIcon("slides", ICON_DATA);
         addIcon("refresh", REFRESH_ICON);
@@ -325,6 +327,7 @@ export class SlidesExtendedPlugin extends Plugin {
 
     onunload() {
         console.debug("unloading Slidey");
+        closeLeftoverExportWindows();
         void this.stopServer();
     }
 
