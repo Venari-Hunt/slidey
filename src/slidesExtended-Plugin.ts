@@ -25,6 +25,12 @@ import {
     SlideOverviewView,
 } from "./reveal/slideOverviewView";
 import {
+    AUDIENCE_VIEW,
+    AudienceView,
+    SPEAKER_VIEW,
+    SpeakerView,
+} from "./reveal/speakerView";
+import {
     DEFAULT_SETTINGS,
     ICON_DATA,
     REFRESH_ICON,
@@ -70,6 +76,17 @@ export class SlidesExtendedPlugin extends Plugin {
         );
         this.registerEditorSuggest(new LineSelectionListener(this.app, this));
         this.registerView(
+            AUDIENCE_VIEW,
+            (leaf) => new AudienceView(leaf, this),
+        );
+        this.registerView(SPEAKER_VIEW, (leaf) => new SpeakerView(leaf, this));
+        // S in a deck (reveal's own speaker view can't open in Obsidian).
+        this.registerDomEvent(window, "message", (ev: MessageEvent) => {
+            if (String(ev.data) === '{"slidey":"open-speaker-view"}') {
+                void this.presentWithSpeakerView();
+            }
+        });
+        this.registerView(
             SLIDE_OVERVIEW_VIEW,
             (leaf) => new SlideOverviewView(leaf, this),
         );
@@ -94,6 +111,11 @@ export class SlidesExtendedPlugin extends Plugin {
                 }
                 instance.onChange();
             },
+        });
+        this.addCommand({
+            id: "present-with-speaker-view",
+            name: "Present with speaker view (two screens)",
+            callback: async () => this.presentWithSpeakerView(),
         });
         this.addCommand({
             id: "show-slide-overview",
@@ -263,6 +285,82 @@ export class SlidesExtendedPlugin extends Plugin {
         }
     }
 
+    getAudienceView(): AudienceView | null {
+        const view = this.app.workspace.getLeavesOfType(AUDIENCE_VIEW)[0]?.view;
+        return view instanceof AudienceView ? view : null;
+    }
+
+    getSpeakerView(): SpeakerView | null {
+        const view = this.app.workspace.getLeavesOfType(SPEAKER_VIEW)[0]?.view;
+        return view instanceof SpeakerView ? view : null;
+    }
+
+    /**
+     * Speaker view in this window, the slides in a new window. With a second
+     * screen, the slides window moves there and goes full screen.
+     */
+    async presentWithSpeakerView() {
+        const file =
+            this.getSpeakerView()?.file ?? this.app.workspace.getActiveFile();
+        if (!file || file.extension !== "md") {
+            new Notice("Open a slide note first.");
+            return;
+        }
+        this.endSpeakerPresentation();
+
+        const speakerLeaf = this.app.workspace.getLeaf("tab");
+        await speakerLeaf.setViewState({ type: SPEAKER_VIEW, active: true });
+        (speakerLeaf.view as SpeakerView).show(file);
+
+        const remote = (
+            require("electron") as { remote?: typeof import("electron") }
+        ).remote;
+        const before = new Set(
+            remote?.BrowserWindow.getAllWindows().map((w) => w.id) ?? [],
+        );
+        const audienceLeaf = this.app.workspace.openPopoutLeaf({
+            size: { width: 960, height: 560 },
+        });
+        await audienceLeaf.setViewState({ type: AUDIENCE_VIEW, active: true });
+        (audienceLeaf.view as AudienceView).show(file);
+
+        const moved = remote ? this.moveToSecondScreen(remote, before) : false;
+        if (!moved) {
+            new Notice(
+                "Only one screen found: the slides opened in a separate window. Drag it to the projector.",
+                8000,
+            );
+        }
+        this.app.workspace.setActiveLeaf(speakerLeaf, { focus: true });
+        (speakerLeaf.view as SpeakerView).contentEl.focus();
+    }
+
+    private moveToSecondScreen(
+        remote: typeof import("electron"),
+        before: Set<number>,
+    ): boolean {
+        const popout = remote.BrowserWindow.getAllWindows().find(
+            (w) => !before.has(w.id),
+        );
+        const main = remote.getCurrentWindow();
+        const here = remote.screen.getDisplayMatching(main.getBounds()).id;
+        const other = remote.screen
+            .getAllDisplays()
+            .find((display) => display.id !== here);
+        if (!popout || !other) {
+            return false;
+        }
+        popout.setBounds(other.bounds);
+        popout.setFullScreen(true);
+        return true;
+    }
+
+    /** Closes the slides window and the speaker view. */
+    endSpeakerPresentation() {
+        this.app.workspace.detachLeavesOfType(AUDIENCE_VIEW);
+        this.app.workspace.detachLeavesOfType(SPEAKER_VIEW);
+    }
+
     getOverviewInstance(): SlideOverviewView | null {
         const view =
             this.app.workspace.getLeavesOfType(SLIDE_OVERVIEW_VIEW)[0]?.view;
@@ -397,6 +495,8 @@ export class SlidesExtendedPlugin extends Plugin {
     onunload() {
         console.debug("unloading Slidey");
         closeLeftoverExportWindows();
+        // A full-screen slides window must not outlive the plugin.
+        this.endSpeakerPresentation();
         void this.stopServer();
     }
 

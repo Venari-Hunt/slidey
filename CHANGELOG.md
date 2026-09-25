@@ -13,6 +13,12 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.20.0 — 2026-09-25
+
+- **Present with a speaker view on two screens.** Run **Present with speaker view (two screens)**, type `/speaker` in a slide note, or press **S** in the preview. The slides open in their own window. With a second screen (a projector) connected, that window moves there and goes full screen by itself. Your screen shows the speaker view: the current slide, the next slide, your speaker notes (`%% notes %%`), a timer, the time of day, and Previous / Next / End buttons. Your clicker works from either window, and both stay on the same slide. Press **Esc** on the slides, or **End**, to finish.
+- Fix: pressing **S** for reveal.js's speaker notes did nothing in Obsidian, because Obsidian blocks the popup window it needs. S now opens the Slidey speaker view.
+- Turning Slidey off now also closes a presentation window that's still open.
+
 ## 0.19.0 — 2026-09-25
 
 - **Slide overview panel.** Run **Show slide overview** (or type `/overview` in a slide note) to open a panel in the right sidebar with a small picture of every slide in the deck. Click a picture to jump to that slide in your note; the preview follows. As you move through the note, the slide you're on gets an orange outline. The pictures update a moment after you stop typing, and switch when you open another slide note.

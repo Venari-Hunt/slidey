@@ -22,6 +22,7 @@ import { FIT_TEXT_SCRIPT } from "./fitText";
 import { md } from "./markdown";
 import { OVERVIEW_SCRIPT } from "./overviewScript";
 import { RevealExporter } from "./revealExporter";
+import { SPEAKER_SCRIPT } from "./speakerScript";
 
 export class RevealRenderer {
     private processor: MarkdownProcessor;
@@ -191,6 +192,7 @@ export class RevealRenderer {
             slideyScript: [
                 fitText === false ? "" : FIT_TEXT_SCRIPT,
                 OVERVIEW_SCRIPT,
+                SPEAKER_SCRIPT,
             ]
                 .filter(Boolean)
                 .join("\n"),

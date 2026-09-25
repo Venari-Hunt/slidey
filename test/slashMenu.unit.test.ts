@@ -80,7 +80,8 @@ describe("filterSlashItems", () => {
 
     test("matches word starts in title and keywords", () => {
         const found = filterSlashItems(items, "two").map((i) => i.title);
-        expect(found).toEqual(["Layout: Two columns"]);
+        expect(found[0]).toBe("Layout: Two columns");
+        expect(found).toContain("Present with speaker view");
         expect(filterSlashItems(items, "bg").map((i) => i.title)).toContain(
             "Background color",
         );
