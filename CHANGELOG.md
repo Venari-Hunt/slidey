@@ -12,6 +12,10 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.23.0 — 2026-09-25
+
+- **Rehearse with slide times.** The speaker view now shows how long you have been on the current slide ("This slide 00:42"), next to the total timer. Click **Slide times** to swap your notes for a list of every slide and the time spent on it so far; going back to a slide adds to its time. **Reset timer** clears them all. Click **Slide times** again to see your notes.
+
 ## 0.22.0 — 2026-09-25
 
 - **Start a deck in one step.** Run **New slide deck** from the command palette. Slidey makes a note called `Untitled deck` in your folder for new notes, fills it with a short example deck (a title slide, bullets, a quote, two columns) and opens the preview. To start from your own note instead, pick it in **Settings → Slidey → New deck template**.
