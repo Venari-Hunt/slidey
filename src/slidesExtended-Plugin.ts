@@ -6,6 +6,7 @@ import {
     type TAbstractFile,
 } from "obsidian";
 import type { SlidesExtendedSettings } from "./@types";
+import { electron, type WindowRemote } from "./electron";
 import { EmbeddedSlideProcessor } from "./obsidian/embeddedSlideProcessor";
 import { ObsidianUtils } from "./obsidian/obsidianUtils";
 import { presetGutter, refreshPresetGutters } from "./obsidian/presetGutter";
@@ -320,9 +321,7 @@ export class SlidesExtendedPlugin extends Plugin {
         await speakerLeaf.setViewState({ type: SPEAKER_VIEW, active: true });
         (speakerLeaf.view as SpeakerView).show(file);
 
-        const remote = (
-            require("electron") as { remote?: typeof import("electron") }
-        ).remote;
+        const remote = electron<{ remote?: WindowRemote }>().remote;
         const before = new Set(
             remote?.BrowserWindow.getAllWindows().map((w) => w.id) ?? [],
         );
@@ -344,7 +343,7 @@ export class SlidesExtendedPlugin extends Plugin {
     }
 
     private moveToSecondScreen(
-        remote: typeof import("electron"),
+        remote: WindowRemote,
         before: Set<number>,
     ): boolean {
         const popout = remote.BrowserWindow.getAllWindows().find(
