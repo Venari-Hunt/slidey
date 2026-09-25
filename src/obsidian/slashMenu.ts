@@ -198,6 +198,12 @@ const ACTION_ITEMS: SlashItem[] = [
         command: "slidey:present-with-speaker-view",
     },
     {
+        title: "Export as PowerPoint",
+        hint: "Runs a command",
+        keywords: "export pptx powerpoint slides save",
+        command: "slidey:export-active-presentation-pptx",
+    },
+    {
         title: "Export as PDF",
         hint: "Runs a command",
         keywords: "export pdf save",

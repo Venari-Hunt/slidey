@@ -97,10 +97,11 @@
                 if (pageInIframe() && window.location.href.indexOf("?export") != -1){
                     parent.postMessage(event.target.location.href, "app://obsidian.md");
                 }
-                // The slide overview panel uses the print layout as thumbnails;
-                // it must not open the print dialog.
+                // Slidey's own uses of the print layout (overview panel,
+                // PowerPoint export: a slidey-… query flag) must not open the
+                // print dialog.
                 if (window.location.href.indexOf("print-pdf") != -1 &&
-                    window.location.href.indexOf("slidey-overview") == -1){
+                    !/[?&]slidey-/.test(window.location.search)){
                     let stateCheck = setInterval(() => {
                         clearInterval(stateCheck);
                         window.print();

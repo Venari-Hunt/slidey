@@ -21,6 +21,15 @@ Hung windows (0.15.1): a hidden export window that never finished blocked the pr
 
 Gotcha: headless Chrome's `--print-to-pdf` flag prints before reveal lays out → blank 1 KB PDF. Always wait for `.pdf-page` first.
 
+## PowerPoint export (0.21.0)
+
+`exportDeckToPptx()` in `src/reveal/pdfExporter.ts`, library `pptxgenjs` (dynamic import). Same hidden-window + `withTimeout` steps as PDF, URL `?print-pdf&pdfSeparateFragments=false&slidey-pptx` (one page per slide; the template skips `window.print()` for any `slidey-` flag).
+
+- `PAGE_BOXES` reads each `.pdf-page`'s top/size and its `aside.notes` text (from `p`/`li` `textContent`: notes are hidden in print layout, so `innerText` is empty).
+- Scrollbars hidden by an injected style, `setZoomFactor(2)`, content size = one page × 2, then per page: `scrollTo(top)`, wait 250 ms and check `scrollY`, `capturePage` → PNG → `addImage` full slide + `addNotes`. Layout 10 in wide, height from the page ratio.
+- **The window needs `webPreferences.backgroundThrottling: false`.** A throttled hidden window doesn't repaint after scrolling, so several pictures came out identical.
+- Checked: `_slidey-fit-test` → 5 distinct 1996×1454 pictures in order (text fit applied); `_slidey-notes-bg-test` notes land in slide 1's notes.
+
 ## Slide overview panel (0.19.0)
 
 `src/reveal/slideOverviewView.ts` (view `slidey-slide-overview`, right sidebar, command `show-slide-overview`, `/overview` in the slash menu).
@@ -47,4 +56,4 @@ Gotcha: headless Chrome's `--print-to-pdf` flag prints before reveal lays out �
 
 ## Commands
 
-`slidey:open-preview` (toggles), `show-slide-overview`, `present-with-speaker-view`, `reload-preview`, `present-active-presentation`, `print-active-presentation` (opens `?print-pdf` in the browser), `export-active-presentation-pdf`, `export-active-presentation-html`, `start-server-preview`, `stop-server-preview`.
+`slidey:open-preview` (toggles), `show-slide-overview`, `present-with-speaker-view`, `reload-preview`, `present-active-presentation`, `print-active-presentation` (opens `?print-pdf` in the browser), `export-active-presentation-pdf`, `export-active-presentation-pptx`, `export-active-presentation-html`, `start-server-preview`, `stop-server-preview`.
