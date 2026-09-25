@@ -52,7 +52,7 @@ Gotcha: headless Chrome's `--print-to-pdf` flag prints before reveal lays out �
 - Speaker view: two mirror iframes (`MIRROR_QUERY`: `slidey-mirror` + reveal query options `controls=false&progress=false&keyboard=false&transition=none…`) moved with reveal's postMessage `slide(h, v, f)`. A transparent cover over each keeps focus in the speaker view, whose `keydown` (PageDown/Up, arrows, Space) calls `AudienceView.go()`. Notes: reveal's notes HTML → `DOMParser` → text (never inserted as HTML).
 - S: reveal's notes plugin `window.open()`s a popup, which Obsidian blocks (`open()` returned null → `Cannot set properties of null (setting 'marked')`). In any deck inside an iframe, `SPEAKER_SCRIPT` rebinds S (keyCode 83) to post `{"slidey":"open-speaker-view"}`; the plugin listens on `window`.
 - The preview ignores messages whose data matches `[?&]slidey-` (URLs posted by the overview, audience or mirror copies on `popstate`) or starts with `{"slidey"`.
-- `onunload()` calls `endSpeakerPresentation()`: disabling the plugin used to leave the full-screen popout open. Testing gotcha: re-enabling Slidey right after a speaker session once took minutes to finish loading; not investigated yet.
+- `onunload()` calls `endSpeakerPresentation()`: disabling the plugin used to leave the full-screen popout open. Testing gotcha: don't race `disablePlugin` against a timeout and then `enablePlugin`. If the old instance hasn't finished unloading, the new `onload` never reaches `onLayoutReady` and the preview server never starts. A plain disable + enable takes about 15 ms + 435 ms and starts the server.
 
 ## Commands
 
