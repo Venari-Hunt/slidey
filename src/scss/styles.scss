@@ -347,3 +347,9 @@ div.reveal-preview-view>iframe {
 .slidey-speaker-empty {
     color: var(--text-faint);
 }
+
+/* Settings → Custom CSS field on each look. */
+.slidey-css-textarea {
+    width: 100%;
+    font-family: var(--font-monospace);
+}

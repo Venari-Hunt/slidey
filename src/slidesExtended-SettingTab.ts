@@ -13,6 +13,7 @@ import {
     getThemeFiles,
     ThemeInputSuggest,
 } from "./obsidian/suggesters/ThemeSuggester";
+import { drawPresetSwatch, SwatchStylesheet } from "./presetSwatch";
 import {
     buildPresetCss,
     LAYOUTS,
@@ -78,6 +79,7 @@ function isFolder(file: TAbstractFile): file is TFolder {
 export class SlidesExtendedSettingTab extends PluginSettingTab {
     plugin: SlidesExtendedPlugin;
     newSettings!: SlidesExtendedSettings;
+    private swatches = new SwatchStylesheet();
 
     constructor(app: App, plugin: SlidesExtendedPlugin) {
         super(app, plugin);
@@ -90,6 +92,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
 
     /** Save on exit */
     hide(): void {
+        this.swatches.clear();
         void this.save();
     }
 
@@ -133,7 +136,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
             type: "file",
             attr: { accept: "application/json,.json" },
         });
-        fileInput.style.display = "none";
+        fileInput.hidden = true;
         fileInput.addEventListener("change", () => {
             const file = fileInput.files?.item(0);
             fileInput.value = "";
@@ -723,19 +726,22 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
 
         // Live preview swatches: one <style> holding every preset's CSS, scoped
         // to its swatch instead of the reveal slide, regenerated on each edit.
-        const swatchStyle = containerEl.createEl("style");
         const refreshSwatches = () => {
-            swatchStyle.textContent = buildPresetCss(
-                looks,
-                (_, i) =>
-                    `.slidey-preset-swatch[data-swatch="${list.key}-${i}"]`,
+            this.swatches.set(
+                containerEl,
+                list.key,
+                buildPresetCss(
+                    looks,
+                    (_, i) =>
+                        `.slidey-preset-swatch[data-swatch="${list.key}-${i}"]`,
+                ),
             );
         };
         refreshSwatches();
 
         looks.forEach((preset, index) => {
             const box = containerEl.createDiv({ cls: "slidey-preset-editor" });
-            this.drawPresetSwatch(box, preset, `${list.key}-${index}`);
+            drawPresetSwatch(box, preset, `${list.key}-${index}`);
 
             const row = new Setting(box)
                 .setName(
@@ -838,42 +844,8 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                         refreshSwatches();
                     });
                     area.inputEl.rows = 4;
-                    area.inputEl.style.width = "100%";
-                    area.inputEl.style.fontFamily = "var(--font-monospace)";
+                    area.inputEl.addClass("slidey-css-textarea");
                 });
         });
     }
-
-    /**
-     * A miniature sample slide styled by the preset's generated CSS. Unset
-     * fields fall back to the default (black) theme's colors.
-     */
-    private drawPresetSwatch(
-        box: HTMLElement,
-        preset: SlidePreset,
-        id: string,
-    ): void {
-        const swatch = box.createDiv({
-            cls: "slidey-preset-swatch",
-            attr: { "data-swatch": id, "aria-hidden": "true" },
-        });
-        if (/\bimg\b/.test(preset.css ?? "")) {
-            swatch.createEl("img", { attr: { src: SWATCH_IMAGE, alt: "" } });
-        }
-        swatch.createEl("h1", { text: preset.label || preset.name || "Title" });
-        swatch.createEl("p", { text: "Body text looks like this." });
-        const list = swatch.createEl("ul");
-        list.createEl("li", { text: "A bullet point" });
-        list.createEl("li", { text: "Another one" });
-    }
 }
-
-/** Placeholder picture for presets whose CSS styles images. */
-const SWATCH_IMAGE =
-    "data:image/svg+xml," +
-    encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 90">' +
-            '<rect width="160" height="90" fill="#5c7cfa"/>' +
-            '<circle cx="120" cy="25" r="12" fill="#ffd43b"/>' +
-            '<path d="M0 90 50 40 90 75 115 55 160 90Z" fill="#2b8a3e"/></svg>',
-    );

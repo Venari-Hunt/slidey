@@ -129,7 +129,7 @@ export class AudienceView extends ItemView {
         }
         let data: { slidey?: string } & Partial<DeckState>;
         try {
-            data = JSON.parse(String(ev.data));
+            data = JSON.parse(String(ev.data)) as typeof data;
         } catch {
             return;
         }
