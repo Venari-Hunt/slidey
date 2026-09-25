@@ -6,7 +6,7 @@ import {
     type TAbstractFile,
     TFolder,
 } from "obsidian";
-import { FolderInputSuggest } from "obsidian-utilities";
+import { FileInputSuggest, FolderInputSuggest } from "obsidian-utilities";
 import type { SlidesExtendedSettings } from "./@types";
 import { presetDotColor } from "./obsidian/presetGutter";
 import {
@@ -312,6 +312,26 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
             }
             return `Select the default ${desc} theme.`;
         };
+
+        new Setting(containerEl)
+            .setName("New deck template")
+            .setDesc(
+                'A note that "New slide deck" copies. Leave blank for Slidey\'s starter deck.',
+            )
+            .addSearch((cb) => {
+                const notes = this.app.vault.getMarkdownFiles();
+                const modal = new FileInputSuggest(this.app, cb, notes);
+                modal.onSelect(({ item }) => {
+                    cb.setValue(item.path);
+                    cb.inputEl.trigger("input");
+                    modal.close();
+                });
+                cb.setPlaceholder("Starter deck")
+                    .setValue(this.newSettings.deckTemplate)
+                    .onChange((value) => {
+                        this.newSettings.deckTemplate = value;
+                    });
+            });
 
         new Setting(containerEl)
             .setName("Assets directory")

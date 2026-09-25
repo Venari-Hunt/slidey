@@ -54,6 +54,10 @@ Gotcha: headless Chrome's `--print-to-pdf` flag prints before reveal lays out â†
 - The preview ignores messages whose data matches `[?&]slidey-` (URLs posted by the overview, audience or mirror copies on `popstate`) or starts with `{"slidey"`.
 - `onunload()` calls `endSpeakerPresentation()`: disabling the plugin used to leave the full-screen popout open. Testing gotcha: don't race `disablePlugin` against a timeout and then `enablePlugin`. If the old instance hasn't finished unloading, the new `onload` never reaches `onLayoutReady` and the preview server never starts. A plain disable + enable takes about 15 ms + 435 ms and starts the server.
 
+## New slide deck (0.22.0)
+
+`slidey:new-deck` â†’ `createDeck()` (`src/obsidian/newDeck.ts`): `Untitled deck[ N].md` in `fileManager.getNewFileParent(active)`, content from `settings.deckTemplate` (vault path, `.md` optional) or `STARTER_DECK`; a set-but-missing template shows a Notice and uses the starter. Then opens the note + `showView()`.
+
 ## Commands
 
-`slidey:open-preview` (toggles), `show-slide-overview`, `present-with-speaker-view`, `reload-preview`, `present-active-presentation`, `print-active-presentation` (opens `?print-pdf` in the browser), `export-active-presentation-pdf`, `export-active-presentation-pptx`, `export-active-presentation-html`, `start-server-preview`, `stop-server-preview`.
+`slidey:new-deck`, `open-preview` (toggles), `show-slide-overview`, `present-with-speaker-view`, `reload-preview`, `present-active-presentation`, `print-active-presentation` (opens `?print-pdf` in the browser), `export-active-presentation-pdf`, `export-active-presentation-pptx`, `export-active-presentation-html`, `start-server-preview`, `stop-server-preview`.

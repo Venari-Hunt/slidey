@@ -28,6 +28,7 @@ export const DEFAULT_SETTINGS: SlidesExtendedSettings = {
     showGrid: false,
     autoComplete: "inPreview",
     slashMenu: true,
+    deckTemplate: "",
     fitText: true,
     paneMode: "split",
     assetsDirectory: "",

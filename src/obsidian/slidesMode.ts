@@ -50,6 +50,8 @@ interface SlideAttrs extends SlideOverrides {
     fit?: string;
     /** reveal's `data-background-opacity`, from `dim=40%` → 0.6. */
     opacity?: string;
+    /** reveal's `data-transition`: fade, zoom, none, `fade-in slide-out`… */
+    transition?: string;
 }
 
 /** Layout and style per heading level (index 0 = `#`), from settings. */
@@ -424,7 +426,7 @@ function readMarkers(
 }
 
 // Reads `preset=quote layout=two-column style=night bg=[[My photo.jpg]]`,
-// plus the one-off overrides `font= color= accent= size=`. `rest` is whatever wasn't a known
+// `transition=fade`, plus the one-off overrides `font= color= accent= size=`. `rest` is whatever wasn't a known
 // attribute, so a marker holding anything else can be left alone.
 function readAttrs(text: string): { attrs: SlideAttrs; rest: string } {
     const attrs: SlideAttrs = {};
@@ -445,6 +447,9 @@ function readAttrs(text: string): { attrs: SlideAttrs; rest: string } {
                 return "";
             case "fit":
                 attrs.fit = value;
+                return "";
+            case "transition":
+                attrs.transition = value;
                 return "";
             case "dim": {
                 const opacity = dimOpacity(value);
@@ -520,6 +525,7 @@ function withAttrs(slide: string, attrs: SlideAttrs): string {
         ["bg", "bg", /\b(?:bg|data-background-\w+)\s*=/],
         ["fit", "data-background-size", /\bdata-background-size\s*=/],
         ["opacity", "data-background-opacity", /\bdata-background-opacity\s*=/],
+        ["transition", "data-transition", /\bdata-transition\s*=/],
     ];
     const comment = SLIDE_COMMENT.exec(slide);
     const existing = comment
