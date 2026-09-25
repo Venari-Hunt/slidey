@@ -353,3 +353,44 @@ div.reveal-preview-view>iframe {
     width: 100%;
     font-family: var(--font-monospace);
 }
+
+/* Speaker view rehearsal: time on the current slide, and the "Slide times"
+   list that takes the notes pane's place while toggled on. */
+.slidey-speaker-slide-timer {
+    font-family: var(--font-monospace);
+    color: var(--text-muted);
+}
+
+.slidey-speaker-notes {
+    .slidey-speaker-times,
+    .mod-times {
+        display: none;
+    }
+
+    &.is-times {
+        .slidey-speaker-notes-text,
+        .mod-notes {
+            display: none;
+        }
+
+        .slidey-speaker-times,
+        .mod-times {
+            display: block;
+        }
+    }
+}
+
+.slidey-speaker-times-row {
+    display: flex;
+    justify-content: space-between;
+    max-width: 16em;
+    padding: 0.15em 0.4em;
+    font-family: var(--font-monospace);
+    font-size: 1.15em;
+
+    &.is-current {
+        border-radius: var(--radius-s);
+        background: var(--background-modifier-hover);
+        font-weight: 600;
+    }
+}
