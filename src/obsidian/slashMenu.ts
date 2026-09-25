@@ -192,6 +192,12 @@ const ACTION_ITEMS: SlashItem[] = [
         command: "slidey:present-active-presentation",
     },
     {
+        title: "Present with speaker view",
+        hint: "Notes + next slide here, slides on the projector",
+        keywords: "present speaker notes two screens projector timer",
+        command: "slidey:present-with-speaker-view",
+    },
+    {
         title: "Export as PDF",
         hint: "Runs a command",
         keywords: "export pdf save",

@@ -236,3 +236,114 @@ div.reveal-preview-view>iframe {
     padding: var(--size-4-4);
     color: var(--text-muted);
 }
+
+// Two-screen presenting (speakerView.ts)
+.slidey-audience {
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: #000;
+}
+
+.slidey-audience-frame {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+}
+
+.slidey-speaker {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-3);
+    padding: var(--size-4-3) !important;
+    outline: none;
+}
+
+.slidey-speaker-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--size-4-2);
+}
+
+.slidey-speaker-counter {
+    color: var(--text-muted);
+    margin-left: var(--size-4-2);
+}
+
+.slidey-speaker-timer {
+    font-family: var(--font-monospace);
+    font-size: 1.6em;
+    font-weight: 600;
+    margin-left: auto;
+}
+
+.slidey-speaker-clock {
+    font-family: var(--font-monospace);
+    color: var(--text-muted);
+}
+
+.slidey-speaker-main {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: var(--size-4-3);
+}
+
+.slidey-speaker-slides {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-3);
+    min-height: 0;
+}
+
+.slidey-speaker-slide:last-child {
+    width: 60%;
+}
+
+.slidey-speaker-slide.is-end .slidey-speaker-frame {
+    opacity: 0.25;
+}
+
+.slidey-speaker-label {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--size-4-1);
+}
+
+.slidey-speaker-frame {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    border-radius: var(--radius-s);
+    overflow: hidden;
+    background: #000;
+
+    iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+}
+
+.slidey-speaker-cover {
+    position: absolute;
+    inset: 0;
+}
+
+.slidey-speaker-notes {
+    min-height: 0;
+    overflow: auto;
+}
+
+.slidey-speaker-notes-text {
+    white-space: pre-wrap;
+    font-size: 1.25em;
+    line-height: 1.5;
+}
+
+.slidey-speaker-empty {
+    color: var(--text-faint);
+}

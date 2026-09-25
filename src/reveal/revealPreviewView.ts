@@ -268,8 +268,9 @@ export class RevealPreviewView extends ItemView {
 
     onMessage(msg: MessageEvent) {
         const data = String(msg.data);
-        if (data.startsWith('{"slidey"')) {
-            // The slide overview panel's own messages, not a deck URL.
+        if (data.startsWith('{"slidey"') || /[?&]slidey-/.test(data)) {
+            // Messages from Slidey's own deck copies (overview panel,
+            // audience window, speaker view), not the preview's deck URL.
             return;
         }
         if (data.includes("?export")) {

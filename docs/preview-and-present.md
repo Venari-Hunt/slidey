@@ -33,6 +33,18 @@ Gotcha: headless Chrome's `--print-to-pdf` flag prints before reveal lays out �
 - Reloads 1.5 s after the note changes (`vault.on("modify")`), and on `file-open` of another deck note (`deckMode()` on the metadata cache frontmatter).
 - Testing gotcha: after the panel reloads, CDP's `/json/list` can still point at the closed frame (reports 0×0, hidden). Screenshot the main page instead.
 
+## Two-screen presenting (0.20.0)
+
+`src/reveal/speakerView.ts` (`AudienceView` `slidey-audience`, `SpeakerView` `slidey-speaker`), `speakerScript.ts` (`SPEAKER_SCRIPT`, always in `slideyScript`). Command `present-with-speaker-view`, `/speaker`, and **S** in any deck iframe.
+
+- `presentWithSpeakerView()`: speaker view in a new main-window tab, audience in `openPopoutLeaf()`. The new popout's `BrowserWindow` is the one not in the id set taken before opening; `moveToSecondScreen()` picks a display other than `screen.getDisplayMatching(main.getBounds())`, then `setBounds` + `setFullScreen(true)`. One screen → a Notice, windowed.
+- Audience deck (`?slidey-audience`) posts `{"slidey":"state",h,v,f,index,total,notes,next,title}` on `slidechanged` / `fragmentshown` / `fragmenthidden`; next = `Reveal.getIndices(getSlides()[at+1])`. Esc is rebound to post `{"slidey":"end"}`.
+- **The deck posts to the popout window, not the main one.** A popout view's `onOpen` runs before Obsidian moves it into the popout, so `contentEl.win` is still the main window there. `AudienceView` attaches its `message` listener in `show()` (`listenOn(contentEl.win)`).
+- Speaker view: two mirror iframes (`MIRROR_QUERY`: `slidey-mirror` + reveal query options `controls=false&progress=false&keyboard=false&transition=none…`) moved with reveal's postMessage `slide(h, v, f)`. A transparent cover over each keeps focus in the speaker view, whose `keydown` (PageDown/Up, arrows, Space) calls `AudienceView.go()`. Notes: reveal's notes HTML → `DOMParser` → text (never inserted as HTML).
+- S: reveal's notes plugin `window.open()`s a popup, which Obsidian blocks (`open()` returned null → `Cannot set properties of null (setting 'marked')`). In any deck inside an iframe, `SPEAKER_SCRIPT` rebinds S (keyCode 83) to post `{"slidey":"open-speaker-view"}`; the plugin listens on `window`.
+- The preview ignores messages whose data matches `[?&]slidey-` (URLs posted by the overview, audience or mirror copies on `popstate`) or starts with `{"slidey"`.
+- `onunload()` calls `endSpeakerPresentation()`: disabling the plugin used to leave the full-screen popout open. Testing gotcha: re-enabling Slidey right after a speaker session once took minutes to finish loading; not investigated yet.
+
 ## Commands
 
-`slidey:open-preview` (toggles), `show-slide-overview`, `reload-preview`, `present-active-presentation`, `print-active-presentation` (opens `?print-pdf` in the browser), `export-active-presentation-pdf`, `export-active-presentation-html`, `start-server-preview`, `stop-server-preview`.
+`slidey:open-preview` (toggles), `show-slide-overview`, `present-with-speaker-view`, `reload-preview`, `present-active-presentation`, `print-active-presentation` (opens `?print-pdf` in the browser), `export-active-presentation-pdf`, `export-active-presentation-html`, `start-server-preview`, `stop-server-preview`.
