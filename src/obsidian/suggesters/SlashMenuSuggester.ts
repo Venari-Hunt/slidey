@@ -99,6 +99,30 @@ export class SlashMenuSuggest extends EditorSuggest<SlashItem> {
         el.createDiv({ cls: "slidey-slash-hint", text: item.hint });
     }
 
+    // After `bg=` lands, open the picture list without waiting for a key.
+    // Uses Obsidian's internal editor-menu trigger; if that's missing, the
+    // list opens on the next letter typed instead.
+    private openPictureList(editor: Editor, file: TFile | null): void {
+        const menus = (
+            this.app.workspace as unknown as {
+                editorSuggest?: {
+                    trigger?: (
+                        editor: Editor,
+                        file: TFile | null,
+                        open: boolean,
+                    ) => void;
+                };
+            }
+        ).editorSuggest;
+        window.setTimeout(() => {
+            try {
+                menus?.trigger?.(editor, file, true);
+            } catch {
+                // Not fatal: the list opens on the next key.
+            }
+        }, 0);
+    }
+
     selectSuggestion(item: SlashItem, _evt: MouseEvent | KeyboardEvent): void {
         const context = this.context;
         if (!context) {
@@ -122,6 +146,9 @@ export class SlashMenuSuggest extends EditorSuggest<SlashItem> {
             ),
         );
         this.close();
+        if (insert.includes(`bg=${CURSOR}`)) {
+            this.openPictureList(editor, file);
+        }
 
         if (item.showPreview) {
             void this.showPreview();

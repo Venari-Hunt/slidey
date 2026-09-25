@@ -26,4 +26,14 @@ Obsidian's `editorSuggest.trigger` asks each suggest in `suggests` order and the
 
 `CURSOR` (`{|}`) in an item's `insert` marks where the cursor lands. `selectSuggestion` replaces from the `/` to the **live cursor**, not `context.end`: the stored end lagged the last typed letter in a live test and left it behind.
 
+## Picture list after `bg=` (0.18.0)
+
+`src/obsidian/pictureSuggest.ts` (pure, tested in `test/pictureSuggest.unit.test.ts`) + `suggesters/PictureSuggester.ts`.
+
+- `bgQuery()`: cursor after `bg=` inside an **open** `%% … ` marker on the line (a `%%` before the cursor that isn't closed yet). `bg=[[` is left to Obsidian's link menu; `bg=#…` (a color) returns nothing.
+- `rankPictures()`: picture extensions only, every typed word in the path, the note's folder (and below) first, then newest `mtime`, max 30.
+- `pictureValue()`: `getTFile` resolves a bg name as "the one vault path that contains it", so insert the bare name only when exactly one path contains it, else the full path; `[[ ]]` when it has spaces.
+- Registered with `registerFirst()` like the slash menu (both at the front of `editorSuggest.suggests`).
+- The slash menu's `bg=` items call Obsidian's internal `editorSuggest.trigger(editor, file, true)` after inserting, so the picture list opens without a keypress (guarded; falls back to opening on the next key).
+
 Live test notes: `Tests/_slidey-slash-menu-test.md` (headings deck), `Tests/_slidey-slash-plain-test.md` (plain note).
