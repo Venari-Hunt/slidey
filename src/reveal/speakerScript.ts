@@ -58,6 +58,9 @@ export const SPEAKER_SCRIPT = `(function () {
             var style = document.createElement("style");
             style.textContent = ".slidey-mirror .reveal .controls,.slidey-mirror .reveal .progress{display:none!important}";
             document.head.appendChild(style);
+            // The speaker view may have sent a position before this copy
+            // could take it; ask for it again.
+            post({ slidey: "mirror-ready" });
         }
         if (inObsidian && !mirror) {
             // S: reveal's popup speaker view can't open in Obsidian.

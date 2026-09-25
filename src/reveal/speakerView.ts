@@ -156,6 +156,7 @@ export class SpeakerView extends ItemView {
     private clockEl: HTMLElement | null = null;
     private started = 0;
     private ticker: number | null = null;
+    private lastState: DeckState | null = null;
 
     constructor(
         leaf: WorkspaceLeaf,
@@ -166,6 +167,31 @@ export class SpeakerView extends ItemView {
 
     getViewType(): string {
         return SPEAKER_VIEW;
+    }
+
+    // A slide copy that loads after the audience deck has reported its
+    // position missed it; send it again when the copy says it's ready.
+    private onMirrorMessage(ev: MessageEvent): void {
+        const fromMirror =
+            ev.source === this.current?.contentWindow ||
+            ev.source === this.next?.contentWindow;
+        if (
+            fromMirror &&
+            String(ev.data) === '{"slidey":"mirror-ready"}' &&
+            this.lastState
+        ) {
+            this.moveMirrors(this.lastState);
+        }
+    }
+
+    private moveMirrors(state: DeckState): void {
+        send(this.current, "slide", [state.h, state.v, state.f]);
+        if (state.next) {
+            send(this.next, "slide", [state.next.h, state.next.v, -1]);
+            this.next?.parentElement?.removeClass("is-end");
+        } else {
+            this.next?.parentElement?.addClass("is-end");
+        }
     }
 
     getDisplayText(): string {
@@ -187,6 +213,9 @@ export class SpeakerView extends ItemView {
             }
         });
         this.ticker = window.setInterval(() => this.tick(), 1000);
+        this.registerDomEvent(window, "message", (ev) =>
+            this.onMirrorMessage(ev),
+        );
     }
 
     async onClose(): Promise<void> {
@@ -254,13 +283,8 @@ export class SpeakerView extends ItemView {
         if (!this.started) {
             this.started = Date.now();
         }
-        send(this.current, "slide", [state.h, state.v, state.f]);
-        if (state.next) {
-            send(this.next, "slide", [state.next.h, state.next.v, -1]);
-            this.next?.parentElement?.removeClass("is-end");
-        } else {
-            this.next?.parentElement?.addClass("is-end");
-        }
+        this.lastState = state;
+        this.moveMirrors(state);
         if (this.counterEl) {
             this.counterEl.setText(
                 `Slide ${state.index + 1} of ${state.total}`,
