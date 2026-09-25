@@ -18,6 +18,7 @@ import {
 import { DEFAULTS } from "../slidesExtended-constants";
 import { has, isEmpty } from "../util";
 import { YamlParser } from "../yaml/yamlParser";
+import { FIT_TEXT_SCRIPT } from "./fitText";
 import { md } from "./markdown";
 import { RevealExporter } from "./revealExporter";
 
@@ -155,6 +156,7 @@ export class RevealRenderer {
             enableTimeBar,
             enablePointer,
             mathEngine,
+            fitText,
         } = settings;
 
         const isKaTeX = mathEngine === "katex";
@@ -185,6 +187,7 @@ export class RevealRenderer {
             isKaTeX,
             isMathJax,
             revealOptionsStr: JSON.stringify(revealOptions),
+            slideyScript: fitText === false ? "" : FIT_TEXT_SCRIPT,
             // Layouts first, styles last so their look wins over a preset's.
             presetStyles: [
                 IMAGE_FIT_CSS,
