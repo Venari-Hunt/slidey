@@ -13,6 +13,11 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.18.0 — 2026-09-25
+
+- **Pick background pictures from a list.** In a slide marker, type `bg=` and a list of the pictures in your vault opens. Pictures next to your note come first, then the newest. Keep typing to narrow it down, and press Enter to insert the name. Slidey writes it so it always finds that exact picture: the short name when it's unique, the full path when another picture shares the name, wrapped in `[[ ]]` when it has spaces. Colors (`bg=#…`) are left alone.
+- The `/` menu's **Background picture** items open that list right away.
+
 ## 0.17.0 — 2026-09-25
 
 - **Text shrinks to fit the slide.** When a slide has more text than fits, like a long list or a big paragraph, Slidey makes that slide's text smaller until nothing runs off the bottom or the right edge. It never goes below half size. Slides that already fit keep their normal size, and the PDF export gets the same result. It's on by default: turn it off in Settings → Shrink text to fit, or for one deck with `fitText: false` in the note's properties.

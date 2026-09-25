@@ -1,10 +1,17 @@
-import { addIcon, Notice, Plugin, type TAbstractFile } from "obsidian";
+import {
+    addIcon,
+    type EditorSuggest,
+    Notice,
+    Plugin,
+    type TAbstractFile,
+} from "obsidian";
 import type { SlidesExtendedSettings } from "./@types";
 import { EmbeddedSlideProcessor } from "./obsidian/embeddedSlideProcessor";
 import { ObsidianUtils } from "./obsidian/obsidianUtils";
 import { presetGutter, refreshPresetGutters } from "./obsidian/presetGutter";
 import { AutoCompleteSuggest } from "./obsidian/suggesters/AutoCompleteSuggester";
 import { LineSelectionListener } from "./obsidian/suggesters/lineSelectionListener";
+import { PictureSuggest } from "./obsidian/suggesters/PictureSuggester";
 import { SlashMenuSuggest } from "./obsidian/suggesters/SlashMenuSuggester";
 import { upgradeStarterPresets } from "./presets";
 import { closeLeftoverExportWindows } from "./reveal/pdfExporter";
@@ -202,23 +209,29 @@ export class SlidesExtendedPlugin extends Plugin {
         this.registerSlashMenu();
     };
 
-    // Obsidian asks each `/` menu in turn and the first to answer wins, so the
-    // slide menu goes to the front; it steps aside when nothing matches.
+    // Obsidian asks each editor menu in turn and the first to answer wins, so
+    // Slidey's menus go to the front; they step aside when nothing matches.
     private registerSlashMenu() {
-        const menu = new SlashMenuSuggest(
-            this.app,
-            () => this.settings,
-            () => this.showView(),
+        this.registerFirst(new PictureSuggest(this.app));
+        this.registerFirst(
+            new SlashMenuSuggest(
+                this.app,
+                () => this.settings,
+                () => this.showView(),
+            ),
         );
-        this.registerEditorSuggest(menu);
+    }
+
+    private registerFirst(suggest: EditorSuggest<unknown>) {
+        this.registerEditorSuggest(suggest);
         const suggests = (
             this.app.workspace as unknown as {
                 editorSuggest?: { suggests?: unknown[] };
             }
         ).editorSuggest?.suggests;
-        if (Array.isArray(suggests) && suggests.includes(menu)) {
-            suggests.splice(suggests.indexOf(menu), 1);
-            suggests.unshift(menu);
+        if (Array.isArray(suggests) && suggests.includes(suggest)) {
+            suggests.splice(suggests.indexOf(suggest), 1);
+            suggests.unshift(suggest);
         }
     }
 
