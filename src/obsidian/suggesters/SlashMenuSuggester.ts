@@ -65,7 +65,10 @@ export class SlashMenuSuggest extends EditorSuggest<SlashItem> {
                 return null;
             }
             try {
-                frontmatter = parseYaml(info.frontmatter) ?? {};
+                frontmatter =
+                    (parseYaml(info.frontmatter) as
+                        | typeof frontmatter
+                        | null) ?? {};
             } catch {
                 return null;
             }

@@ -172,7 +172,7 @@ export class SlideOverviewView extends ItemView {
         }
         let data: { slidey?: string; page?: number };
         try {
-            data = JSON.parse(String(ev.data));
+            data = JSON.parse(String(ev.data)) as typeof data;
         } catch {
             return;
         }

@@ -12,6 +12,10 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.21.1 — 2026-09-25
+
+- Behind the scenes: code cleanup so Slidey passes the checks Obsidian runs before listing a plugin in its directory. Nothing changes in how you use it. The sample slides in **Settings → Slide styles / Slide presets** still show each look's colors and fonts.
+
 ## 0.21.0 — 2026-09-25
 
 - **Save your slides as a PowerPoint file.** Run **Export active presentation as PowerPoint (.pptx)**, use the preview's `⋯` menu → **Export as PowerPoint**, or type `/powerpoint` in a slide note. Slidey saves `export/<note name>.pptx` and opens it. Each slide is a sharp picture of the slide exactly as Slidey shows it, and your speaker notes go into PowerPoint's notes. Because each slide is a picture, the text can't be edited in PowerPoint.

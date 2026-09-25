@@ -86,7 +86,7 @@ export function applySlidesMode(markdown: string, options: Options): string {
         return blocksToSlides(markdown).markdown;
     }
     const levelPresets = Array.isArray(options.headingPresets)
-        ? (options.headingPresets as string[])
+        ? options.headingPresets
         : [];
     return headingsToSlides(markdown, levelPresets, {
         layouts: stringList(options.headingLayouts),

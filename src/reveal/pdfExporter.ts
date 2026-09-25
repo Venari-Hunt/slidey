@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { electron } from "../electron";
 
 // The slice of Electron's remote API this exporter uses. Obsidian desktop
 // exposes it as require("electron").remote; typed here so the plugin does not
@@ -59,7 +60,7 @@ const WAIT_FOR_PRINT_LAYOUT = `new Promise((resolve) => {
 })`;
 
 function getRemote(): ElectronRemote | undefined {
-    return (require("electron") as { remote?: ElectronRemote }).remote;
+    return electron<{ remote?: ElectronRemote }>().remote;
 }
 
 function withTimeout<T>(step: string, work: Promise<T>): Promise<T> {
@@ -277,8 +278,8 @@ export async function exportDeckToPptx(
 
 /** Opens a file in the system's default app (the PDF viewer, for a PDF). */
 export function openInDefaultApp(file: string): void {
-    const { shell } = require("electron") as {
+    const { shell } = electron<{
         shell: { openPath(file: string): Promise<string> };
-    };
+    }>();
     void shell.openPath(file);
 }

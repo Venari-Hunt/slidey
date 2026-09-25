@@ -58,10 +58,7 @@ export class PresetProcessor implements Processor {
 
     process(markdown: string, options: Options): string {
         const { attr, deckKey, listKey, fixed } = this.kind;
-        const presets =
-            fixed ??
-            ((listKey && options[listKey]) as SlidePreset[] | undefined) ??
-            [];
+        const presets = fixed ?? (listKey && options[listKey]) ?? [];
         const deck = options[deckKey];
         const deckPreset = typeof deck === "string" ? deck.trim() : "";
 

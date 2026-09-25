@@ -24,3 +24,7 @@ Obsidian must run with `--remote-debugging-port=9222` (standing permission to qu
 - `slidey:open-preview` **toggles** the preview pane — calling it when open closes it.
 - Obsidian 1.13 opens Settings in a popout window that is **not** a CDP target. To inspect the settings UI, render `app.setting.pluginTabs.find(t => t.id === 'slidey')` into a fixed-position overlay `div` in the main page, then remove it.
 - If the document reports `visibilityState: "hidden"`, send `Page.bringToFront`.
+
+## Obsidian review lint
+
+`corepack pnpm exec eslint src` runs the same `eslint-plugin-obsidianmd` rules as Obsidian's plugin-directory review. Keep it at 0 errors (warnings are advisory). Rules that bite: no `element.style.x =` (use a CSS class or `setCssProps`), no `<style>` elements, no `createEl("h1".."h6")` inside a `PluginSettingTab` class, and type `JSON.parse`/`parseYaml` results.
