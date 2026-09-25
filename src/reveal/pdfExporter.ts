@@ -9,8 +9,16 @@ interface HiddenWindow {
     destroy(): void;
     isDestroyed(): boolean;
     isVisible(): boolean;
+    setContentSize(width: number, height: number): void;
     webContents: {
         getURL(): string;
+        setZoomFactor(factor: number): void;
+        capturePage(rect: {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+        }): Promise<{ toPNG(): Uint8Array }>;
         executeJavaScript(code: string): Promise<unknown>;
         printToPDF(options: {
             printBackground: boolean;
@@ -24,6 +32,7 @@ interface ElectronRemote {
             show: boolean;
             width: number;
             height: number;
+            webPreferences?: { backgroundThrottling?: boolean };
         }): HiddenWindow;
         getAllWindows(): HiddenWindow[];
     };
@@ -137,6 +146,130 @@ export async function exportDeckToPdf(
         await mkdir(path.dirname(outFile), { recursive: true });
         await writeFile(outFile, pdf);
         return pages;
+    } finally {
+        closeWindow(win);
+    }
+}
+
+// PowerPoint pictures are taken at this multiple of the slide's size, so
+// they stay sharp on a projector.
+const PPTX_ZOOM = 2;
+
+// Runs inside the deck page (print layout): each page's box in CSS px and
+// its speaker notes as plain text.
+const PAGE_BOXES = `[...document.querySelectorAll(".pdf-page")].map((page) => {
+    const r = page.getBoundingClientRect();
+    const notes = page.querySelector("aside.notes");
+    return {
+        top: r.top + window.scrollY,
+        width: r.width,
+        height: r.height,
+        // Notes are hidden in print layout, so innerText would be empty.
+        notes: notes
+            ? [...notes.querySelectorAll("p, li")].map((e) => e.textContent.trim()).join("\\n") ||
+              notes.textContent.trim()
+            : "",
+    };
+})`;
+
+/**
+ * Renders the deck at `deckUrl` in its print layout in a hidden window, takes
+ * a picture of every slide and writes them to `outFile` as a PowerPoint
+ * file: one picture per slide, speaker notes in PowerPoint's notes (0.21.0).
+ * The text is part of the picture, so it can't be edited in PowerPoint.
+ * Returns the slide count.
+ */
+export async function exportDeckToPptx(
+    deckUrl: URL,
+    outFile: string,
+): Promise<number> {
+    const remote = getRemote();
+    if (!remote) {
+        throw new Error("PowerPoint export needs the Obsidian desktop app.");
+    }
+
+    const printUrl = new URL(deckUrl.toString());
+    printUrl.hash = "";
+    // One page per slide (fragments shown), and no print dialog (template).
+    printUrl.search = "print-pdf&pdfSeparateFragments=false&slidey-pptx";
+
+    const win = new remote.BrowserWindow({
+        show: false,
+        width: 1280,
+        height: 960,
+        // A throttled hidden window doesn't repaint after a scroll, so every
+        // picture would show the same slide.
+        webPreferences: { backgroundThrottling: false },
+    });
+    try {
+        await withTimeout("Loading the deck", win.loadURL(printUrl.toString()));
+        await withTimeout(
+            "Laying out the slides",
+            win.webContents.executeJavaScript(WAIT_FOR_PRINT_LAYOUT),
+        );
+        const pages = (await win.webContents.executeJavaScript(PAGE_BOXES)) as {
+            top: number;
+            width: number;
+            height: number;
+            notes: string;
+        }[];
+        if (!pages.length) {
+            throw new Error("The deck has no slides.");
+        }
+        const { width, height } = pages[0];
+        // Scrollbars would end up in the pictures.
+        await win.webContents.executeJavaScript(
+            `(() => { const s = document.createElement("style"); s.textContent = "::-webkit-scrollbar{display:none} html{scrollbar-width:none}"; document.head.appendChild(s); })()`,
+        );
+        win.webContents.setZoomFactor(PPTX_ZOOM);
+        win.setContentSize(
+            Math.ceil(width * PPTX_ZOOM),
+            Math.ceil(height * PPTX_ZOOM),
+        );
+
+        const { default: PptxGenJS } = await import("pptxgenjs");
+        const pptx = new PptxGenJS();
+        const slideWidth = 10;
+        pptx.defineLayout({
+            name: "SLIDEY",
+            width: slideWidth,
+            height: (slideWidth * height) / width,
+        });
+        pptx.layout = "SLIDEY";
+
+        for (const page of pages) {
+            const at = await win.webContents.executeJavaScript(
+                `window.scrollTo(0, ${page.top}); new Promise((r) => setTimeout(() => r(window.scrollY), 250))`,
+            );
+            if (Math.abs(Number(at) - page.top) > 1) {
+                throw new Error("Couldn't scroll to every slide.");
+            }
+            const image = await withTimeout(
+                "Taking a picture of a slide",
+                win.webContents.capturePage({
+                    x: 0,
+                    y: 0,
+                    width: Math.floor(width * PPTX_ZOOM),
+                    height: Math.floor(height * PPTX_ZOOM),
+                }),
+            );
+            const slide = pptx.addSlide();
+            slide.addImage({
+                data: `data:image/png;base64,${Buffer.from(image.toPNG()).toString("base64")}`,
+                x: 0,
+                y: 0,
+                w: "100%",
+                h: "100%",
+            });
+            if (page.notes) {
+                slide.addNotes(page.notes);
+            }
+        }
+
+        const file = (await pptx.write({ outputType: "nodebuffer" })) as Buffer;
+        await mkdir(path.dirname(outFile), { recursive: true });
+        await writeFile(outFile, file);
+        return pages.length;
     } finally {
         closeWindow(win);
     }

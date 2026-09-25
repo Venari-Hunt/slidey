@@ -9,9 +9,12 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 
 - Preset tuning (the 7 starters are a first cut).
 - `image-bg` needs a real image on the slide to look like anything.
-- PPTX export (PDF export is in).
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
+
+## 0.21.0 — 2026-09-25
+
+- **Save your slides as a PowerPoint file.** Run **Export active presentation as PowerPoint (.pptx)**, use the preview's `⋯` menu → **Export as PowerPoint**, or type `/powerpoint` in a slide note. Slidey saves `export/<note name>.pptx` and opens it. Each slide is a sharp picture of the slide exactly as Slidey shows it, and your speaker notes go into PowerPoint's notes. Because each slide is a picture, the text can't be edited in PowerPoint.
 
 ## 0.20.0 — 2026-09-25
 

@@ -9,7 +9,11 @@ import {
 import type { Options, SlidesExtendedSettings } from "../@types";
 import type { SlidesExtendedPlugin } from "../slidesExtended-Plugin";
 import { YamlParser } from "../yaml/yamlParser";
-import { exportDeckToPdf, openInDefaultApp } from "./pdfExporter";
+import {
+    exportDeckToPdf,
+    exportDeckToPptx,
+    openInDefaultApp,
+} from "./pdfExporter";
 import { getSlideLines } from "./slideLines";
 
 export const REVEAL_PREVIEW_VIEW = "reveal-preview-view";
@@ -223,6 +227,11 @@ export class RevealPreviewView extends ItemView {
                 .onClick(() => this.exportAsPdf());
         });
         menu.addItem((item) => {
+            item.setIcon("presentation")
+                .setTitle("Export as PowerPoint")
+                .onClick(() => this.exportAsPptx());
+        });
+        menu.addItem((item) => {
             item.setIcon("install")
                 .setTitle("Export as HTML")
                 .onClick(() => this.exportAsHtml());
@@ -257,6 +266,33 @@ export class RevealPreviewView extends ItemView {
             const msg = error instanceof Error ? error.message : String(error);
             new Notice(`PDF export failed: ${msg}`, 8000);
             console.error("Slidey PDF export failed", error);
+        }
+    }
+
+    async exportAsPptx() {
+        const name = this.plugin.getTargetName().replace(/.md$/, "");
+        if (!name) {
+            return;
+        }
+        const outFile = path.join(
+            this.plugin.obsidianUtils.exportDirectory,
+            `${name}.pptx`,
+        );
+        const working = new Notice("Saving slides as PowerPoint…", 0);
+        try {
+            const slides = await exportDeckToPptx(this.home, outFile);
+            working.hide();
+            new Notice(
+                `Saved ${slides} slides as PowerPoint:
+${outFile}`,
+                8000,
+            );
+            openInDefaultApp(outFile);
+        } catch (error) {
+            working.hide();
+            const msg = error instanceof Error ? error.message : String(error);
+            new Notice(`PowerPoint export failed: ${msg}`, 8000);
+            console.error("Slidey PowerPoint export failed", error);
         }
     }
 
