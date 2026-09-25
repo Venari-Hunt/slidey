@@ -180,6 +180,12 @@ const ACTION_ITEMS: SlashItem[] = [
         showPreview: true,
     },
     {
+        title: "Slide overview",
+        hint: "Small pictures of every slide",
+        keywords: "overview thumbnails grid all slides",
+        command: "slidey:show-slide-overview",
+    },
+    {
         title: "Present full screen",
         hint: "Runs a command",
         keywords: "present start fullscreen",

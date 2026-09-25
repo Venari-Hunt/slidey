@@ -21,6 +21,18 @@ Hung windows (0.15.1): a hidden export window that never finished blocked the pr
 
 Gotcha: headless Chrome's `--print-to-pdf` flag prints before reveal lays out → blank 1 KB PDF. Always wait for `.pdf-page` first.
 
+## Slide overview panel (0.19.0)
+
+`src/reveal/slideOverviewView.ts` (view `slidey-slide-overview`, right sidebar, command `show-slide-overview`, `/overview` in the slash menu).
+
+- The panel is an iframe of the deck with `OVERVIEW_QUERY` (`?print-pdf&pdfSeparateFragments=false&slidey-overview`): reveal's print layout = one `.pdf-page` per slide, fragments not split. `OVERVIEW_SCRIPT` (`overviewScript.ts`, always in the template's `slideyScript` slot, no-op without `slidey-overview` in the query) zooms `<html>` to the panel width, posts `{"slidey":"overview-click","page":i}` on click and `overview-ready` once laid out, and outlines the page named in `overview-current`.
+- Print layout **flattens vertical stacks**, so a click carries only the page index. `slideStartLines()` (`slideLines.ts`, moved out of the preview view with `getSlideLines`) lists each slide's note line in deck order; page i → line i. Cursor moves (`LineSelectionListener`) call `onLineChanged` → last start ≤ line → `overview-current`.
+- **The preview's message handler takes every window message as a deck URL.** It now ignores data starting with `{"slidey"`; without that, the panel's messages would replace the preview's URL.
+- **The template called `window.print()` on any `print-pdf` URL.** It now skips that when the URL has `slidey-overview` (template change → ships in `slidey.zip`).
+- reveal lays out print pages once, at load. A deck loaded into a 0-wide (hidden) panel never gets them, so `reload()` waits for a size (`onResize`), and a deck that hasn't posted `overview-ready` within 10 s is reloaded (twice at most).
+- Reloads 1.5 s after the note changes (`vault.on("modify")`), and on `file-open` of another deck note (`deckMode()` on the metadata cache frontmatter).
+- Testing gotcha: after the panel reloads, CDP's `/json/list` can still point at the closed frame (reports 0×0, hidden). Screenshot the main page instead.
+
 ## Commands
 
-`slidey:open-preview` (toggles), `reload-preview`, `present-active-presentation`, `print-active-presentation` (opens `?print-pdf` in the browser), `export-active-presentation-pdf`, `export-active-presentation-html`, `start-server-preview`, `stop-server-preview`.
+`slidey:open-preview` (toggles), `show-slide-overview`, `reload-preview`, `present-active-presentation`, `print-active-presentation` (opens `?print-pdf` in the browser), `export-active-presentation-pdf`, `export-active-presentation-html`, `start-server-preview`, `stop-server-preview`.

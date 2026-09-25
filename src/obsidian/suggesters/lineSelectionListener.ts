@@ -22,6 +22,7 @@ export class LineSelectionListener extends EditorSuggest<string> {
         _editor: Editor,
         _file: TFile,
     ): EditorSuggestTriggerInfo {
+        this.plugin.getOverviewInstance()?.onLineChanged(cursor.line, _file);
         const instance = this.plugin.getViewInstance();
 
         if (instance) {
