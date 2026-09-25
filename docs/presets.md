@@ -51,6 +51,18 @@ Slide content is **not** a direct child of `<section>`: it sits inside an absolu
 
 `IMAGE_FIT_CSS` in `presets.ts`, injected first in the `presetStyles` slot (before layouts, presets, styles). Images that are direct children of the drop wrapper (or the section) get `flex:0 1 auto; min-height:0; max-height:100%; object-fit:contain`, so a heading + tall picture shrinks the picture instead of overflowing the 700 px slide. A wrapper with 2+ direct `img` switches to `flex-flow:row wrap`: non-images take a full row, images share one row (`flex:1 1 0`, max 60% of the slide height). Images on one line and on separate lines are indistinguishable after DropProcessor, so both become a row. Selectors are `.reveal .slides section > div > img` (0,2,3), which loses to layout/preset rules (`section.slidey-… img`, 0,3,2); the gallery row also skips sections whose class contains `image-`. Live test note: `02 - Projetos/Slidey/_slidey-images-test.md`.
 
+## Text fit (0.17.0)
+
+`src/reveal/fitText.ts`: `FIT_TEXT_SCRIPT` runs in the deck page, injected through the template's `{{{slideyScript}}}` slot (after `Reveal.initialize`; `reveal-dist/template/reveal.html`, so it ships in `slidey.zip`). The renderer sets `slideyScript` unless `fitText` is false (setting **Shrink text to fit**, overridden by note frontmatter `fitText:` via `getTemplateSettings`).
+
+- `excess(section)`: the max of each element's `getBoundingClientRect()` right/bottom past the slide frame, in slide px. The frame is built from the **section's own corner** + config width/height × `Reveal.getScale()`, so a slide mid-transition measures the same as one at rest (a screen-fixed frame gave wrong results during the slide transition).
+- Only right and bottom count; media (`img`, `video`, `svg`, …) and anything inside a non-`visible` overflow box are skipped. `image-left` bleeds its picture 10 px past the left edge on purpose.
+- Don't use `scrollHeight` on elements: a multi-column `<p>` (two-column) reports ~3000 px. The column spill widens its bounding box instead.
+- Shrink: binary search (7 steps) on the section's inline `font-size`, from its computed size down to `MIN_SCALE` (0.5). Tolerance 4 px. If the text at `MIN_SCALE` doesn't reduce the overflow, leave the slide alone (not the text's fault). The original inline size (a `size=` override) is kept in `data-slidey-base-font`; the result is in `data-slidey-fit`.
+- When: `fonts.ready`, `slidechanged`, `slidetransitionend`, `resize` for shown slides (hidden ones have no layout), each picture's `load`, and every page on `pdf-ready`.
+
+**Test note:** `Tests/_slidey-fit-test.md` (12 bullets → 0.93, two-column paragraph → 0.69, `size=2` list → 0.74). Checked that no slide shrinks in 8 other test decks, and in the `?print-pdf` view.
+
 ## Changing a starter preset
 
 Stored presets are *copies* of the starters, so editing `STARTER_PRESETS` doesn't reach existing installs. Add the old CSS to `RETIRED_STARTER_CSS` in `presets.ts`; `upgradeStarterPresets()` (called from `loadSettings`) swaps it for the new CSS only where the user never edited it, and returns the upgraded names so `loadSettings` shows a Notice (no silent changes).

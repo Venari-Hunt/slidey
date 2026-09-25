@@ -129,6 +129,7 @@ export class YamlParser {
             "enableTimeBar",
             "enablePointer",
             "mathEngine",
+            "fitText",
         ];
 
         const globalSettings = pick(this.settings, properties);

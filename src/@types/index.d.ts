@@ -29,6 +29,7 @@ export interface SlidesExtendedSettings {
     showGrid: boolean;
     autoComplete: string;
     slashMenu: boolean;
+    fitText: boolean;
     paneMode: "split" | "tab" | "sidebar";
     assetsDirectory: string;
     center: boolean;
@@ -94,6 +95,8 @@ export type Options = {
     layout?: string;
     /** How the note is cut into slides (note frontmatter `slides:`). */
     slides?: string;
+    /** Shrink text that overflows a slide (setting; note frontmatter `fitText:`). */
+    fitText?: boolean;
     /** Preset per heading level, from plugin settings. */
     headingPresets?: string[];
     /** Layout per heading level, from plugin settings. */

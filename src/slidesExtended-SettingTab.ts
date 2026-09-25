@@ -411,6 +411,17 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
             });
 
         new Setting(containerEl)
+            .setName("Shrink text to fit")
+            .setDesc(
+                "When a slide has more text than fits, make its text smaller (down to half size) so nothing runs off the slide. Turn it off for one deck with fitText: false in the note's properties.",
+            )
+            .addToggle((value) =>
+                value.setValue(this.newSettings.fitText).onChange((value) => {
+                    this.newSettings.fitText = value;
+                }),
+            );
+
+        new Setting(containerEl)
             .setName("Center content")
             .setDesc(
                 "When enabled, content is centered on the slide by default.",
