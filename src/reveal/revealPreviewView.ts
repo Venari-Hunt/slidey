@@ -7,14 +7,10 @@ import {
     type WorkspaceLeaf,
 } from "obsidian";
 import type { Options, SlidesExtendedSettings } from "../@types";
-import {
-    blocksToSlides,
-    headingsToSlides,
-    slidesMode,
-} from "../obsidian/slidesMode";
 import type { SlidesExtendedPlugin } from "../slidesExtended-Plugin";
 import { YamlParser } from "../yaml/yamlParser";
 import { exportDeckToPdf, openInDefaultApp } from "./pdfExporter";
+import { getSlideLines } from "./slideLines";
 
 export const REVEAL_PREVIEW_VIEW = "reveal-preview-view";
 
@@ -272,6 +268,10 @@ export class RevealPreviewView extends ItemView {
 
     onMessage(msg: MessageEvent) {
         const data = String(msg.data);
+        if (data.startsWith('{"slidey"')) {
+            // The slide overview panel's own messages, not a deck URL.
+            return;
+        }
         if (data.includes("?export")) {
             this.setUrl(data.split("?")[0]);
             return;
@@ -314,7 +314,7 @@ export class RevealPreviewView extends ItemView {
         const separators = this.yaml.getSlideOptions(yamlOptions);
         const yamlLength = source.indexOf(markdown);
         const offset = source.substring(0, yamlLength).split(/^/gm).length;
-        const slides = this.getSlideLines(markdown, separators);
+        const slides = getSlideLines(markdown, separators);
 
         const cursorPosition = line - (offset > 0 ? offset - 1 : 0);
 
@@ -341,97 +341,12 @@ export class RevealPreviewView extends ItemView {
         const separators = this.yaml.getSlideOptions(yamlOptions);
         const yamlLength = source.indexOf(markdown);
         const offset = source.substring(0, yamlLength).split(/^/gm).length;
-        const slides = this.getSlideLines(markdown, separators);
+        const slides = getSlideLines(markdown, separators);
 
         const hX = Number.parseInt(h, 10) || 0;
         const vX = Number.parseInt(v, 10) || 0;
 
         return slides.get([hX, vX].join(",")) + offset;
-    }
-
-    getSlideLines(source: string, separators: Options) {
-        const mode = slidesMode(separators);
-        if (mode !== "separators") {
-            const { starts } =
-                mode === "blocks"
-                    ? blocksToSlides(source)
-                    : headingsToSlides(source, []);
-            return new Map(starts.map((line, i) => [`${i},0`, line]));
-        }
-
-        let store = new Map<number, string>();
-
-        const l = this.getIdxOfRegex(/^/gm, source);
-        const h = this.getIdxOfRegex(
-            RegExp(separators.separator, "gm"),
-            source,
-        );
-
-        for (const item of h) {
-            for (let index = 0; index < l.length; index++) {
-                const line = l[index];
-                if (line > item) {
-                    store.set(index, "h");
-                    break;
-                }
-            }
-        }
-
-        const v = this.getIdxOfRegex(
-            RegExp(separators.verticalSeparator, "gm"),
-            source,
-        );
-
-        for (const item of v) {
-            for (let index = 0; index < l.length; index++) {
-                const line = l[index];
-                if (line > item) {
-                    store.set(index, "v");
-                    break;
-                }
-            }
-        }
-
-        store.set(0, "h");
-
-        store = new Map(
-            [...store].sort((a, b) => {
-                return a[0] - b[0];
-            }),
-        );
-
-        const result = new Map<string, number>();
-
-        let hV = -1;
-        let vV = 0;
-        for (const [key, value] of store.entries()) {
-            if (value === "h") {
-                hV++;
-                vV = 0;
-            }
-
-            if (value === "v") {
-                vV++;
-            }
-
-            result.set([hV, vV].join(","), key);
-        }
-        return result;
-    }
-
-    getIdxOfRegex(regex: RegExp, source: string): number[] {
-        const idxs: Array<number> = [] as number[];
-        let m: RegExpExecArray | null;
-        do {
-            m = regex.exec(source);
-            if (m) {
-                if (m.index === regex.lastIndex) {
-                    regex.lastIndex++;
-                }
-                idxs.push(m.index);
-            }
-        } while (m);
-        return idxs;
     }
 
     getViewType() {

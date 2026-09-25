@@ -97,7 +97,10 @@
                 if (pageInIframe() && window.location.href.indexOf("?export") != -1){
                     parent.postMessage(event.target.location.href, "app://obsidian.md");
                 }
-                if (window.location.href.indexOf("print-pdf") != -1){
+                // The slide overview panel uses the print layout as thumbnails;
+                // it must not open the print dialog.
+                if (window.location.href.indexOf("print-pdf") != -1 &&
+                    window.location.href.indexOf("slidey-overview") == -1){
                     let stateCheck = setInterval(() => {
                         clearInterval(stateCheck);
                         window.print();

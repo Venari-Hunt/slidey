@@ -13,6 +13,11 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.19.0 — 2026-09-25
+
+- **Slide overview panel.** Run **Show slide overview** (or type `/overview` in a slide note) to open a panel in the right sidebar with a small picture of every slide in the deck. Click a picture to jump to that slide in your note; the preview follows. As you move through the note, the slide you're on gets an orange outline. The pictures update a moment after you stop typing, and switch when you open another slide note.
+- Fix: in print layout the deck page opened the print dialog by itself. It still does for **Print presentation**, but no longer for the overview panel.
+
 ## 0.18.0 — 2026-09-25
 
 - **Pick background pictures from a list.** In a slide marker, type `bg=` and a list of the pictures in your vault opens. Pictures next to your note come first, then the newest. Keep typing to narrow it down, and press Enter to insert the name. Slidey writes it so it always finds that exact picture: the short name when it's unique, the full path when another picture shares the name, wrapped in `[[ ]]` when it has spaces. Colors (`bg=#…`) are left alone.

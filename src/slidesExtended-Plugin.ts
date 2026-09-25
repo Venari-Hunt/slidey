@@ -21,6 +21,10 @@ import {
 } from "./reveal/revealPreviewView";
 import { RevealServer } from "./reveal/revealServer";
 import {
+    SLIDE_OVERVIEW_VIEW,
+    SlideOverviewView,
+} from "./reveal/slideOverviewView";
+import {
     DEFAULT_SETTINGS,
     ICON_DATA,
     REFRESH_ICON,
@@ -32,7 +36,7 @@ export class SlidesExtendedPlugin extends Plugin {
     settings: SlidesExtendedSettings;
     obsidianUtils: ObsidianUtils;
 
-    private revealServer: RevealServer;
+    revealServer: RevealServer;
     private autoCompleteSuggester: AutoCompleteSuggest;
     private target: TAbstractFile;
     private slideProcessor: EmbeddedSlideProcessor;
@@ -65,6 +69,10 @@ export class SlidesExtendedPlugin extends Plugin {
             this.app.vault.on("modify", (file) => this.onChange(file)),
         );
         this.registerEditorSuggest(new LineSelectionListener(this.app, this));
+        this.registerView(
+            SLIDE_OVERVIEW_VIEW,
+            (leaf) => new SlideOverviewView(leaf, this),
+        );
         this.registerEditorExtension(presetGutter(() => this.settings));
 
         this.addRibbonIcon("slides", "Show slide preview", async () => {
@@ -86,6 +94,11 @@ export class SlidesExtendedPlugin extends Plugin {
                 }
                 instance.onChange();
             },
+        });
+        this.addCommand({
+            id: "show-slide-overview",
+            name: "Show slide overview",
+            callback: async () => this.showOverview(),
         });
         this.addCommand({
             id: "present-active-presentation",
@@ -233,6 +246,27 @@ export class SlidesExtendedPlugin extends Plugin {
             suggests.splice(suggests.indexOf(suggest), 1);
             suggests.unshift(suggest);
         }
+    }
+
+    /** Opens the slide overview panel in the right sidebar (or reveals it). */
+    async showOverview() {
+        let leaf = this.app.workspace.getLeavesOfType(SLIDE_OVERVIEW_VIEW)[0];
+        if (!leaf) {
+            leaf = this.app.workspace.getRightLeaf(false);
+            await leaf?.setViewState({
+                type: SLIDE_OVERVIEW_VIEW,
+                active: true,
+            });
+        }
+        if (leaf) {
+            void this.app.workspace.revealLeaf(leaf);
+        }
+    }
+
+    getOverviewInstance(): SlideOverviewView | null {
+        const view =
+            this.app.workspace.getLeavesOfType(SLIDE_OVERVIEW_VIEW)[0]?.view;
+        return view instanceof SlideOverviewView ? view : null;
     }
 
     getViewInstance(): RevealPreviewView | null {

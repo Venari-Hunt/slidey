@@ -20,6 +20,7 @@ import { has, isEmpty } from "../util";
 import { YamlParser } from "../yaml/yamlParser";
 import { FIT_TEXT_SCRIPT } from "./fitText";
 import { md } from "./markdown";
+import { OVERVIEW_SCRIPT } from "./overviewScript";
 import { RevealExporter } from "./revealExporter";
 
 export class RevealRenderer {
@@ -187,7 +188,12 @@ export class RevealRenderer {
             isKaTeX,
             isMathJax,
             revealOptionsStr: JSON.stringify(revealOptions),
-            slideyScript: fitText === false ? "" : FIT_TEXT_SCRIPT,
+            slideyScript: [
+                fitText === false ? "" : FIT_TEXT_SCRIPT,
+                OVERVIEW_SCRIPT,
+            ]
+                .filter(Boolean)
+                .join("\n"),
             // Layouts first, styles last so their look wins over a preset's.
             presetStyles: [
                 IMAGE_FIT_CSS,
