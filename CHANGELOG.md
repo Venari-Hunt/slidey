@@ -12,6 +12,11 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.22.0 — 2026-09-25
+
+- **Start a deck in one step.** Run **New slide deck** from the command palette. Slidey makes a note called `Untitled deck` in your folder for new notes, fills it with a short example deck (a title slide, bullets, a quote, two columns) and opens the preview. To start from your own note instead, pick it in **Settings → Slidey → New deck template**.
+- **Pick how a slide appears.** Put `%% transition=fade %%` under a slide heading (or at the top of a `---` slide). Choices: `fade`, `slide`, `zoom`, `convex`, `concave`, `none`, or two at once like `transition="fade-in slide-out"`. The `/` menu has one item for each. For the whole deck, use `transition:` in the note properties.
+
 ## 0.21.1 — 2026-09-25
 
 - Behind the scenes: code cleanup so Slidey passes the checks Obsidian runs before listing a plugin in its directory. Nothing changes in how you use it. The sample slides in **Settings → Slide styles / Slide presets** still show each look's colors and fonts.

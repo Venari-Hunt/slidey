@@ -8,6 +8,7 @@ import {
 import type { SlidesExtendedSettings } from "./@types";
 import { electron, type WindowRemote } from "./electron";
 import { EmbeddedSlideProcessor } from "./obsidian/embeddedSlideProcessor";
+import { createDeck } from "./obsidian/newDeck";
 import { ObsidianUtils } from "./obsidian/obsidianUtils";
 import { presetGutter, refreshPresetGutters } from "./obsidian/presetGutter";
 import { AutoCompleteSuggest } from "./obsidian/suggesters/AutoCompleteSuggester";
@@ -101,6 +102,11 @@ export class SlidesExtendedPlugin extends Plugin {
             id: "open-preview",
             name: "Show slide preview",
             callback: async () => this.toggleView(),
+        });
+        this.addCommand({
+            id: "new-deck",
+            name: "New slide deck",
+            callback: async () => this.newDeck(),
         });
         this.addCommand({
             id: "reload-preview",
@@ -422,6 +428,22 @@ export class SlidesExtendedPlugin extends Plugin {
         if (this.settings.autoComplete === "inPreview") {
             this.autoCompleteSuggester?.deactivate();
         }
+    }
+
+    /** Creates a deck note from the template (or starter), opens it and its preview. */
+    async newDeck() {
+        const { file, missingTemplate } = await createDeck(
+            this.app,
+            this.settings.deckTemplate,
+        );
+        if (missingTemplate) {
+            new Notice(
+                `Slidey: template note "${this.settings.deckTemplate}" not found, so the new deck uses the starter.`,
+                8000,
+            );
+        }
+        await this.app.workspace.getLeaf(false).openFile(file);
+        await this.showView();
     }
 
     async showView() {

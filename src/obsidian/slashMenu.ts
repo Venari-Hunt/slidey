@@ -109,6 +109,9 @@ function lookItems(
         }));
 }
 
+// reveal.js's built-in slide transitions.
+const TRANSITIONS = ["fade", "slide", "zoom", "convex", "concave", "none"];
+
 const SLIDE_ITEMS: SlashItem[] = [
     {
         title: "Background picture",
@@ -164,6 +167,12 @@ const SLIDE_ITEMS: SlashItem[] = [
         keywords: "size bigger smaller scale",
         insert: marker(`size=${CURSOR}`),
     },
+    ...TRANSITIONS.map((name) => ({
+        title: `Transition: ${name}`,
+        hint: marker(`transition=${name}`),
+        keywords: `transition animation effect ${name}`,
+        insert: marker(`transition=${name}`),
+    })),
     {
         title: "Show step by step",
         hint: '<!-- element class="fragment" -->',

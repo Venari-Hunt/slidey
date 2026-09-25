@@ -14,6 +14,8 @@ export interface SlidesExtendedSettings {
     autoReload: boolean;
     autoStart: boolean;
     exportDirectory: string;
+    /** Vault path of a note to copy for "New slide deck"; blank = starter. */
+    deckTemplate: string;
     enableOverview: boolean;
     enableChalkboard: boolean;
     enableMenu: boolean;
