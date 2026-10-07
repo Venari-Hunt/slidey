@@ -1,11 +1,14 @@
-import { MarkdownProcessor } from '../src/obsidian/markdownProcessor';
-import { restoreFencedCode } from '../src/obsidian/fencedCode';
-import { when } from 'ts-mockito';
-import { MockedObsidianUtils, obsidianUtils as utilsInstance } from './__mocks__/mockObsidianUtils';
-import { prepare } from './testUtils';
-import { readFileSync } from 'node:fs';
+import { readFileSync } from "node:fs";
+import { when } from "ts-mockito";
+import { restoreFencedCode } from "../src/obsidian/fencedCode";
+import { MarkdownProcessor } from "../src/obsidian/markdownProcessor";
+import {
+    MockedObsidianUtils,
+    obsidianUtils as utilsInstance,
+} from "./__mocks__/mockObsidianUtils";
+import { prepare } from "./testUtils";
 
-test('Basic Markdown Syntax > Headers', () => {
+test("Basic Markdown Syntax > Headers", () => {
     const input = `# This is a heading 1
 ## This is a heading 2
 ### This is a heading 3
@@ -20,7 +23,7 @@ test('Basic Markdown Syntax > Headers', () => {
     return expect(result).toMatchSnapshot();
 });
 
-test('Basic Markdown Syntax > Text style', () => {
+test("Basic Markdown Syntax > Text style", () => {
     const input = `*This text will be italic*
 
 _This will also be italic_ _**strong italic**_
@@ -46,7 +49,7 @@ Any word wrapped with two equal signs (like ==this==) will appear as highlighted
     return expect(result).toMatchSnapshot();
 });
 
-test('Basic Markdown Syntax > Lists', () => {
+test("Basic Markdown Syntax > Lists", () => {
     const input = `- Item 1
 - Item 2
 	- Item 2a
@@ -68,13 +71,17 @@ test('Basic Markdown Syntax > Lists', () => {
     return expect(result).toMatchSnapshot();
 });
 
-test('Basic Markdown Syntax > Images', () => {
-    when(MockedObsidianUtils.findMediaFile('Image.jpg')).thenCall(arg => {
-        return '/documentation/Image.jpg';
+test("Basic Markdown Syntax > Images", () => {
+    when(MockedObsidianUtils.findMediaFile("Image.jpg")).thenCall((arg) => {
+        return "/documentation/Image.jpg";
     });
 
-    when(MockedObsidianUtils.findMediaFile('/local-file-url/Users/testUser/Desktop/howToUse.png')).thenCall(arg => {
-        return '/local-file-url/Users/testUser/Desktop/howToUse.png';
+    when(
+        MockedObsidianUtils.findMediaFile(
+            "/local-file-url/Users/testUser/Desktop/howToUse.png",
+        ),
+    ).thenCall((arg) => {
+        return "/local-file-url/Users/testUser/Desktop/howToUse.png";
     });
 
     const input = `
@@ -115,17 +122,17 @@ Scale image to a width of 300x100 px
     return expect(result).toMatchSnapshot();
 });
 
-test('Basic Markdown Syntax > Images with parens in filename', () => {
-    when(MockedObsidianUtils.findMediaFile('image(1).jpg')).thenCall(arg => {
-        return '/documentation/image(1).jpg';
+test("Basic Markdown Syntax > Images with parens in filename", () => {
+    when(MockedObsidianUtils.findMediaFile("image(1).jpg")).thenCall((arg) => {
+        return "/documentation/image(1).jpg";
     });
 
-    when(MockedObsidianUtils.findMediaFile('image (1).jpg')).thenCall(arg => {
-        return '/documentation/image (1).jpg';
+    when(MockedObsidianUtils.findMediaFile("image (1).jpg")).thenCall((arg) => {
+        return "/documentation/image (1).jpg";
     });
 
-    when(MockedObsidianUtils.findMediaFile('image.jpg')).thenCall(arg => {
-        return '/documentation/image.jpg';
+    when(MockedObsidianUtils.findMediaFile("image.jpg")).thenCall((arg) => {
+        return "/documentation/image.jpg";
     });
 
     const input = `
@@ -148,13 +155,17 @@ test('Basic Markdown Syntax > Images with parens in filename', () => {
     return expect(result).toMatchSnapshot();
 });
 
-test('Basic Markdown Syntax > Videos', () => {
-    when(MockedObsidianUtils.findMediaFile('/local-file-url/Users/testUser/Desktop/video.mp4')).thenCall(arg => {
-        return '/local-file-url/Users/testUser/Desktop/video.mp4';
+test("Basic Markdown Syntax > Videos", () => {
+    when(
+        MockedObsidianUtils.findMediaFile(
+            "/local-file-url/Users/testUser/Desktop/video.mp4",
+        ),
+    ).thenCall((arg) => {
+        return "/local-file-url/Users/testUser/Desktop/video.mp4";
     });
 
-    when(MockedObsidianUtils.findMediaFile('video.mp4')).thenCall(arg => {
-        return '/documentation/video.mp4';
+    when(MockedObsidianUtils.findMediaFile("video.mp4")).thenCall((arg) => {
+        return "/documentation/video.mp4";
     });
 
     const input = `
@@ -189,14 +200,13 @@ Scale image to a width of 300x100 px, disable controls
     return expect(result).toMatchSnapshot();
 });
 
-
-test('Basic Markdown Syntax > Audio', () => {
-    when(MockedObsidianUtils.findMediaFile('narration.mp3')).thenCall(arg => {
-        return '/documentation/narration.mp3';
+test("Basic Markdown Syntax > Audio", () => {
+    when(MockedObsidianUtils.findMediaFile("narration.mp3")).thenCall((arg) => {
+        return "/documentation/narration.mp3";
     });
 
-    when(MockedObsidianUtils.findMediaFile('sound.ogg')).thenCall(arg => {
-        return '/documentation/sound.ogg';
+    when(MockedObsidianUtils.findMediaFile("sound.ogg")).thenCall((arg) => {
+        return "/documentation/sound.ogg";
     });
 
     const input = `
@@ -225,8 +235,7 @@ Audio with controls disabled
     return expect(result).toMatchSnapshot();
 });
 
-
-test('Basic Markdown Syntax > Links', () => {
+test("Basic Markdown Syntax > Links", () => {
     const input = `External Links
 
 http://obsidian.md - automatic!
@@ -261,7 +270,7 @@ Two links on the same line (normal link, alias)
     return expect(result).toMatchSnapshot();
 });
 
-test('Basic Markdown Syntax > Links', () => {
+test("Basic Markdown Syntax > Links", () => {
     const input = `---
 enableLinks: true
 ---
@@ -281,19 +290,22 @@ This [[Internal link|Link]] will use its alias for displaying
     return expect(result).toMatchSnapshot();
 });
 
-test('Basic Markdown Syntax > Embeds', () => {
+test("Basic Markdown Syntax > Embeds", () => {
+    when(MockedObsidianUtils.parseFile("Obsidian Notes.md", "Link")).thenCall(
+        (arg) => {
+            return "Link to Obsidian Homepage: http://obsidian.md";
+        },
+    );
 
-    when(MockedObsidianUtils.parseFile('Obsidian Notes.md', 'Link')).thenCall(arg => {
-        return 'Link to Obsidian Homepage: http://obsidian.md';
-    });
-
-    when(MockedObsidianUtils.parseFile('Obsidian Notes.md', null)).thenCall(arg => {
-        return `# Notes about Obsidian
+    when(MockedObsidianUtils.parseFile("Obsidian Notes.md", null)).thenCall(
+        (arg) => {
+            return `# Notes about Obsidian
 A knowledge base that works on local Markdown files
 
 # Link
 Link to Obsidian Homepage: http://obsidian.md`;
-    });
+        },
+    );
 
     const input = `![[Obsidian Notes|Title]]
 
@@ -317,7 +329,7 @@ Link to Obsidian Homepage: http://obsidian.md`;
     return expect(result).toMatchSnapshot();
 });
 
-test('Basic Markdown Syntax > Blockquotes', () => {
+test("Basic Markdown Syntax > Blockquotes", () => {
     const input = `> Human beings face ever more complex and urgent problems, and their effectiveness in dealing with these problems is a matter that is critical to the stability and continued progress of society.
 
 - Doug Engelbart, 1961
@@ -330,7 +342,7 @@ test('Basic Markdown Syntax > Blockquotes', () => {
     return expect(result).toMatchSnapshot();
 });
 
-test('Basic Markdown Syntax > Inline Code', () => {
+test("Basic Markdown Syntax > Inline Code", () => {
     const input = `### Text inside \`backticks\` on a line will be formatted like code.
 `;
 
@@ -341,7 +353,7 @@ test('Basic Markdown Syntax > Inline Code', () => {
     return expect(result).toMatchSnapshot();
 });
 
-test('Basic Markdown Syntax > Tables', () => {
+test("Basic Markdown Syntax > Tables", () => {
     const input = `First Header | Second Header
 ------------ | ------------
 Content from cell 1 | Content from cell 2
@@ -355,7 +367,7 @@ Content in the first column | Content in the second column
     return expect(result).toMatchSnapshot();
 });
 
-test('Basic Markdown Syntax > Footnotes', () => {
+test("Basic Markdown Syntax > Footnotes", () => {
     const input = `Here's a simple footnote[^1]
 
 [^1]: meaningful!
@@ -369,7 +381,7 @@ test('Basic Markdown Syntax > Footnotes', () => {
     return expect(result).toMatchSnapshot();
 });
 
-test('Basic Markdown Syntax > Footnotes in Tables', () => {
+test("Basic Markdown Syntax > Footnotes in Tables", () => {
     const input = `| Table     | Col 1 | Col 2 | Col 3 |
     | --------- | ----- | ----- | ----- |
     | Footnotes | [^1]  | [^2]  | [^3]  |
@@ -386,9 +398,9 @@ test('Basic Markdown Syntax > Footnotes in Tables', () => {
     return expect(result).toMatchSnapshot();
 });
 
-test('Basic Markdown Syntax > Math', () => {
+test("Basic Markdown Syntax > Math", () => {
     // escape literals in javascript interpreted string
-    const input = readFileSync('test/fixtures/mathjax.md', 'utf8');
+    const input = readFileSync("test/fixtures/mathjax.md", "utf8");
 
     const { options, markdown } = prepare(input);
     const sut = new MarkdownProcessor(utilsInstance);
@@ -397,9 +409,9 @@ test('Basic Markdown Syntax > Math', () => {
     return expect(result).toMatchSnapshot();
 });
 
-test('Basic Markdown Syntax > Math complicated', () => {
+test("Basic Markdown Syntax > Math complicated", () => {
     // escape literals in javascript interpreted string
-    const input = readFileSync('test/fixtures/mathjax-hardmode.md', 'utf8');
+    const input = readFileSync("test/fixtures/mathjax-hardmode.md", "utf8");
 
     const { options, markdown } = prepare(input);
     const sut = new MarkdownProcessor(utilsInstance);
@@ -408,7 +420,7 @@ test('Basic Markdown Syntax > Math complicated', () => {
     return expect(result).toMatchSnapshot();
 });
 
-test('Basic Markdown Syntax > Math markdown-special chars are preserved', () => {
+test("Basic Markdown Syntax > Math markdown-special chars are preserved", () => {
     const input = `Inline $a~b~c$ and $a*b*c$
 
 $$a~b~c$$
@@ -420,13 +432,13 @@ $$a*b*c$$`;
 
     const result = sut.process(markdown, options);
 
-    expect(result).toContain('$a&#126;b&#126;c$');
-    expect(result).toContain('$a&#42;b&#42;c$');
-    expect(result).toContain('$$a&#126;b&#126;c$$');
-    expect(result).toContain('$$a&#42;b&#42;c$$');
+    expect(result).toContain("$a&#126;b&#126;c$");
+    expect(result).toContain("$a&#42;b&#42;c$");
+    expect(result).toContain("$$a&#126;b&#126;c$$");
+    expect(result).toContain("$$a&#42;b&#42;c$$");
 });
 
-test('Basic Markdown Syntax > Mermaid', () => {
+test("Basic Markdown Syntax > Mermaid", () => {
     const input = `---
 theme: beige
 highlightTheme: css/vs2015.css
@@ -444,11 +456,13 @@ sequenceDiagram
     const { options, markdown } = prepare(input);
     const sut = new MarkdownProcessor(utilsInstance);
 
-    const result = JSON.stringify(restoreFencedCode(sut.process(markdown, options)));
+    const result = JSON.stringify(
+        restoreFencedCode(sut.process(markdown, options)),
+    );
     return expect(result).toMatchSnapshot();
 });
 
-test('Basic Markdown Syntax > Callouts', () => {
+test("Basic Markdown Syntax > Callouts", () => {
     const input = `> [!tip] This tip has a custom Header
     > This is an Tip with a custom Title
     <!-- element style="width:40%"-->
@@ -484,7 +498,7 @@ test('Basic Markdown Syntax > Callouts', () => {
     return expect(result).toMatchSnapshot();
 });
 
-test('Basic Markdown Syntax > Math spacing regression simple', () => {
+test("Basic Markdown Syntax > Math spacing regression simple", () => {
     const input = `
 \`n^2\`
 \`n^2 \`

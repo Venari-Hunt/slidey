@@ -48,6 +48,8 @@ export interface SlidesExtendedSettings {
     headingLayouts: string[];
     /** Style per heading level (index 0 = `#`). */
     headingStyles: string[];
+    /** Pick each slide's layout from its content, in the house theme. */
+    autoSlides: boolean;
 }
 
 export type ChartJsOptions = {
@@ -105,6 +107,8 @@ export type Options = {
     headingLayouts?: string[];
     /** Style per heading level, from plugin settings. */
     headingStyles?: string[];
+    /** Auto mode (setting; note frontmatter `autoSlides:`). */
+    autoSlides?: boolean;
     [key: string]: unknown;
 };
 

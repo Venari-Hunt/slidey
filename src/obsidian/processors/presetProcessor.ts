@@ -1,4 +1,9 @@
 import type { Options, Processor } from "../../@types";
+import {
+    guessLayout,
+    isAutoDeck,
+    separateQuoteCredit,
+} from "../../domain/autoLayout";
 import { CommentParser } from "../../obsidian/comment";
 import {
     LAYOUTS,
@@ -19,6 +24,8 @@ interface LookKind {
     /** A fixed list shipped with the plugin, used instead of `listKey`. */
     fixed?: SlidePreset[];
     classFor: (name: string) => string;
+    /** Picks a name from the slide's content when nothing else does. */
+    auto?: (slide: string) => string;
 }
 
 const PRESETS: LookKind = {
@@ -42,6 +49,7 @@ export const LAYOUTS_KIND: LookKind = {
     deckKey: "layout",
     fixed: LAYOUTS,
     classFor: layoutClass,
+    auto: guessLayout,
 };
 
 // Resolves each slide's preset — a per-slide `<!-- slide preset="x" -->` wins
@@ -61,8 +69,12 @@ export class PresetProcessor implements Processor {
         const presets = fixed ?? (listKey && options[listKey]) ?? [];
         const deck = options[deckKey];
         const deckPreset = typeof deck === "string" ? deck.trim() : "";
+        const auto = isAutoDeck(options) ? this.kind.auto : undefined;
 
-        if (presets.length === 0 || (!deckPreset && !markdown.includes(attr))) {
+        if (
+            presets.length === 0 ||
+            (!deckPreset && !auto && !markdown.includes(attr))
+        ) {
             return markdown;
         }
 
@@ -78,7 +90,11 @@ export class PresetProcessor implements Processor {
             if (!slide.trim()) {
                 continue;
             }
-            const newSlide = this.transformSlide(slide, deckPreset, byName);
+            const newSlide = this.transformSlide(
+                auto ? separateQuoteCredit(slide) : slide,
+                deckPreset || auto?.(slide) || "",
+                byName,
+            );
             if (newSlide !== slide) {
                 output = output.split(slide).join(newSlide);
             }

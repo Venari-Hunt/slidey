@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import path, { basename, extname, join } from "node:path";
 import Mustache from "mustache";
 import type { Options, QueryString } from "../@types";
+import { autoDeckSize, isAutoDeck } from "../domain/autoLayout";
 import type { MarkdownProcessor } from "../obsidian/markdownProcessor";
 import {
     getMediaCollector,
@@ -13,6 +14,7 @@ import {
     buildLayoutCss,
     buildPresetCss,
     buildStyleCss,
+    HOUSE_THEME_CSS,
     IMAGE_FIT_CSS,
 } from "../presets";
 import { DEFAULTS } from "../slidesExtended-constants";
@@ -92,6 +94,7 @@ export class RevealRenderer {
     ): Promise<{ html: string; localAssetPaths: string[] }> {
         const { yamlOptions, markdown } = this.yaml.parseYamlFrontMatter(input);
         const options = this.yaml.getSlideOptions(yamlOptions, renderForPrint);
+        Object.assign(options, autoDeckSize(options, yamlOptions));
         const deckMarkdown = applySlidesMode(markdown, options);
         const revealOptions = this.yaml.getRevealOptions(options);
 
@@ -202,6 +205,7 @@ export class RevealRenderer {
                 buildLayoutCss(),
                 buildPresetCss(options.presets),
                 buildStyleCss(options.styles),
+                isAutoDeck(options) ? HOUSE_THEME_CSS : "",
             ]
                 .filter(Boolean)
                 .join("\n"),
