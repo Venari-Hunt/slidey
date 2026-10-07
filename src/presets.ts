@@ -371,10 +371,10 @@ export function buildLayoutCss(): string {
     );
 }
 
-// The one look of an auto deck (see domain/autoLayout.ts): warm paper, dark
-// ink, one accent, system fonts so nothing has to be installed. Overrides the
+// The one look of an auto deck (see domain/autoLayout.ts): near-black, white
+// text, one warm-yellow accent, system fonts so nothing has to be installed. Overrides the
 // reveal theme's variables; `:root:root` outranks the theme's `:root`.
-export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#f7f5f0;--r-main-color:#1f2328;--r-heading-color:#14171a;--r-link-color:#d9480f;--r-link-color-hover:#e8590c;--r-selection-background-color:#ffd8a8;--r-main-font:"Inter","Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;--r-heading-font:"Inter","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;--r-main-font-size:38px;--r-heading-font-weight:700;--r-heading-text-transform:none;--r-heading-letter-spacing:-.02em;--r-heading-text-shadow:none;--r-heading-line-height:1.1}
+export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#0e0e0f;--r-main-color:#e9e7e1;--r-heading-color:#ffffff;--r-link-color:#f5c542;--r-link-color-hover:#ffd75e;--r-selection-background-color:#5c4a12;--r-main-font:"Inter","Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;--r-heading-font:"Inter","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;--r-main-font-size:38px;--r-heading-font-weight:700;--r-heading-text-transform:none;--r-heading-letter-spacing:-.02em;--r-heading-text-shadow:none;--r-heading-line-height:1.1}
 .reveal-viewport{background:var(--r-background-color)}
 .reveal .slides section :is(h1,h2,h3){color:var(--r-heading-color)}
 .reveal .slides section h2{font-size:1.6em}
