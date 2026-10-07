@@ -371,6 +371,27 @@ export function buildLayoutCss(): string {
     );
 }
 
+// The one look of an auto deck (see domain/autoLayout.ts): near-black, white
+// text, one warm-yellow accent, system fonts so nothing has to be installed. Overrides the
+// reveal theme's variables; `:root:root` outranks the theme's `:root`.
+export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#0e0e0f;--r-main-color:#e9e7e1;--r-heading-color:#ffffff;--r-link-color:#f5c542;--r-link-color-hover:#ffd75e;--r-selection-background-color:#5c4a12;--r-main-font:"Inter","Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;--r-heading-font:"Inter","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;--r-main-font-size:38px;--r-heading-font-weight:700;--r-heading-text-transform:none;--r-heading-letter-spacing:-.02em;--r-heading-text-shadow:none;--r-heading-line-height:1.1}
+.reveal-viewport{background:var(--r-background-color)}
+.reveal .slides section :is(h1,h2,h3){color:var(--r-heading-color)}
+.reveal .slides section h2{font-size:1.6em}
+.reveal .slides section h3{font-size:1.2em}
+.reveal .slides section :is(h1,h2,h3)::after{content:"";display:block;width:2.2em;height:.12em;margin-top:.35em;background:var(--r-link-color);border-radius:.06em}
+.reveal .slides section[class*="layout-title"] :is(h1,h2)::after,.reveal .slides section[class*="layout-section"] :is(h1,h2)::after{margin-left:auto;margin-right:auto}
+.reveal .slides section[class*="layout-image-full"] :is(h1,h2,h3){color:#fff}
+.reveal .slides section[class*="layout-image-full"] :is(h1,h2,h3)::after{margin-left:auto;margin-right:auto}
+.reveal .slides section:not([class*="layout-"]){text-align:left}
+.reveal .slides section:not([class*="layout-"]) > div{align-items:flex-start!important}
+.reveal .slides section[class*="layout-two-column"] > div{display:flex!important;column-count:1;align-items:flex-start!important}
+.reveal .slides section[class*="layout-two-column"] :is(ul,ol){column-count:2;column-gap:1.5em;align-self:stretch;width:auto}
+.reveal .slides section li::marker{color:var(--r-link-color)}
+.reveal .slides section blockquote{color:var(--r-main-color)}
+.reveal .slides section blockquote p:last-child:not(:first-child){font-style:normal;font-size:.65em;opacity:.7;margin-top:.8em}
+.reveal .controls,.reveal .progress{color:var(--r-link-color)}`;
+
 // Images on every slide: shrink to fit the 960×700 slide instead of spilling
 // off it, and 2+ pictures side by side as a row with any text above/below.
 // Layout and preset rules (`section.slidey-…`) are more specific, so they win.
@@ -400,6 +421,29 @@ export const LAYOUTS: SlideLayout[] = [
         label: "Section divider",
         css: `&{text-align:center}
 & h1,& h2{font-size:2.6em;letter-spacing:.02em}`,
+    },
+    {
+        name: "statement",
+        label: "One big statement",
+        css: `&{text-align:center}
+& p{font-size:1.7em;line-height:1.25;font-weight:600;max-width:85%;margin:0 auto}`,
+    },
+    {
+        name: "bullets",
+        label: "Heading and list",
+        css: `&{text-align:left}
+&:not(:has(> div)),& > div{align-items:flex-start!important}
+& :is(ul,ol){display:block;margin-left:1em}
+& li{margin:.3em 0}`,
+    },
+    {
+        name: "image-side",
+        label: "Text left, picture right",
+        css: `&:not(:has(> div)),& > div{display:grid!important;grid-template-columns:1fr 45%;grid-auto-rows:min-content;column-gap:1.5em;align-content:center;text-align:left}
+& > div > :not(img):not(p:has(> img)){grid-column:1;margin-left:0;margin-right:0}
+& > div > img,& > div > p:has(> img){grid-column:2;grid-row:1 / span 12;align-self:center;width:100%;max-width:100%;max-height:600px;margin:0;object-fit:contain!important}
+& > div > p:has(> img) img{width:100%;max-height:600px;object-fit:contain}
+& :is(ul,ol){display:block;margin-left:1em}`,
     },
     {
         name: "two-column",

@@ -1,11 +1,13 @@
-import { MarkdownProcessor } from '../src/obsidian/markdownProcessor';
-import { when } from 'ts-mockito';
-import { prepare } from './testUtils';
-import { MockedObsidianUtils, obsidianUtils as utilsInstance } from './__mocks__/mockObsidianUtils';
+import { when } from "ts-mockito";
+import { MarkdownProcessor } from "../src/obsidian/markdownProcessor";
+import {
+    MockedObsidianUtils,
+    obsidianUtils as utilsInstance,
+} from "./__mocks__/mockObsidianUtils";
+import { prepare } from "./testUtils";
 
-test('Template only with content', () => {
-
-    when(MockedObsidianUtils.parseFile('template.md', null)).thenCall(arg => {
+test("Template only with content", () => {
+    when(MockedObsidianUtils.parseFile("template.md", null)).thenCall((arg) => {
         return `
         # Before
         <% content %>
@@ -25,9 +27,8 @@ test('Template only with content', () => {
     return expect(result).toMatchSnapshot();
 });
 
-test('Template with variable not set', () => {
-
-    when(MockedObsidianUtils.parseFile('template.md', null)).thenCall(arg => {
+test("Template with variable not set", () => {
+    when(MockedObsidianUtils.parseFile("template.md", null)).thenCall((arg) => {
         return `
     <% content %>
     # After<grid drag="100 6" drop="bottom">
@@ -48,9 +49,8 @@ test('Template with variable not set', () => {
     return expect(result).toMatchSnapshot();
 });
 
-test('Template with invisible variable not set', () => {
-
-    when(MockedObsidianUtils.parseFile('template.md', null)).thenCall(arg => {
+test("Template with invisible variable not set", () => {
+    when(MockedObsidianUtils.parseFile("template.md", null)).thenCall((arg) => {
         return `
         <% content %>
         # After<grid drag="100 6" drop="bottom">
@@ -71,9 +71,8 @@ test('Template with invisible variable not set', () => {
     return expect(result).toMatchSnapshot();
 });
 
-test('Template with variable set', () => {
-
-    when(MockedObsidianUtils.parseFile('template.md', null)).thenCall(arg => {
+test("Template with variable set", () => {
+    when(MockedObsidianUtils.parseFile("template.md", null)).thenCall((arg) => {
         return `
         <% content %>
         # After<grid drag="100 6" drop="bottom">
@@ -87,7 +86,7 @@ test('Template with variable set', () => {
 # MyContent
 
 ::: footer
-$$\lim_{t \to \infty} (w(t) - y(t)) = 0$$
+$$lim_{t \to infty} (w(t) - y(t)) = 0$$
 :::
 
 `;
@@ -99,9 +98,8 @@ $$\lim_{t \to \infty} (w(t) - y(t)) = 0$$
     return expect(result).toMatchSnapshot();
 });
 
-test('Template with variable in frontmatter', () => {
-
-    when(MockedObsidianUtils.parseFile('template.md', null)).thenCall(arg => {
+test("Template with variable in frontmatter", () => {
+    when(MockedObsidianUtils.parseFile("template.md", null)).thenCall((arg) => {
         return `
     <% content %>
     # After<grid drag="100 6" drop="bottom">

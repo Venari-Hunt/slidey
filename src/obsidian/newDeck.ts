@@ -1,39 +1,35 @@
 import { type App, normalizePath, TFile } from "obsidian";
 
 /** Used when no template note is set, or it can't be found. */
-export const STARTER_DECK = `---
-slides: headings
-style: night
----
+// Plain text and `---`: auto slides pick each slide's layout from what is on it.
+export const STARTER_DECK = `# Deck title
 
-# Deck title
-%% layout=title %%
 A subtitle, or your name
 
 %% notes %%
 Speaker notes: only you see these. Press S in the preview for the speaker view.
 
+---
+
 ## First point
+
 - One idea per bullet
 - Keep it short
 - Three is plenty
 
-## A quote
-%% layout=quote %%
+---
+
+One short sentence on its own becomes a big statement.
+
+---
 
 > Say one thing, and say it well.
+> — Someone wise
 
-## Two columns
-%% layout=two-column %%
+---
 
-- Left side
-- More left
+# Thank you
 
-- Right side
-- More right
-
-## Thank you
-%% layout=title transition=zoom %%
 Questions?
 `;
 

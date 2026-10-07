@@ -43,6 +43,7 @@ export const DEFAULT_SETTINGS: SlidesExtendedSettings = {
     headingPresets: ["", "", "", "", "", ""],
     headingLayouts: ["title", "", "", "", "", ""],
     headingStyles: ["", "", "", "", "", ""],
+    autoSlides: true,
 };
 export const DEFAULTS: Options = {
     bg: "",

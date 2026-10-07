@@ -434,6 +434,19 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
             });
 
         new Setting(containerEl)
+            .setName("Auto slides")
+            .setDesc(
+                "Pick each slide's layout from what you wrote (a lone heading is a title, a list is bullets, a picture fills the slide) and use one dark theme. Notes that set style, preset or layout in their properties keep their own look. Turn it off for one deck with autoSlides: false.",
+            )
+            .addToggle((value) =>
+                value
+                    .setValue(this.newSettings.autoSlides)
+                    .onChange((value) => {
+                        this.newSettings.autoSlides = value;
+                    }),
+            );
+
+        new Setting(containerEl)
             .setName("Shrink text to fit")
             .setDesc(
                 "When a slide has more text than fits, make its text smaller (down to half size) so nothing runs off the slide. Turn it off for one deck with fitText: false in the note's properties.",
