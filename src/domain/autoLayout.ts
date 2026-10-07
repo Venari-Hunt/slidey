@@ -28,7 +28,7 @@ const QUOTE = /^\s*>/;
 const FENCE = /^\s*(?:`{3,}|~{3,})/;
 const IMAGE_ONLY =
     /^\s*(?:!\[[^\]]*\]\([^)]*\)|!\[\[[^\]]+\]\]|<img\b[^>]*>|<p>\s*<img\b[^>]*>\s*<\/p>)\s*$/i;
-const COMMENT_LINE = /^\s*<!--.*-->\s*$/;
+const COMMENT_LINE = /^\s*<!--.*--!?>\s*$/;
 const OBSIDIAN_COMMENT_LINE = /^\s*%%.*%%\s*$/;
 // Where speaker notes start: upstream's `note:` or Slidey's notes sentinel.
 const NOTES_START = /^\s*(?:note:|<!-- @slidey:notes -->)/i;
