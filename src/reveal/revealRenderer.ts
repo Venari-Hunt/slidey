@@ -21,6 +21,7 @@ import { DEFAULTS } from "../slidesExtended-constants";
 import { has, isEmpty } from "../util";
 import { YamlParser } from "../yaml/yamlParser";
 import { FIT_TEXT_SCRIPT } from "./fitText";
+import { IDLE_UI_CSS, IDLE_UI_SCRIPT } from "./idleUi";
 import { md } from "./markdown";
 import { OVERVIEW_SCRIPT } from "./overviewScript";
 import { RevealExporter } from "./revealExporter";
@@ -196,12 +197,14 @@ export class RevealRenderer {
                 fitText === false ? "" : FIT_TEXT_SCRIPT,
                 OVERVIEW_SCRIPT,
                 SPEAKER_SCRIPT,
+                IDLE_UI_SCRIPT,
             ]
                 .filter(Boolean)
                 .join("\n"),
             // Layouts first, styles last so their look wins over a preset's.
             presetStyles: [
                 IMAGE_FIT_CSS,
+                IDLE_UI_CSS,
                 buildLayoutCss(),
                 buildPresetCss(options.presets),
                 buildStyleCss(options.styles),
