@@ -28,3 +28,7 @@ Obsidian must run with `--remote-debugging-port=9222` (standing permission to qu
 ## Obsidian review lint
 
 `corepack pnpm exec eslint src` runs the same `eslint-plugin-obsidianmd` rules as Obsidian's plugin-directory review. Keep it at 0 errors (warnings are advisory). Rules that bite: no `element.style.x =` (use a CSS class or `setCssProps`), no `<style>` elements, no `createEl("h1".."h6")` inside a `PluginSettingTab` class, and type `JSON.parse`/`parseYaml` results.
+
+## Slide screenshots without a visible window
+
+The preview iframe can't be screenshotted, and fullscreen hangs when the Obsidian window is hidden. Instead, launch headless Edge with `--remote-debugging-port`, `Page.navigate` to `http://localhost:3000/<vault path>`, step with `Reveal.slide(i)` and `Page.captureScreenshot` each slide (a Node script, ~40 lines). Edge's own `--screenshot` flag hangs on the deck's live-reload connection.

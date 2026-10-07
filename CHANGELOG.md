@@ -12,6 +12,20 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.24.0 — 2026-10-07
+
+- **Just type, Slidey designs the slides.** Write your talk as plain text and put `---` between slides. Slidey looks at each slide and picks its layout by itself:
+  - a heading alone becomes a title (`#`) or a section break (`##`)
+  - one short sentence becomes a big statement
+  - a list becomes bullets, and a long list (8+ items) splits into two columns
+  - a `>` quote becomes a quote slide, and a `> — Name` line under it becomes the credit
+  - a picture fills the slide, and a picture with text sits beside it
+  - a code block becomes a code slide
+- **One dark theme.** Every auto deck uses the same look: a near-black background, white text and a warm-yellow accent, in a 16:9 frame that fills today's screens. You don't need to choose styles or presets.
+- Your existing decks don't change: a note that sets `style`, `preset` or `layout` in its properties keeps its old look. A `%% layout=quote %%` line still changes one slide by hand.
+- **New slide deck** now starts from a plain-text example deck.
+- To turn it off: **Settings → Slidey → Auto slides**, or `autoSlides: false` in one note's properties.
+
 ## 0.23.0 — 2026-09-25
 
 - **Rehearse with slide times.** The speaker view now shows how long you have been on the current slide ("This slide 00:42"), next to the total timer. Click **Slide times** to swap your notes for a list of every slide and the time spent on it so far; going back to a slide adds to its time. **Reset timer** clears them all. Click **Slide times** again to see your notes.
