@@ -28,10 +28,15 @@ const QUOTE = /^\s*>/;
 const FENCE = /^\s*(?:`{3,}|~{3,})/;
 const IMAGE_ONLY =
     /^\s*(?:!\[[^\]]*\]\([^)]*\)|!\[\[[^\]]+\]\]|<img\b[^>]*>|<p>\s*<img\b[^>]*>\s*<\/p>)\s*$/i;
-const COMMENT_LINE = /^\s*<!--.*--!?>\s*$/;
 const OBSIDIAN_COMMENT_LINE = /^\s*%%.*%%\s*$/;
 // Where speaker notes start: upstream's `note:` or Slidey's notes sentinel.
 const NOTES_START = /^\s*(?:note:|<!-- @slidey:notes -->)/i;
+
+/** A whole line that is one HTML comment (slide annotations, sentinels). */
+function isCommentLine(line: string): boolean {
+    const t = line.trim();
+    return t.startsWith("<!--") && t.endsWith(">");
+}
 
 /** The lines the audience will see: no comments, notes or blank lines. */
 function visibleLines(slide: string): string[] {
@@ -42,7 +47,7 @@ function visibleLines(slide: string): string[] {
         }
         if (
             !line.trim() ||
-            COMMENT_LINE.test(line) ||
+            isCommentLine(line) ||
             OBSIDIAN_COMMENT_LINE.test(line)
         ) {
             continue;
