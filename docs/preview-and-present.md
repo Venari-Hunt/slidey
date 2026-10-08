@@ -13,6 +13,12 @@ Code: `src/reveal/revealPreviewView.ts` (leaf type `reveal-preview-view`, upstre
 
 Command `present-active-presentation` ("Present slides (fullscreen)", no default hotkey). `presentMode()` / `exitPresentMode()` put the view's content element in real Fullscreen API mode; a `fullscreenchange` listener toggles `.is-presenting`; a `pointermove` idle timer (2 s) fades a `.slidey-present-exit` button in/out (top-right). Escape or the button exits back to whatever pane layout was already configured.
 
+- 0.25.0: with 2+ screens (`screenCount()`, Electron `remote.screen.getAllDisplays()`), the command runs `presentWithSpeakerView()` instead (see Two-screen presenting). One screen, or no `remote`: fullscreen as above.
+
+### Fading controls (0.25.0)
+
+`src/reveal/idleUi.ts`: `IDLE_UI_SCRIPT` (in `slideyScript`) toggles `.slidey-idle` on `.reveal` 2 s after the last `mousemove` / `pointerdown` / `touchstart`; keys (clickers) don't wake it. `IDLE_UI_CSS` (in `presetStyles`) fades `.controls`, `.progress`, `.slide-number` over 0.4 s. Every deck, every view. Testing gotcha: in a hidden Obsidian window (`visibilityState: hidden`) the transition never advances, so computed opacity stays 1; measure in headless Edge instead (`docs/development.md`).
+
 ## PDF export (0.15.0)
 
 `src/reveal/pdfExporter.ts`. `exportDeckToPdf(deckUrl, outFile)` opens a hidden Electron `BrowserWindow` (via `require("electron").remote`, which Obsidian desktop exposes) on the deck URL with `?print-pdf`, waits in-page for reveal's print layout (`.pdf-page` count > 0, `Reveal.isReady()`, all images complete, `document.fonts.ready`; 15 s cap), then `webContents.printToPDF({printBackground, preferCSSPageSize})` — reveal's print CSS sets the page size to the slide size, so one slide = one page. Output: `<exportDirectory>/<note name>.pdf` (setting default `/export`), opened with `shell.openPath`. `RevealPreviewView.exportAsPdf()` wraps it with a working/done Notice.

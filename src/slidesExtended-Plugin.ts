@@ -133,6 +133,11 @@ export class SlidesExtendedPlugin extends Plugin {
             id: "present-active-presentation",
             name: "Present slides (fullscreen)",
             callback: async () => {
+                // A second screen: slides there, speaker view here.
+                if (this.screenCount() > 1) {
+                    await this.presentWithSpeakerView();
+                    return;
+                }
                 await this.showView();
                 const instance = this.getViewInstance();
                 await instance?.presentMode();
@@ -346,6 +351,12 @@ export class SlidesExtendedPlugin extends Plugin {
         }
         this.app.workspace.setActiveLeaf(speakerLeaf, { focus: true });
         (speakerLeaf.view as SpeakerView).contentEl.focus();
+    }
+
+    /** Screens connected now; 1 when Electron's screen API isn't reachable. */
+    private screenCount(): number {
+        const remote = electron<{ remote?: WindowRemote }>().remote;
+        return remote?.screen.getAllDisplays().length ?? 1;
     }
 
     private moveToSecondScreen(

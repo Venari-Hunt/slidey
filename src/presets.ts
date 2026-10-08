@@ -379,10 +379,7 @@ export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#0e0e0f;--r-main
 .reveal .slides section :is(h1,h2,h3){color:var(--r-heading-color)}
 .reveal .slides section h2{font-size:1.6em}
 .reveal .slides section h3{font-size:1.2em}
-.reveal .slides section :is(h1,h2,h3)::after{content:"";display:block;width:2.2em;height:.12em;margin-top:.35em;background:var(--r-link-color);border-radius:.06em}
-.reveal .slides section[class*="layout-title"] :is(h1,h2)::after,.reveal .slides section[class*="layout-section"] :is(h1,h2)::after{margin-left:auto;margin-right:auto}
 .reveal .slides section[class*="layout-image-full"] :is(h1,h2,h3){color:#fff}
-.reveal .slides section[class*="layout-image-full"] :is(h1,h2,h3)::after{margin-left:auto;margin-right:auto}
 .reveal .slides section:not([class*="layout-"]){text-align:left}
 .reveal .slides section:not([class*="layout-"]) > div{align-items:flex-start!important}
 .reveal .slides section[class*="layout-two-column"] > div{display:flex!important;column-count:1;align-items:flex-start!important}
@@ -464,7 +461,8 @@ export const LAYOUTS: SlideLayout[] = [
         name: "image-full",
         label: "Full-slide image, text on top",
         css: `&{text-align:center}
-& img{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;object-fit:cover!important;margin:0;border:0;box-shadow:none;filter:brightness(.6)}
+& img{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;object-fit:cover!important;margin:0;border:0;box-shadow:none;filter:brightness(.7)}
+&:not(:has(> div))::after,& > div::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.55) 75%,rgba(0,0,0,.9) 100%)}
 & :is(h1,h2,h3,h4,ul,ol,blockquote),& p:not(:has(img)){position:relative;z-index:1;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.6)}`,
     },
     {
