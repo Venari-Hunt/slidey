@@ -17,6 +17,7 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - **Controls get out of the way.** The arrows, progress bar and slide number fade out 2 seconds after you stop moving the mouse, and come back when you move it. Clicker and keyboard presses don't bring them back.
 - **Present slides (fullscreen) uses your second screen.** With a projector or second monitor connected, it now opens the slides fullscreen there and the speaker view on your screen (notes, current and next slide, timer, slide times). With one screen, it goes fullscreen as before.
 - Auto slides: headings no longer have a yellow line under them.
+- **Full-bleed image slides get a vignette:** the edges of the picture darken, so the text in the middle stands out.
 
 ## 0.24.0 — 2026-10-07
 

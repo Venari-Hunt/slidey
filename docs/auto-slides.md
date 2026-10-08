@@ -30,6 +30,7 @@ A `%% layout=x %%` line on the slide still wins: `PresetProcessor` (`LAYOUTS_KIN
 
 `HOUSE_THEME_CSS` goes last in the `presetStyles` slot when `isAutoDeck`. It overrides reveal theme variables with `:root:root`: near-black `#0e0e0f`, text `#e9e7e1`, headings white, accent warm yellow `#f5c542` (list markers, quote bar, controls, progress; no heading underline since 0.25.0). System fonts (Inter → Segoe UI → system-ui), so nothing is downloaded.
 
+- `image-full` (every deck, 0.25.0): picture at `brightness(.7)` plus a radial vignette on the wrapper `::after` (`z-index:0`, under the text at `z-index:1`).
 - `autoDeckSize` makes auto decks 1280×720 (16:9) unless the frontmatter sets `width:` / `height:`; applied in `RevealRenderer.render` right after `getSlideOptions`.
 - Two-column in auto decks keeps the wrapper flex-centered and splits only the list (`column-count:2`, `align-self:stretch`). A list at `width:100%` plus its indent overflowed and text-fit shrank it to half size.
 

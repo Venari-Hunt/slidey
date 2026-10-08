@@ -461,7 +461,8 @@ export const LAYOUTS: SlideLayout[] = [
         name: "image-full",
         label: "Full-slide image, text on top",
         css: `&{text-align:center}
-& img{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;object-fit:cover!important;margin:0;border:0;box-shadow:none;filter:brightness(.6)}
+& img{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;object-fit:cover!important;margin:0;border:0;box-shadow:none;filter:brightness(.7)}
+&:not(:has(> div))::after,& > div::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.55) 75%,rgba(0,0,0,.9) 100%)}
 & :is(h1,h2,h3,h4,ul,ol,blockquote),& p:not(:has(img)){position:relative;z-index:1;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.6)}`,
     },
     {
