@@ -371,6 +371,12 @@ export function buildLayoutCss(): string {
     );
 }
 
+// Title cards (a picture with a line over it) in Avant Garde's bold, tightly
+// set. Real ITC Avant Garde wins when installed (its "dlig" adds the NT / CA /
+// TH ligatures); otherwise the bundled lookalike TeX Gyre Adventor Bold.
+export const TITLE_CARD_FONT_NAME = "Slidey Adventor";
+const TITLE_CARD_FONT = `"ITC Avant Garde Gothic Pro","ITC Avant Garde Gothic Std","ITC Avant Garde Gothic","Avant Garde Gothic","AvantGarde","Avant Garde","${TITLE_CARD_FONT_NAME}",var(--r-heading-font)`;
+
 // The one look of an auto deck (see domain/autoLayout.ts): near-black, white
 // text, one warm-yellow accent, system fonts so nothing has to be installed. Overrides the
 // reveal theme's variables; `:root:root` outranks the theme's `:root`.
@@ -380,6 +386,9 @@ export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#0e0e0f;--r-main
 .reveal .slides section h2{font-size:1.6em}
 .reveal .slides section h3{font-size:1.2em}
 .reveal .slides section[class*="layout-image-full"] :is(h1,h2,h3){color:#fff}
+.reveal .slides section[class*="layout-image-full"] :is(h1,h2,h3,p){font-family:${TITLE_CARD_FONT};font-weight:700;letter-spacing:-.045em;line-height:1.05;font-variant-ligatures:common-ligatures discretionary-ligatures;font-feature-settings:"kern","liga","dlig";text-wrap:balance}
+.reveal .slides section[class*="layout-image-full"] p:not(:has(img)){max-width:85%;margin-inline:auto}
+.reveal .slides section[class*="layout-image-full"] > div:not(:has(> :is(h1,h2,h3))) > p:not(:has(img)){font-size:2em}
 .reveal .slides section:not([class*="layout-"]){text-align:left}
 .reveal .slides section:not([class*="layout-"]) > div{align-items:flex-start!important}
 .reveal .slides section[class*="layout-two-column"] > div{display:flex!important;column-count:1;align-items:flex-start!important}

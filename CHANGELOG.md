@@ -12,6 +12,11 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.26.0 — 2026-10-08
+
+- **Title cards.** A slide with one picture and one line or short paragraph (a heading on top is fine) now fills the slide with the picture and sets the text over it in a bold Avant Garde style, tightly spaced. A lone line is shown extra large.
+- The font is TeX Gyre Adventor Bold, a free Avant Garde lookalike that ships inside Slidey, so it works with nothing installed, in PDF and PowerPoint export too. If you have the real ITC Avant Garde Gothic installed, Slidey uses it instead, including its special letter pairs (NT, CA, TH…). The free font doesn't have those pairs.
+
 ## 0.25.0 — 2026-10-08
 
 - **Controls get out of the way.** The arrows, progress bar and slide number fade out 2 seconds after you stop moving the mouse, and come back when you move it. Clicker and keyboard presses don't bring them back.

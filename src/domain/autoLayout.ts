@@ -19,6 +19,8 @@ export type AutoLayout =
 const STATEMENT_MAX_WORDS = 14;
 /** Longest subtitle (in words) under a `#` heading on a title slide. */
 const SUBTITLE_MAX_WORDS = 16;
+/** Longest line (in words) over a picture on a title card. */
+const TITLE_CARD_MAX_WORDS = 40;
 /** More list items than this split into two columns. */
 const TWO_COLUMN_MIN_ITEMS = 8;
 
@@ -79,12 +81,17 @@ export function guessLayout(slide: string): AutoLayout | "" {
     const body = lines.filter((l) => !HEADING.test(l) && !IMAGE_ONLY.test(l));
 
     if (images.length > 0) {
-        // A picture with at most a heading over it fills the slide.
-        return body.length === 0 && images.length === 1
-            ? "image-full"
-            : body.length === 0
-              ? ""
-              : "image-side";
+        // A picture with at most a heading and one line or paragraph over it
+        // fills the slide (a title card).
+        const titleCard =
+            images.length === 1 &&
+            headings.length <= 1 &&
+            (body.length === 0 ||
+                (body.length === 1 &&
+                    !LIST_ITEM.test(body[0]) &&
+                    !QUOTE.test(body[0]) &&
+                    words(body[0]) <= TITLE_CARD_MAX_WORDS));
+        return titleCard ? "image-full" : body.length === 0 ? "" : "image-side";
     }
 
     if (body.length > 0 && body.every((l) => QUOTE.test(l))) {

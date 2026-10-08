@@ -1,4 +1,4 @@
-# Auto slides (0.24.0)
+# Auto slides (0.24.0, title cards 0.26.0)
 
 Write plain text, separate slides with `---`, and each slide gets a layout picked from its content, in one dark house theme. Code: `src/domain/autoLayout.ts` (rules, no DOM), `HOUSE_THEME_CSS` and the `statement` / `bullets` / `image-side` layouts in `src/presets.ts`.
 
@@ -13,7 +13,7 @@ Write plain text, separate slides with `---`, and each slide gets a layout picke
 | Slide content | Layout |
 |---|---|
 | a fenced code block | `code` |
-| one image, at most a heading | `image-full` |
+| one image, at most a heading + one line ≤ 40 words (not a list or quote) | `image-full` (title card) |
 | image(s) + text | `image-side` (2+ images, no text → `""`, the gallery row) |
 | every body line is `>` | `quote` |
 | heading only | `title` for `#`, `section` for `##`+ |
@@ -31,6 +31,7 @@ A `%% layout=x %%` line on the slide still wins: `PresetProcessor` (`LAYOUTS_KIN
 `HOUSE_THEME_CSS` goes last in the `presetStyles` slot when `isAutoDeck`. It overrides reveal theme variables with `:root:root`: near-black `#0e0e0f`, text `#e9e7e1`, headings white, accent warm yellow `#f5c542` (list markers, quote bar, controls, progress; no heading underline since 0.25.0). System fonts (Inter → Segoe UI → system-ui), so nothing is downloaded.
 
 - `image-full` (every deck, 0.25.0): picture at `brightness(.7)` plus a radial vignette on the wrapper `::after` (`z-index:0`, under the text at `z-index:1`).
+- **Title cards** (0.26.0): `image-full` text uses `TITLE_CARD_FONT` (installed ITC Avant Garde Gothic names first, then the bundled "Slidey Adventor"), bold, `letter-spacing:-.045em`, `dlig` on, `text-wrap:balance`; a line with no heading is 2em. The font is `src/assets/fonts/texgyreadventor-bold.woff2` (TeX Gyre Adventor Bold 2.501, GUST Font License, from gust.org.pl, converted with wawoff2), inlined as a data URL by esbuild's `.woff2` loader in `src/reveal/titleCardFont.ts` (~100 KB of main.js), so export needs nothing extra. Adventor has no NT/CA/TH ligatures; only a real Avant Garde Pro shows them.
 - `autoDeckSize` makes auto decks 1280×720 (16:9) unless the frontmatter sets `width:` / `height:`; applied in `RevealRenderer.render` right after `getSlideOptions`.
 - Two-column in auto decks keeps the wrapper flex-centered and splits only the list (`column-count:2`, `align-self:stretch`). A list at `width:100%` plus its indent overflowed and text-fit shrank it to half size.
 
@@ -38,4 +39,4 @@ A `%% layout=x %%` line on the slide still wins: `PresetProcessor` (`LAYOUTS_KIN
 
 `STARTER_DECK` (`src/obsidian/newDeck.ts`) is a plain-text `---` deck with no frontmatter, so **New slide deck** starts in auto mode.
 
-**Test note:** `02 - Projetos/Slidey/Tests/Sample talk - auto slides.md` (12 slides, every layout but code). Screenshots: headless Edge over CDP, see `docs/development.md`.
+**Test note:** `02 - Projetos/Slidey/Tests/Sample talk - auto slides.md` (12 slides, every layout but code); `Tests/_slidey-title-cards-test.md` (3 title cards). Screenshots: headless Edge over CDP, see `docs/development.md`.
