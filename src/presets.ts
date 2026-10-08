@@ -386,7 +386,7 @@ export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#0e0e0f;--r-main
 .reveal .slides section h2{font-size:1.6em}
 .reveal .slides section h3{font-size:1.2em}
 .reveal .slides section[class*="layout-image-full"] :is(h1,h2,h3){color:#fff}
-.reveal .slides section[class*="layout-image-full"] :is(h1,h2,h3,p){font-family:${TITLE_CARD_FONT};font-weight:700;letter-spacing:-.045em;line-height:1.05;font-variant-ligatures:common-ligatures discretionary-ligatures;font-feature-settings:"kern","liga","dlig";text-wrap:balance}
+.reveal .slides section[class*="layout-image-full"] :is(h1,h2,h3,p){font-family:${TITLE_CARD_FONT};font-weight:700;letter-spacing:-.025em;-webkit-text-stroke:.035em currentColor;paint-order:stroke fill;line-height:1.05;font-variant-ligatures:common-ligatures discretionary-ligatures;font-feature-settings:"kern","liga","dlig";text-wrap:balance}
 .reveal .slides section[class*="layout-image-full"] p:not(:has(img)){max-width:85%;margin-inline:auto}
 .reveal .slides section[class*="layout-image-full"] > div:not(:has(> :is(h1,h2,h3))) > p:not(:has(img)){font-size:2em}
 .reveal .slides section:not([class*="layout-"]){text-align:left}
