@@ -379,10 +379,7 @@ export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#0e0e0f;--r-main
 .reveal .slides section :is(h1,h2,h3){color:var(--r-heading-color)}
 .reveal .slides section h2{font-size:1.6em}
 .reveal .slides section h3{font-size:1.2em}
-.reveal .slides section :is(h1,h2,h3)::after{content:"";display:block;width:2.2em;height:.12em;margin-top:.35em;background:var(--r-link-color);border-radius:.06em}
-.reveal .slides section[class*="layout-title"] :is(h1,h2)::after,.reveal .slides section[class*="layout-section"] :is(h1,h2)::after{margin-left:auto;margin-right:auto}
 .reveal .slides section[class*="layout-image-full"] :is(h1,h2,h3){color:#fff}
-.reveal .slides section[class*="layout-image-full"] :is(h1,h2,h3)::after{margin-left:auto;margin-right:auto}
 .reveal .slides section:not([class*="layout-"]){text-align:left}
 .reveal .slides section:not([class*="layout-"]) > div{align-items:flex-start!important}
 .reveal .slides section[class*="layout-two-column"] > div{display:flex!important;column-count:1;align-items:flex-start!important}
