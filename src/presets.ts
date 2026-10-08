@@ -371,15 +371,16 @@ export function buildLayoutCss(): string {
     );
 }
 
-// Title cards (a picture with a line over it) in a heavy geometric sans:
-// Rustica when installed (Adobe Fonts), else the bundled Poppins ExtraBold.
-export const TITLE_CARD_FONT_NAME = "Slidey Poppins";
-const TITLE_CARD_FONT = `"Rustica","${TITLE_CARD_FONT_NAME}",var(--r-heading-font)`;
+// The auto-deck font: Poppins, bundled (see reveal/houseFont.ts). Title cards
+// (a picture with a line over it) use its ExtraBold, or Rustica when installed.
+export const HOUSE_FONT_NAME = "Slidey Poppins";
+const HOUSE_FONT = `"${HOUSE_FONT_NAME}","Poppins","Segoe UI",system-ui,sans-serif`;
+const TITLE_CARD_FONT = `"Rustica",${HOUSE_FONT}`;
 
 // The one look of an auto deck (see domain/autoLayout.ts): near-black, white
-// text, one warm-yellow accent, system fonts so nothing has to be installed. Overrides the
+// text, one warm-yellow accent, the bundled Poppins so nothing has to be installed. Overrides the
 // reveal theme's variables; `:root:root` outranks the theme's `:root`.
-export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#0e0e0f;--r-main-color:#e9e7e1;--r-heading-color:#ffffff;--r-link-color:#f5c542;--r-link-color-hover:#ffd75e;--r-selection-background-color:#5c4a12;--r-main-font:"Inter","Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;--r-heading-font:"Inter","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;--r-main-font-size:38px;--r-heading-font-weight:700;--r-heading-text-transform:none;--r-heading-letter-spacing:-.02em;--r-heading-text-shadow:none;--r-heading-line-height:1.1}
+export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#0e0e0f;--r-main-color:#e9e7e1;--r-heading-color:#ffffff;--r-link-color:#f5c542;--r-link-color-hover:#ffd75e;--r-selection-background-color:#5c4a12;--r-main-font:${HOUSE_FONT};--r-heading-font:${HOUSE_FONT};--r-main-font-size:38px;--r-heading-font-weight:700;--r-heading-text-transform:none;--r-heading-letter-spacing:-.02em;--r-heading-text-shadow:none;--r-heading-line-height:1.1}
 .reveal-viewport{background:var(--r-background-color)}
 .reveal .slides section :is(h1,h2,h3){color:var(--r-heading-color)}
 .reveal .slides section h2{font-size:1.6em}

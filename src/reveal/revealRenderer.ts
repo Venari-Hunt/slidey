@@ -21,12 +21,12 @@ import { DEFAULTS } from "../slidesExtended-constants";
 import { has, isEmpty } from "../util";
 import { YamlParser } from "../yaml/yamlParser";
 import { FIT_TEXT_SCRIPT } from "./fitText";
+import { HOUSE_FONT_FACES } from "./houseFont";
 import { IDLE_UI_CSS, IDLE_UI_SCRIPT } from "./idleUi";
 import { md } from "./markdown";
 import { OVERVIEW_SCRIPT } from "./overviewScript";
 import { RevealExporter } from "./revealExporter";
 import { SPEAKER_SCRIPT } from "./speakerScript";
-import { TITLE_CARD_FONT_FACE } from "./titleCardFont";
 
 export class RevealRenderer {
     private processor: MarkdownProcessor;
@@ -209,7 +209,7 @@ export class RevealRenderer {
                 buildLayoutCss(),
                 buildPresetCss(options.presets),
                 buildStyleCss(options.styles),
-                isAutoDeck(options) ? TITLE_CARD_FONT_FACE : "",
+                isAutoDeck(options) ? HOUSE_FONT_FACES : "",
                 isAutoDeck(options) ? HOUSE_THEME_CSS : "",
             ]
                 .filter(Boolean)
