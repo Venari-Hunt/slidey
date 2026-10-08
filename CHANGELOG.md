@@ -12,6 +12,11 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.27.0 — 2026-10-08
+
+- **New fonts for auto slides.** Headings, one-line slides and title cards use Poppins; body text, lists and quotes use Inter. Both ship inside Slidey, so they work with nothing installed, in PDF and PowerPoint export too.
+- **Title cards are heavier and less tight:** Poppins ExtraBold instead of the Avant Garde lookalike, which had no heavier weight. If you have Rustica (Adobe Fonts) installed, title cards use it instead.
+
 ## 0.26.0 — 2026-10-08
 
 - **Title cards.** A slide with one picture and one line or short paragraph (a heading on top is fine) now fills the slide with the picture and sets the text over it in a bold Avant Garde style, tightly spaced. A lone line is shown extra large.

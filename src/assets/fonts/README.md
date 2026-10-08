@@ -1,6 +1,6 @@
 # Bundled fonts
 
-`texgyreadventor-bold.woff2` — TeX Gyre Adventor Bold, version 2.501, by the GUST e-foundry
-(https://www.gust.org.pl/projects/e-foundry/tex-gyre/adventor). Converted from the original OTF to
-WOFF2 without changes to the glyphs. Distributed under the GUST Font License
-(https://www.gust.org.pl/projects/e-foundry/licenses), which allows free use and redistribution.
+Latin subsets from the `@fontsource` 5.3.0 packages, all SIL Open Font License 1.1:
+
+- `poppins-latin-*.woff2` — Poppins 400, 700, 800 by the Indian Type Foundry. License: `Poppins-OFL.txt`.
+- `inter-latin-*.woff2` — Inter 400, 400 italic, 700, 700 italic by Rasmus Andersson. License: `Inter-OFL.txt`.
