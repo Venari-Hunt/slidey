@@ -12,7 +12,7 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
-## 0.25.0 — 2026-10-07
+## 0.25.0 — 2026-10-08
 
 - **Controls get out of the way.** The arrows, progress bar and slide number fade out 2 seconds after you stop moving the mouse, and come back when you move it. Clicker and keyboard presses don't bring them back.
 - **Present slides (fullscreen) uses your second screen.** With a projector or second monitor connected, it now opens the slides fullscreen there and the speaker view on your screen (notes, current and next slide, timer, slide times). With one screen, it goes fullscreen as before.
