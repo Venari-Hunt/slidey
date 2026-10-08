@@ -371,21 +371,25 @@ export function buildLayoutCss(): string {
     );
 }
 
-// The auto-deck font: Poppins, bundled (see reveal/houseFont.ts). Title cards
-// (a picture with a line over it) use its ExtraBold, or Rustica when installed.
+// The auto-deck fonts, bundled (see reveal/houseFont.ts): Poppins for headings
+// and one-line statements, Inter for body text. Title cards (a picture with a
+// line over it) use Poppins ExtraBold, or Rustica when installed.
 export const HOUSE_FONT_NAME = "Slidey Poppins";
+export const BODY_FONT_NAME = "Slidey Inter";
 const HOUSE_FONT = `"${HOUSE_FONT_NAME}","Poppins","Segoe UI",system-ui,sans-serif`;
+const BODY_FONT = `"${BODY_FONT_NAME}","Inter","Segoe UI",system-ui,sans-serif`;
 const TITLE_CARD_FONT = `"Rustica",${HOUSE_FONT}`;
 
 // The one look of an auto deck (see domain/autoLayout.ts): near-black, white
-// text, one warm-yellow accent, the bundled Poppins so nothing has to be installed. Overrides the
+// text, one warm-yellow accent, bundled Poppins + Inter so nothing has to be installed. Overrides the
 // reveal theme's variables; `:root:root` outranks the theme's `:root`.
-export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#0e0e0f;--r-main-color:#e9e7e1;--r-heading-color:#ffffff;--r-link-color:#f5c542;--r-link-color-hover:#ffd75e;--r-selection-background-color:#5c4a12;--r-main-font:${HOUSE_FONT};--r-heading-font:${HOUSE_FONT};--r-main-font-size:38px;--r-heading-font-weight:700;--r-heading-text-transform:none;--r-heading-letter-spacing:-.02em;--r-heading-text-shadow:none;--r-heading-line-height:1.1}
+export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#0e0e0f;--r-main-color:#e9e7e1;--r-heading-color:#ffffff;--r-link-color:#f5c542;--r-link-color-hover:#ffd75e;--r-selection-background-color:#5c4a12;--r-main-font:${BODY_FONT};--r-heading-font:${HOUSE_FONT};--r-main-font-size:38px;--r-heading-font-weight:700;--r-heading-text-transform:none;--r-heading-letter-spacing:-.02em;--r-heading-text-shadow:none;--r-heading-line-height:1.1}
 .reveal-viewport{background:var(--r-background-color)}
 .reveal .slides section :is(h1,h2,h3){color:var(--r-heading-color)}
 .reveal .slides section h2{font-size:1.6em}
 .reveal .slides section h3{font-size:1.2em}
 .reveal .slides section[class*="layout-image-full"] :is(h1,h2,h3){color:#fff}
+.reveal .slides section[class*="layout-statement"] p{font-family:${HOUSE_FONT}}
 .reveal .slides section[class*="layout-image-full"] :is(h1,h2,h3,p){font-family:${TITLE_CARD_FONT};font-weight:800;letter-spacing:-.025em;line-height:1.1;text-wrap:balance}
 .reveal .slides section[class*="layout-image-full"] p:not(:has(img)){max-width:85%;margin-inline:auto}
 .reveal .slides section[class*="layout-image-full"] > div:not(:has(> :is(h1,h2,h3))) > p:not(:has(img)){font-size:2em}
