@@ -26,6 +26,7 @@ import { md } from "./markdown";
 import { OVERVIEW_SCRIPT } from "./overviewScript";
 import { RevealExporter } from "./revealExporter";
 import { SPEAKER_SCRIPT } from "./speakerScript";
+import { TITLE_CARD_FONT_FACE } from "./titleCardFont";
 
 export class RevealRenderer {
     private processor: MarkdownProcessor;
@@ -208,6 +209,7 @@ export class RevealRenderer {
                 buildLayoutCss(),
                 buildPresetCss(options.presets),
                 buildStyleCss(options.styles),
+                isAutoDeck(options) ? TITLE_CARD_FONT_FACE : "",
                 isAutoDeck(options) ? HOUSE_THEME_CSS : "",
             ]
                 .filter(Boolean)
