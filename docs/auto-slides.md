@@ -41,3 +41,13 @@ A `%% layout=x %%` line on the slide still wins: `PresetProcessor` (`LAYOUTS_KIN
 `STARTER_DECK` (`src/obsidian/newDeck.ts`) is a plain-text `---` deck with no frontmatter, so **New slide deck** starts in auto mode.
 
 **Test note:** `02 - Projetos/Slidey/Tests/Sample talk - auto slides.md` (12 slides, every layout but code); `Tests/_slidey-title-cards-test.md` (3 title cards). Screenshots: headless Edge over CDP, see `docs/development.md`.
+
+## Step bullets, picture focus, callouts (0.28.0)
+
+Rules in `src/domain/slideBuild.ts` (no DOM), read by `slidesMode.ts` in every slides mode, not only auto decks.
+
+- **Step bullets:** note frontmatter `stepBullets: true` (deck), `%% step %%` / `%% step=on|off %%` (slide; slide wins). `stepLists` rewrites top-level list items to upstream's fragment syntax (`+ x`, `1) x`), which `FragmentProcessor` turns into fragments. Nested items arrive with their parent; fenced code and speaker notes are untouched.
+- **Picture focus:** `%% focus=… %%` takes `top`/`bot`/`bottom`/`left`/`right`/`center`, one or two words (`left top`, `top-left`, `left,bot`). `focusPosition` → CSS position, written as slide-comment `data-background-position` (for `bg=`) and inline `--slidey-focus` (via `overrideStyle`); `IMAGE_FIT_CSS` sets `object-position:var(--slidey-focus,center)` on slide images. An unreadable value leaves the marker as text.
+- **Callouts:** upstream already renders `> [!type]` as `.callout` boxes in the browser (`reveal-dist/plugin/obsidian-markdown.js`, `_callouts.scss`). `guessLayout` returns `""` for a slide with a callout so it isn't laid out as a quote; `HOUSE_THEME_CSS` restyles `.callout` as a tinted card (Poppins title in the callout color) and centers and enlarges a callout alone on a slide.
+
+**Test note:** `Tests/_slidey-step-focus-callout-test.md`.

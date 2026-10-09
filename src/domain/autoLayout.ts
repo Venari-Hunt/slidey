@@ -27,6 +27,8 @@ const TWO_COLUMN_MIN_ITEMS = 8;
 const HEADING = /^(#{1,6})\s+\S/;
 const LIST_ITEM = /^\s*(?:[-*+]|\d+[.)])\s+\S/;
 const QUOTE = /^\s*>/;
+// An Obsidian callout opener; it renders as a box, not a quote.
+const CALLOUT = /^\s*>\s*\[![\w-]+\]/;
 const FENCE = /^\s*(?:`{3,}|~{3,})/;
 const IMAGE_ONLY =
     /^\s*(?:!\[[^\]]*\]\([^)]*\)|!\[\[[^\]]+\]\]|<img\b[^>]*>|<p>\s*<img\b[^>]*>\s*<\/p>)\s*$/i;
@@ -94,6 +96,9 @@ export function guessLayout(slide: string): AutoLayout | "" {
         return titleCard ? "image-full" : body.length === 0 ? "" : "image-side";
     }
 
+    if (body.some((l) => CALLOUT.test(l))) {
+        return "";
+    }
     if (body.length > 0 && body.every((l) => QUOTE.test(l))) {
         return "quote";
     }

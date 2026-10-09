@@ -109,6 +109,8 @@ export type Options = {
     headingStyles?: string[];
     /** Auto mode (setting; note frontmatter `autoSlides:`). */
     autoSlides?: boolean;
+    /** Lists show one item per click (note frontmatter `stepBullets:`). */
+    stepBullets?: boolean;
     [key: string]: unknown;
 };
 
