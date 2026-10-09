@@ -8,6 +8,7 @@ Code: `src/reveal/revealPreviewView.ts` (leaf type `reveal-preview-view`, upstre
 - `navKeyMethods` + a `keydown` fallback on `containerEl` forward PageUp/PageDown/Arrow keys/Space to reveal.js as `{method: 'next'|'prev'|'left'|'right'|'up'|'down'}` via `postMessage` when focus is on Obsidian chrome. reveal.js 5.2 has `postMessage: true` by default; its blacklist is only `registerPlugin|registerKeyboardShortcut|addKeyBinding|addEventListener|showPreview`.
 - Keydowns inside the iframe don't bubble to the parent listener → no double-trigger.
 - Known latent issue: editor↔deck cursor sync (`LineSelectionListener.onTrigger` → `onLineChanged` → `setState`) can fight navigation if something moves the editor cursor mid-sequence. Keys < 650 ms apart can coalesce during a slide transition.
+- Key map (0.28.0): one shared `CLICKER_KEYS` in `src/reveal/clickerKeys.ts`, used by the preview pane (arrows remapped to `left`/`right`) and the audience/speaker views. `.` / `b` / `B` → `togglePause` (the clicker "blank screen" button). While paused, reveal ignores Next until the pause key again (reveal's own rule, kept). Checked live over CDP: PageDown steps fragments, `.` and `b` toggle `Reveal.isPaused()`.
 
 ## Present mode (0.2.0)
 

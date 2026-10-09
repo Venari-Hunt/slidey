@@ -73,6 +73,8 @@ export interface SlideOverrides {
     color?: string;
     accent?: string;
     size?: string;
+    /** Part of a cover picture kept in frame, as a CSS position ("left top"). */
+    focus?: string;
 }
 
 // `1.2` → 1.2 × the theme size; `36px`, `1.5em`, `120%` pass through.
@@ -120,6 +122,9 @@ export function overrideStyle(overrides: SlideOverrides): string {
     const size = overrides.size ? sizeValue(overrides.size) : "";
     if (size) {
         decls.push(`--r-main-font-size:${size}`, `font-size:${size}`);
+    }
+    if (overrides.focus) {
+        decls.push(`--slidey-focus:${clean(overrides.focus)}`);
     }
     return decls.join("; ");
 }
@@ -400,7 +405,13 @@ export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#0e0e0f;--r-main
 .reveal .slides section li::marker{color:var(--r-link-color)}
 .reveal .slides section blockquote{color:var(--r-main-color)}
 .reveal .slides section blockquote p:last-child:not(:first-child){font-style:normal;font-size:.65em;opacity:.7;margin-top:.8em}
-.reveal .controls,.reveal .progress{color:var(--r-link-color)}`;
+.reveal .controls,.reveal .progress{color:var(--r-link-color)}
+.reveal .slides section .callout{margin:.5em 0;max-width:85%;text-align:left;background:rgba(var(--callout-color),.12);border-left:.15em solid rgb(var(--callout-color));border-radius:.4em}
+.reveal .slides section .callout-title{padding:.5em .9em .15em;background:none;border:0;color:rgb(var(--callout-color));font-family:${HOUSE_FONT}}
+.reveal .slides section .callout-content{padding:.1em .9em .6em;overflow:visible}
+.reveal .slides section .callout-content > *{margin:.2em 0}
+.reveal .slides section > div:has(> .callout:only-child){align-items:center!important}
+.reveal .slides section > div > .callout:only-child{font-size:1.3em;min-width:50%}`;
 
 // Images on every slide: shrink to fit the 960×700 slide instead of spilling
 // off it, and 2+ pictures side by side as a row with any text above/below.
@@ -408,7 +419,8 @@ export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#0e0e0f;--r-main
 export const IMAGE_FIT_CSS = `.reveal .slides section > div > img,.reveal .slides section > img{flex:0 1 auto;min-height:0;min-width:0;max-width:100%;max-height:100%;object-fit:contain}
 .reveal .slides section:not([class*="image-"]) > div:has(> img ~ img){flex-flow:row wrap!important;align-content:center;align-items:center;column-gap:.5em}
 .reveal .slides section:not([class*="image-"]) > div:has(> img ~ img) > :not(img){flex:0 0 100%}
-.reveal .slides section:not([class*="image-"]) > div:has(> img ~ img) > img{flex:1 1 0;width:0;height:auto;max-height:60%}`;
+.reveal .slides section:not([class*="image-"]) > div:has(> img ~ img) > img{flex:1 1 0;width:0;height:auto;max-height:60%}
+.reveal .slides section img{object-position:var(--slidey-focus,center)}`;
 
 // Headings span both columns; everything after flows down one, then the other.
 const TWO_COLUMN_CSS = `&:not(:has(> div)),& > div{display:block!important;column-count:2;column-gap:1.5em;column-fill:balance;text-align:left}

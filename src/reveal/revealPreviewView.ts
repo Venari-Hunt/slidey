@@ -9,6 +9,7 @@ import {
 import type { Options, SlidesExtendedSettings } from "../@types";
 import type { SlidesExtendedPlugin } from "../slidesExtended-Plugin";
 import { YamlParser } from "../yaml/yamlParser";
+import { CLICKER_KEYS } from "./clickerKeys";
 import {
     exportDeckToPdf,
     exportDeckToPptx,
@@ -34,19 +35,12 @@ export class RevealPreviewView extends ItemView {
     private yaml: YamlParser;
     private plugin: SlidesExtendedPlugin;
 
-    // Keys a presentation remote / clicker emits, mapped to the reveal.js
-    // postMessage API method that performs the same navigation. Clickers
-    // almost always send PageUp/PageDown (some send arrows); Space is the
-    // common "advance" on the ones that double as a laser pointer.
+    // Clicker keys (see clickerKeys.ts); arrows move between top-level
+    // slides here, as reveal.js does with focus inside the deck.
     private readonly navKeyMethods: Record<string, string> = {
-        PageDown: "next",
-        PageUp: "prev",
+        ...CLICKER_KEYS,
         ArrowRight: "right",
         ArrowLeft: "left",
-        ArrowUp: "up",
-        ArrowDown: "down",
-        " ": "next",
-        Spacebar: "next",
     };
 
     constructor(

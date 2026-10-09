@@ -1,5 +1,6 @@
 import { ItemView, type TFile, type WorkspaceLeaf } from "obsidian";
 import type { SlidesExtendedPlugin } from "../slidesExtended-Plugin";
+import { CLICKER_KEYS } from "./clickerKeys";
 import { AUDIENCE_QUERY, MIRROR_QUERY } from "./speakerScript";
 
 export const AUDIENCE_VIEW = "slidey-audience";
@@ -16,18 +17,6 @@ export interface DeckState {
     next: { h: number; v: number; f?: number } | null;
     title: string;
 }
-
-// Keys a clicker (or keyboard) sends → reveal.js postMessage API method.
-const NAV_KEYS: Record<string, string> = {
-    PageDown: "next",
-    PageUp: "prev",
-    ArrowRight: "next",
-    ArrowLeft: "prev",
-    ArrowDown: "down",
-    ArrowUp: "up",
-    " ": "next",
-    Spacebar: "next",
-};
 
 function deckUrl(plugin: SlidesExtendedPlugin, file: TFile, query: string) {
     const url = new URL(plugin.revealServer.getTargetUrl(file).href);
@@ -81,7 +70,7 @@ export class AudienceView extends ItemView {
     async onOpen(): Promise<void> {
         this.contentEl.addClass("slidey-audience");
         this.registerDomEvent(this.contentEl, "keydown", (ev) => {
-            const method = NAV_KEYS[ev.key];
+            const method = CLICKER_KEYS[ev.key];
             if (method) {
                 ev.preventDefault();
                 this.go(method);
@@ -214,7 +203,7 @@ export class SpeakerView extends ItemView {
         this.contentEl.addClass("slidey-speaker");
         this.contentEl.tabIndex = 0;
         this.registerDomEvent(this.contentEl, "keydown", (ev) => {
-            const method = NAV_KEYS[ev.key];
+            const method = CLICKER_KEYS[ev.key];
             if (method) {
                 ev.preventDefault();
                 this.plugin.getAudienceView()?.go(method);

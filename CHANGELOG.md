@@ -12,6 +12,13 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
 
+## 0.28.0 — 2026-10-08
+
+- **Bullets one per click.** Put `stepBullets: true` in a note's properties and every list shows one item per clicker press. For one slide only, add `%% step %%` at its top; `%% step=off %%` turns it off for one slide. Also in the `/` menu as "Bullets one per click".
+- **Picture focus.** A full-slide picture is cropped from the middle. `%% focus=top %%` keeps the top in frame instead; also `bot`, `left`, `right`, `center`, or two together: `%% focus=left top %%`. Works for `bg=` backgrounds too. In the `/` menu as "Picture focus".
+- **Callouts in auto slides.** A `> [!tip]` callout now shows as a tinted card with a colored title, centered and larger when it's alone on a slide, instead of being laid out as a quote.
+- **Blank-screen button.** Your clicker's blank button (it sends `.` or `b`) turns the screen black and back, also when Obsidian, not the slide, has the keyboard and in the two-screen speaker view.
+
 ## 0.27.0 — 2026-10-08
 
 - **New fonts for auto slides.** Headings, one-line slides and title cards use Poppins; body text, lists and quotes use Inter. Both ship inside Slidey, so they work with nothing installed, in PDF and PowerPoint export too.

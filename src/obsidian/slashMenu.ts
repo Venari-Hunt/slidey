@@ -174,6 +174,24 @@ const SLIDE_ITEMS: SlashItem[] = [
         insert: marker(`transition=${name}`),
     })),
     {
+        title: "Bullets one per click",
+        hint: marker("step"),
+        keywords: "step bullets list fragment click appear one by one",
+        insert: marker("step"),
+    },
+    ...[
+        ["top", "Top"],
+        ["bot", "Bottom"],
+        ["left", "Left"],
+        ["right", "Right"],
+        ["center", "Center"],
+    ].map(([value, label]) => ({
+        title: `Picture focus: ${label}`,
+        hint: marker(`focus=${value}`),
+        keywords: `focus crop picture image position ${value} ${label}`,
+        insert: marker(`focus=${value}`),
+    })),
+    {
         title: "Show step by step",
         hint: '<!-- element class="fragment" -->',
         keywords: "fragment step appear reveal",
