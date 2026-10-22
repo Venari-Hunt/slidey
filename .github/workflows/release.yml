@@ -1,8 +1,16 @@
 name: Release Obsidian Plugin
-# Manual trigger only (UI or API). Bumps the version, builds the plugin and the
+# Manual trigger (UI or API) or called by auto-release.yml on a merge to main. Bumps the version, builds the plugin and the
 # reveal.js distribution assets, packages slidey.zip, and publishes a GitHub
 # Release with all the artifacts the plugin needs at runtime.
 on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        default: 'patch'
+      prerelease:
+        type: boolean
+        default: true
   workflow_dispatch:
     inputs:
       version:
@@ -46,7 +54,7 @@ jobs:
     - name: Bump version, commit and tag
       id: build
       env:
-        INPUT_VERSION: ${{ github.event.inputs.version }}
+        INPUT_VERSION: ${{ inputs.version }}
       run: |
         git config user.name "$GH_BOT_NAME"
         git config user.email "$GH_BOT_EMAIL"
@@ -115,7 +123,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         RELEASE_VERSION: ${{ steps.build.outputs.version }}
-        PRERELEASE: ${{ github.event.inputs.prerelease }}
+        PRERELEASE: ${{ inputs.prerelease }}
       run: |
         gh release create "$RELEASE_VERSION" \
             -F ./release-notes.md \
