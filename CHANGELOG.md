@@ -5,6 +5,8 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 
 ## [Unreleased]
 
+- **Empty and error states for the overview panel.** With no slide note open, the panel now says why it is empty and offers a "New slide deck" button. If the thumbnails never load, it says so and offers "Try again" instead of staying blank. These two texts and the speaker view's two "nothing here" lines also follow Obsidian's language (English or Brazilian Portuguese).
+
 - **Portuguese for the settings tab and the `/` menu.** With Obsidian set to Portuguese (Brazil), the settings tab (names, descriptions, buttons, dropdown choices, notices) and the `/` slide menu (titles, hints, and typing the Portuguese word to filter) now show in Portuguese. Setting keys and `%% … %%` syntax stay as written. Anything without a translation stays in English.
 
 - **Keyboard shortcuts sheet.** New command "Show keyboard shortcuts" lists the keys that move and show the slides (arrows, Space, PageUp/PageDown, the clicker blank button, O, F, S, Esc). It follows Obsidian's language: English or Brazilian Portuguese.
