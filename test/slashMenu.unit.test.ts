@@ -2,8 +2,8 @@ import {
     CURSOR,
     deckMode,
     filterSlashItems,
-    localText,
     inFencedCode,
+    localText,
     slashItems,
     slashQuery,
 } from "../src/obsidian/slashMenu";

@@ -2,12 +2,13 @@ import {
     type App,
     Notice,
     PluginSettingTab,
-    Setting,
     type TAbstractFile,
     TFolder,
 } from "obsidian";
 import { FileInputSuggest, FolderInputSuggest } from "obsidian-utilities";
 import type { SlidesExtendedSettings } from "./@types";
+import { tr } from "./domain/settingsStrings";
+import { LocalSetting } from "./obsidian/localSetting";
 import { presetDotColor } from "./obsidian/presetGutter";
 import {
     getThemeFiles,
@@ -109,12 +110,12 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
 
         containerEl.empty();
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Backup and restore")
             .setHeading()
             .setDesc("Save and restore plugin settings");
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Export settings")
             .setDesc("Save the current settings to a JSON file.")
             .addButton((btn) =>
@@ -156,7 +157,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                             err,
                         );
                         new Notice(
-                            "Slidey: that file doesn't contain valid JSON.",
+                            tr("Slidey: that file doesn't contain valid JSON."),
                         );
                         return;
                     }
@@ -166,17 +167,17 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                         parsed,
                     );
                     void this.plugin.update(imported).then(() => {
-                        new Notice("Slidey: settings imported.");
+                        new Notice(tr("Slidey: settings imported."));
                         this.display();
                     });
                 })
                 .catch((err: unknown) => {
                     console.error("Slidey: failed to read settings file", err);
-                    new Notice("Slidey: failed to read the settings file.");
+                    new Notice(tr("Slidey: failed to read the settings file."));
                 });
         });
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Import settings")
             .setDesc("Load settings from a previously exported JSON file.")
             .addButton((btn) =>
@@ -185,7 +186,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                 }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Slide preview mode")
             .setDesc("Select the slide preview pane display mode.")
             .addDropdown((cb) => {
@@ -206,7 +207,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     });
             });
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Automatically start the preview server")
             .addToggle((value) =>
                 value.setValue(this.newSettings.autoStart).onChange((value) => {
@@ -214,7 +215,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                 }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Server port")
             .setDesc(
                 "Specify the port number for the server to listen on. Default is 3000.",
@@ -228,7 +229,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Server host")
             .setDesc(
                 "Specify the host for the server to listen on. Default is localhost. Use 0.0.0.0 to allow external connections.",
@@ -242,7 +243,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Auto reload")
             .setDesc(
                 "When enabled, the slide preview window automatically updates upon detecting changes in the source file.",
@@ -255,7 +256,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Auto complete")
             .setDesc(
                 'Enable auto-complete inputs. "Always" enables it everywhere, "When slide preview is active" enables it only when the slide preview is active, and "Never" disables it.',
@@ -270,7 +271,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     });
             });
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Slide menu (/)")
             .setDesc(
                 "In a slide note, type / to insert a new slide, layout, style, background, speaker notes and more. In other notes, type /slides to turn the note into slides.",
@@ -281,7 +282,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                 }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Export directory")
             .setDesc(
                 "Specify the directory where Slidey should export presentations.",
@@ -303,7 +304,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     });
             });
 
-        const themeSettings: Record<string, Setting> = {};
+        const themeSettings: Record<string, LocalSetting> = {};
         const themeDesc = (type: string, assets: string) => {
             const desc =
                 type === "slide" ? "*" : "*.highlight.css or *.hljs.css";
@@ -313,7 +314,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
             return `Select the default ${desc} theme.`;
         };
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("New deck template")
             .setDesc(
                 'A note that "New slide deck" copies. Leave blank for Slidey\'s starter deck.',
@@ -333,7 +334,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     });
             });
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Assets directory")
             .setDesc(
                 "Specify a vault directory for custom themes, CSS, scripts, and HTML templates. CSS files are searched in css/ and the directory root. Scripts are searched in js/. HTML templates in html/.",
@@ -358,14 +359,14 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     });
             });
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Custom scripts")
             .setHeading()
             .setDesc(
                 "Load additional scripts into all presentations. Override per-note using property names.",
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Scripts")
             .setDesc(
                 "Comma-separated local script paths (resolved from vault or theme directory).",
@@ -379,7 +380,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Remote scripts")
             .setDesc("Comma-separated external script URLs.")
             .addText((text) =>
@@ -391,9 +392,9 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     }),
             );
 
-        new Setting(containerEl).setName("Slides").setHeading();
+        new LocalSetting(containerEl).setName("Slides").setHeading();
 
-        themeSettings.slide = new Setting(containerEl)
+        themeSettings.slide = new LocalSetting(containerEl)
             .setName("Default slide theme")
             .setDesc(themeDesc("slide", this.newSettings.assetsDirectory))
             .addSearch((cb) => {
@@ -413,7 +414,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     });
             });
 
-        themeSettings.highlight = new Setting(containerEl)
+        themeSettings.highlight = new LocalSetting(containerEl)
             .setName("Default highlight theme")
             .setDesc(themeDesc("highlight", this.newSettings.assetsDirectory))
             .addSearch((cb) => {
@@ -433,7 +434,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     });
             });
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Auto slides")
             .setDesc(
                 "Pick each slide's layout from what you wrote (a lone heading is a title, a list is bullets, a picture fills the slide) and use one dark theme. Notes that set style, preset or layout in their properties keep their own look. Turn it off for one deck with autoSlides: false.",
@@ -446,7 +447,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Shrink text to fit")
             .setDesc(
                 "When a slide has more text than fits, make its text smaller (down to half size) so nothing runs off the slide. Turn it off for one deck with fitText: false in the note's properties.",
@@ -457,7 +458,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                 }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Center content")
             .setDesc(
                 "When enabled, content is centered on the slide by default.",
@@ -468,7 +469,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                 }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Transition style")
             .setDesc("Select a default slide transition")
             .addDropdown((cb) => {
@@ -484,7 +485,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     });
             });
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Transition speed")
             .setDesc("Select a default transition speed")
             .addDropdown((cb) => {
@@ -497,7 +498,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     });
             });
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Default horizontal slide separator")
             .setDesc(
                 "Regex pattern used to split horizontal slides. Default: \\r?\\n---\\r?\\n. Override per-note with the 'separator' property.",
@@ -511,7 +512,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Default vertical slide separator")
             .setDesc(
                 "Regex pattern used to split vertical slides. Default: \\r?\\n--\\r?\\n. Override per-note with the 'verticalSeparator' property.",
@@ -525,14 +526,14 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Presentation plugins")
             .setHeading()
             .setDesc(
                 "Control presentation plugins. Override per-note using property names (e.g., enableCustomControls).",
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Controls")
             .setDesc("Display presentation control arrows.")
             .addButton((btn) => {
@@ -544,7 +545,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                 }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Chalkboard")
             .setDesc("Display a chalkboard and related controls.")
             .addButton((btn) => {
@@ -558,7 +559,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Elapsed time bar")
             .setDesc(
                 "Display an elapsed time bar; set 'timeForPresentation' property in seconds (500), minutes (55m), or hours (1h).",
@@ -574,7 +575,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Laser pointer")
             .setDesc("Change your mouse into a laser pointer (toggle with Q).")
             .addButton((btn) => {
@@ -588,7 +589,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Menu")
             .setDesc("Display a presentation menu button.")
             .addButton((btn) => {
@@ -602,7 +603,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Overview")
             .setDesc("When enabled, display a presentation overview button.")
             .addButton((btn) => {
@@ -616,7 +617,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Progress bar (progress)")
             .setDesc("When enabled, display a presentation progress bar.")
             .addButton((btn) => {
@@ -628,7 +629,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                 }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Slide numbers")
             .setDesc("Display the page number of the current slide.")
             .addButton((btn) => {
@@ -642,7 +643,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     }),
             );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Math engine")
             .setDesc("Select the math rendering engine.")
             .addDropdown((cb) => {
@@ -667,15 +668,15 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
         const { version } = this.plugin.manifest;
         const repo = "https://github.com/Venari-Hunt/slidey";
 
-        new Setting(containerEl).setName("About").setHeading();
+        new LocalSetting(containerEl).setName("About").setHeading();
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName(`Slidey ${version}`)
             .setDesc(
                 "By Venari. MIT license. Slidey is a fork of Slides Extended (Erin Schnabel), itself a fork of Advanced Slides (Matthäus Szturc); slides run on reveal.js (MIT).",
             );
 
-        const help = new Setting(containerEl).setName("Help and feedback");
+        const help = new LocalSetting(containerEl).setName("Help and feedback");
         const links: [string, string][] = [
             ["User guide", "https://venari-hunt.github.io/slidey-docs/"],
             ["What's new", `${repo}/blob/main/CHANGELOG.md`],
@@ -683,13 +684,13 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
         ];
         for (const [text, href] of links) {
             if (help.descEl.hasChildNodes()) help.descEl.append(" · ");
-            help.descEl.createEl("a", { text, href });
+            help.descEl.createEl("a", { text: tr(text), href });
         }
         help.descEl.append(
-            ". Run the command “New slide deck” for a ready-made example.",
+            tr(". Run the command “New slide deck” for a ready-made example."),
         );
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Privacy")
             .setDesc(
                 "Slidey collects nothing and sends nothing. Your notes stay in your vault. The only network use is downloading its slide engine from GitHub once per version.",
@@ -709,7 +710,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
             return settings[key];
         };
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName("Heading levels")
             .setHeading()
             .setDesc(
@@ -731,7 +732,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
         ];
 
         for (let level = 1; level <= 6; level++) {
-            const row = new Setting(containerEl).setName(
+            const row = new LocalSetting(containerEl).setName(
                 `${"#".repeat(level)} Heading ${level}`,
             );
             for (const [key, noun, names] of choices) {
@@ -768,7 +769,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
         }
         const looks = this.newSettings[list.key];
 
-        new Setting(containerEl)
+        new LocalSetting(containerEl)
             .setName(list.title)
             .setHeading()
             .setDesc(list.desc)
@@ -811,7 +812,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
             const box = containerEl.createDiv({ cls: "slidey-preset-editor" });
             drawPresetSwatch(box, preset, `${list.key}-${index}`);
 
-            const row = new Setting(box)
+            const row = new LocalSetting(box)
                 .setName(
                     preset.label || preset.name || `${list.noun} ${index + 1}`,
                 )
@@ -850,7 +851,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                 label: string,
                 key: "background" | "color" | "accent",
             ) =>
-                new Setting(box).setName(label).addText((text) =>
+                new LocalSetting(box).setName(label).addText((text) =>
                     text
                         .setPlaceholder("e.g. #4dabf7 (blank = theme)")
                         .setValue(preset[key] ?? "")
@@ -863,7 +864,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
             color("Text color", "color");
             color("Accent color", "accent");
 
-            new Setting(box).setName("Font scale").addText((text) =>
+            new LocalSetting(box).setName("Font scale").addText((text) =>
                 text
                     .setPlaceholder("1")
                     .setValue(preset.fontScale ? String(preset.fontScale) : "")
@@ -877,7 +878,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
 
             if (list.fonts) {
                 const font = (label: string, key: "headingFont" | "bodyFont") =>
-                    new Setting(box).setName(label).addText((text) =>
+                    new LocalSetting(box).setName(label).addText((text) =>
                         text
                             .setPlaceholder("e.g. Georgia (blank = theme)")
                             .setValue(preset[key] ?? "")
@@ -890,7 +891,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                 font("Body font", "bodyFont");
             }
 
-            new Setting(box).setName("Alignment").addDropdown((cb) =>
+            new LocalSetting(box).setName("Alignment").addDropdown((cb) =>
                 cb
                     .addOption("", "(theme default)")
                     .addOption("left", "Left")
@@ -903,7 +904,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
                     }),
             );
 
-            new Setting(box)
+            new LocalSetting(box)
                 .setName("Custom CSS")
                 .setDesc("Advanced. `&` is replaced with the slide selector.")
                 .addTextArea((area) => {
