@@ -6,11 +6,13 @@ import {
     type TAbstractFile,
 } from "obsidian";
 import type { SlidesExtendedSettings } from "./@types";
+import { t } from "./domain/strings";
 import { electron, type WindowRemote } from "./electron";
 import { EmbeddedSlideProcessor } from "./obsidian/embeddedSlideProcessor";
 import { createDeck } from "./obsidian/newDeck";
 import { ObsidianUtils } from "./obsidian/obsidianUtils";
 import { presetGutter, refreshPresetGutters } from "./obsidian/presetGutter";
+import { ShortcutsModal } from "./obsidian/shortcutsModal";
 import { AutoCompleteSuggest } from "./obsidian/suggesters/AutoCompleteSuggester";
 import { LineSelectionListener } from "./obsidian/suggesters/lineSelectionListener";
 import { PictureSuggest } from "./obsidian/suggesters/PictureSuggester";
@@ -102,6 +104,11 @@ export class SlidesExtendedPlugin extends Plugin {
             id: "open-preview",
             name: "Show slide preview",
             callback: async () => this.toggleView(),
+        });
+        this.addCommand({
+            id: "show-shortcuts",
+            name: t("shortcutsCommand"),
+            callback: () => new ShortcutsModal(this.app).open(),
         });
         this.addCommand({
             id: "new-deck",

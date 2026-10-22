@@ -15,3 +15,5 @@ declare global {
         first(): T | undefined;
     }
 }
+
+export const getLanguage = (): string => "en";
