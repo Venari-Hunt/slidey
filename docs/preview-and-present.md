@@ -69,3 +69,7 @@ Gotcha: headless Chrome's `--print-to-pdf` flag prints before reveal lays out â†
 ## Commands
 
 `slidey:new-deck`, `open-preview` (toggles), `show-slide-overview`, `present-with-speaker-view`, `reload-preview`, `present-active-presentation`, `print-active-presentation` (opens `?print-pdf` in the browser), `export-active-presentation-pdf`, `export-active-presentation-pptx`, `export-active-presentation-html`, `start-server-preview`, `stop-server-preview`.
+
+## Shortcuts sheet and strings (unreleased)
+
+Command `show-shortcuts` opens `ShortcutsModal` (`src/obsidian/shortcutsModal.ts`) with the rows in `SHORTCUT_GROUPS`. All its text comes from the one table in `src/domain/strings.ts` (en + pt-BR, language from Obsidian's `getLanguage()`); new screens add their strings there. Older screens (settings tab, slash menu) are still English-only. Keep the rows in step with `CLICKER_KEYS` and reveal's defaults.

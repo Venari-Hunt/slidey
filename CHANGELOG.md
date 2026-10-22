@@ -5,6 +5,8 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 
 ## [Unreleased]
 
+- **Keyboard shortcuts sheet.** New command "Show keyboard shortcuts" lists the keys that move and show the slides (arrows, Space, PageUp/PageDown, the clicker blank button, O, F, S, Esc). It follows Obsidian's language: English or Brazilian Portuguese.
+
 - **Author name.** Now "Venari" in the manifest, license and About section; the engine download comes from the Venari-Hunt/slidey releases.
 
 - **About section in settings.** Bottom of the settings tab: version, author, license and credits (Slides Extended, Advanced Slides, reveal.js), links to the user guide, what's new and the issue tracker, and a privacy line (nothing collected, nothing sent).
