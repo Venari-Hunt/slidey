@@ -5,6 +5,8 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 
 ## [Unreleased]
 
+- **About section in settings.** Bottom of the settings tab: version, author, license and credits (Slides Extended, Advanced Slides, reveal.js), links to the user guide, what's new and the issue tracker, and a privacy line (nothing collected, nothing sent).
+
 ### Known gaps
 
 - Preset tuning (the 7 starters are a first cut).

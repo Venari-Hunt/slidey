@@ -659,6 +659,41 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
         this.drawHeadingLevels(containerEl);
         this.drawLooks(containerEl, STYLE_LIST);
         this.drawLooks(containerEl, PRESET_LIST);
+        this.drawAbout(containerEl);
+    }
+
+    /** Version, help links, privacy line and credits, at the bottom. */
+    private drawAbout(containerEl: HTMLElement): void {
+        const { version } = this.plugin.manifest;
+        const repo = "https://github.com/Venari-Hunt/slidey";
+
+        new Setting(containerEl).setName("About").setHeading();
+
+        new Setting(containerEl)
+            .setName(`Slidey ${version}`)
+            .setDesc(
+                "By joaovenari. MIT license. Slidey is a fork of Slides Extended (Erin Schnabel), itself a fork of Advanced Slides (Matthäus Szturc); slides run on reveal.js (MIT).",
+            );
+
+        const help = new Setting(containerEl).setName("Help and feedback");
+        const links: [string, string][] = [
+            ["User guide", "https://venari-hunt.github.io/slidey-docs/"],
+            ["What's new", `${repo}/blob/main/CHANGELOG.md`],
+            ["Report a problem or idea", `${repo}/issues`],
+        ];
+        for (const [text, href] of links) {
+            if (help.descEl.hasChildNodes()) help.descEl.append(" · ");
+            help.descEl.createEl("a", { text, href });
+        }
+        help.descEl.append(
+            ". Run the command “New slide deck” for a ready-made example.",
+        );
+
+        new Setting(containerEl)
+            .setName("Privacy")
+            .setDesc(
+                "Slidey collects nothing and sends nothing. Your notes stay in your vault. The only network use is downloading its slide engine from GitHub once per version.",
+            );
     }
 
     /**
