@@ -672,7 +672,7 @@ export class SlidesExtendedSettingTab extends PluginSettingTab {
         new Setting(containerEl)
             .setName(`Slidey ${version}`)
             .setDesc(
-                "By joaovenari. MIT license. Slidey is a fork of Slides Extended (Erin Schnabel), itself a fork of Advanced Slides (Matthäus Szturc); slides run on reveal.js (MIT).",
+                "By Venari. MIT license. Slidey is a fork of Slides Extended (Erin Schnabel), itself a fork of Advanced Slides (Matthäus Szturc); slides run on reveal.js (MIT).",
             );
 
         const help = new Setting(containerEl).setName("Help and feedback");

@@ -5,6 +5,8 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 
 ## [Unreleased]
 
+- **Author name.** Now "Venari" in the manifest, license and About section; the engine download comes from the Venari-Hunt/slidey releases.
+
 - **About section in settings.** Bottom of the settings tab: version, author, license and credits (Slides Extended, Advanced Slides, reveal.js), links to the user guide, what's new and the issue tracker, and a privacy line (nothing collected, nothing sent).
 
 ### Known gaps
