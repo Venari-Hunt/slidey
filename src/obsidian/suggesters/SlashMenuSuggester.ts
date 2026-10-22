@@ -10,11 +10,13 @@ import {
     type TFile,
 } from "obsidian";
 import type { SlidesExtendedSettings } from "../../@types";
+import { currentLang } from "../../domain/strings";
 import {
     CURSOR,
     deckMode,
     filterSlashItems,
     inFencedCode,
+    localText,
     type SlashItem,
     slashItems,
     slashQuery,
@@ -81,7 +83,11 @@ export class SlashMenuSuggest extends EditorSuggest<SlashItem> {
             return null;
         }
 
-        this.items = filterSlashItems(slashItems(mode, settings), typed.query);
+        this.items = filterSlashItems(
+            slashItems(mode, settings),
+            typed.query,
+            currentLang(),
+        );
         if (!this.items.length) {
             return null;
         }
@@ -97,9 +103,16 @@ export class SlashMenuSuggest extends EditorSuggest<SlashItem> {
     }
 
     renderSuggestion(item: SlashItem, el: HTMLElement): void {
+        const lang = currentLang();
         el.addClass("slidey-slash-item");
-        el.createDiv({ cls: "slidey-slash-title", text: item.title });
-        el.createDiv({ cls: "slidey-slash-hint", text: item.hint });
+        el.createDiv({
+            cls: "slidey-slash-title",
+            text: localText(item.title, lang),
+        });
+        el.createDiv({
+            cls: "slidey-slash-hint",
+            text: localText(item.hint, lang),
+        });
     }
 
     // After `bg=` lands, open the picture list without waiting for a key.

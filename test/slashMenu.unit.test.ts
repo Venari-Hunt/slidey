@@ -2,6 +2,7 @@ import {
     CURSOR,
     deckMode,
     filterSlashItems,
+    localText,
     inFencedCode,
     slashItems,
     slashQuery,
@@ -128,5 +129,26 @@ describe("inFencedCode", () => {
         expect(inFencedCode(lines, 2)).toBe(true);
         expect(inFencedCode(lines, 4)).toBe(false);
         expect(inFencedCode(lines, 6)).toBe(true);
+    });
+});
+
+describe("localText", () => {
+    it("translates titles, hints and Kind: name titles to pt-BR", () => {
+        expect(localText("New slide", "pt-BR")).toBe("Novo slide");
+        expect(localText("Runs a command", "pt-BR")).toBe("Executa um comando");
+        expect(localText("Picture focus: Top", "pt-BR")).toBe(
+            "Foco da imagem: Topo",
+        );
+        expect(localText("Style: Warm", "pt-BR")).toBe("Estilo: Warm");
+    });
+    it("leaves English and code hints alone", () => {
+        expect(localText("New slide", "en")).toBe("New slide");
+        expect(localText("%% bg=a.jpg %%", "pt-BR")).toBe("%% bg=a.jpg %%");
+    });
+    it("filters by the pt-BR title", () => {
+        const items = slashItems("separators", {});
+        expect(
+            filterSlashItems(items, "novo", "pt-BR").map((i) => i.title),
+        ).toContain("New slide");
     });
 });
