@@ -1,4 +1,5 @@
 import { ItemView, type TFile, type WorkspaceLeaf } from "obsidian";
+import { t } from "../domain/strings";
 import type { SlidesExtendedPlugin } from "../slidesExtended-Plugin";
 import { CLICKER_KEYS } from "./clickerKeys";
 import { AUDIENCE_QUERY, MIRROR_QUERY } from "./speakerScript";
@@ -336,7 +337,7 @@ export class SpeakerView extends ItemView {
             } else {
                 this.notesEl.createSpan({
                     cls: "slidey-speaker-empty",
-                    text: "No notes on this slide. Add them under %% notes %%.",
+                    text: t("speakerNoNotes"),
                 });
             }
         }
@@ -406,7 +407,7 @@ export class SpeakerView extends ItemView {
         if (!total) {
             this.timesEl.createSpan({
                 cls: "slidey-speaker-empty",
-                text: "Times appear once the slides are showing.",
+                text: t("speakerNoTimes"),
             });
         }
     }

@@ -5,6 +5,7 @@ import {
     type TFile,
     type WorkspaceLeaf,
 } from "obsidian";
+import { t } from "../domain/strings";
 import { deckMode } from "../obsidian/slashMenu";
 import type { SlidesExtendedPlugin } from "../slidesExtended-Plugin";
 import { YamlParser } from "../yaml/yamlParser";
@@ -106,9 +107,25 @@ export class SlideOverviewView extends ItemView {
     private renderEmpty(): void {
         this.iframe = null;
         this.contentEl.empty();
-        this.contentEl.createDiv({
-            cls: "slidey-overview-empty",
-            text: "Open a slide note to see its slides here.",
+        const box = this.contentEl.createDiv({ cls: "slidey-overview-empty" });
+        box.createEl("p", { text: t("overviewEmpty") });
+        box.createEl("button", {
+            cls: "mod-cta",
+            text: t("overviewNewDeck"),
+        }).addEventListener("click", () => void this.plugin.newDeck());
+    }
+
+    private renderFailed(): void {
+        this.iframe = null;
+        this.contentEl.empty();
+        const box = this.contentEl.createDiv({ cls: "slidey-overview-empty" });
+        box.createEl("p", { text: t("overviewFailed") });
+        box.createEl("button", {
+            cls: "mod-cta",
+            text: t("overviewRetry"),
+        }).addEventListener("click", () => {
+            this.retries = 0;
+            void this.reload();
         });
     }
 
@@ -149,6 +166,8 @@ export class SlideOverviewView extends ItemView {
             if (this.retries < 2 && this.contentEl.clientWidth > 0) {
                 this.retries++;
                 void this.reload();
+            } else if (this.contentEl.clientWidth > 0) {
+                this.renderFailed();
             }
         }, 10000);
     }
