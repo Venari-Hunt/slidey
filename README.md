@@ -24,6 +24,10 @@ Turn a markdown note into a controllable, preset-styled slide deck — write in 
 
 - PPTX export
 
+## Privacy
+
+Slidey has no analytics and no account. Your notes and settings stay in your vault. Its preview server runs on your computer; other devices can reach it only if you change its address in settings. Slidey goes online only to download its deck engine from this project's GitHub releases, and when a slide loads something you pointed it to, like a web image or a CDN library.
+
 ## Development
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`AGENTS.md`](AGENTS.md) for architecture. Quick start (Node 24+, pnpm via corepack):
