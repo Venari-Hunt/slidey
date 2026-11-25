@@ -456,7 +456,7 @@ ${LOOK("quote", "mark")} blockquote p:last-child:not(:first-child){font-family:$
     `.reveal-viewport.slidey-full .backgrounds .slide-background.present .slide-background-content{filter:brightness(.7)}
 .reveal-viewport.slidey-full .backgrounds .slide-background.present .slide-background-content::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.55) 75%,rgba(0,0,0,.9) 100%)}
 .reveal .slides section[data-state="slidey-full"] > div::after{display:none}
-.reveal-viewport.slidey-bleed .backgrounds .slide-background.present .slide-background-content{left:54%}
+.reveal-viewport.slidey-bleed .backgrounds .slide-background.present .slide-background-content{left:54%;right:0;width:auto}
 .reveal-viewport.slidey-photo .backgrounds .slide-background.present .slide-background-content::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 25%,rgba(10,10,12,.9))}
 ${LOOK("image-side", "photo")} > div{display:flex!important;flex-direction:column;justify-content:flex-end!important;align-items:flex-start!important;padding-bottom:1.2em;box-sizing:border-box}
 ${LOOK("image-side", "photo")} blockquote{background:none;box-shadow:none;position:relative;z-index:2;width:90%;margin:0;border:0!important;padding:0!important;font:700 1.35em/1.2 ${HOUSE_FONT};font-style:normal;color:#fff;text-wrap:balance}
