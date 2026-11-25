@@ -32,6 +32,10 @@ A layout is the structure half of a slide: where the title, text and image go. U
 
 **Test note:** `_slidey-layouts-test.md` (all 8 layouts, `style: night` deck default, one `style=paper` override).
 
+## Looks (auto decks)
+
+After the layout processor, `LookProcessor` (`src/obsidian/processors/lookProcessor.ts`) picks one look per slide with `pickLook` in `src/domain/slideLook.ts` and stamps `slidey-look-<layout>-<look>`; the CSS lives in `LOOKS_CSS` and `MODIFIERS_CSS` in `src/presets.ts`, appended to `HOUSE_THEME_CSS`. The first look of each layout is today's look and has no rules. Order: `%% look=x %%` (travels as `slidey-look` on the slide comment), then the content rules shaped by `slideLooks: auto | calm | bold`, then neighbors differ. Two looks add markup: the statement number (`.slidey-big` with a `.slidey-count` that counts up via the registered `--slidey-n` property) and the section number or `2 / 3` kicker. Code blocks are placeholders during the structure phase; processors call `restoreFencedCode` before reading a slide. The approved mock: Global Management `design-system/dist/tool/mock-slidey-looks.html`. Left out: code line focus (Slidey has no `[2]` line marks yet).
+
 ## Per-slide overrides (0.12.0)
 
 `%% font="Open Sans" color=#eee accent=red size=1.4 %%` changes one slide without a new style. `readAttrs` reads them (`SlideAttrs extends SlideOverrides`); `withAttrs` turns them into inline CSS with `overrideStyle()` (presets.ts) and writes it to the slide comment's upstream `style="…"` attribute, in front of any inline CSS already there (which wins).

@@ -385,6 +385,82 @@ const HOUSE_FONT = `"${HOUSE_FONT_NAME}","Poppins","Segoe UI",system-ui,sans-ser
 const BODY_FONT = `"${BODY_FONT_NAME}","Inter","Segoe UI",system-ui,sans-serif`;
 const TITLE_CARD_FONT = `"Rustica",${HOUSE_FONT}`;
 
+// Inline modifiers in an auto deck, all plain markdown Obsidian already shows
+// (owner-approved mock-slidey-looks, 2026-11-25): `*x*` amber, `**x**` brighter,
+// `==x==` an amber marker that sweeps in, `~~x~~` dimmed with an amber strike,
+// `` `x` `` a small chip. Quotes keep their italics.
+const AMBER_45 = "rgba(224,184,76,.45)";
+const MODIFIERS_CSS = `.reveal .slides section:not([class*="layout-image-full"]) :is(p,li) > :is(em,i){font-style:normal;color:var(--r-link-color)}
+.reveal .slides section blockquote :is(em,i){font-style:italic;color:inherit}
+.reveal .slides section strong{color:var(--r-heading-color)}
+.reveal .slides section mark{color:var(--r-heading-color);background:linear-gradient(${AMBER_45},${AMBER_45}) no-repeat 0 88%/100% 42%;padding:0 .08em}
+.reveal .slides section.present mark{animation:slidey-sweep .7s cubic-bezier(.2,.8,.2,1) .2s both}
+@keyframes slidey-sweep{from{background-size:0% 42%}}
+.reveal .slides section del{color:#a3a09a;text-decoration-color:var(--r-link-color);text-decoration-thickness:.08em}
+.reveal .slides section :not(pre) > code{font-size:.8em;padding:.08em .3em;border-radius:.2em;background:#1b1b1f;color:var(--r-main-color)}`;
+
+// Looks per layout (domain/slideLook.ts stamps `slidey-look-<layout>-<look>`).
+// The first look of each layout is today's look and has no rules here.
+const LOOK = (layout: string, look: string) =>
+    `.reveal .slides section.slidey-look-${layout}-${look}`;
+const LOOKS_CSS = [
+    // Title: big left, with a short amber bar over the subtitle.
+    `${LOOK("title", "left")} > div{align-items:flex-start!important;justify-content:flex-end!important;text-align:left;padding-bottom:1.2em;box-sizing:border-box}
+${LOOK("title", "left")} h1{font-size:2.7em;max-width:92%;text-align:left}
+${LOOK("title", "left")} h1 ~ p{opacity:1;color:#a3a09a;text-align:left}
+${LOOK("title", "left")} h1 ~ p::before{content:"";display:block;width:1.9em;height:.16em;border-radius:.08em;background:var(--r-link-color);margin-bottom:.6em}`,
+    // Title: a 1-3 word line becomes an amber kicker above the heading.
+    `${LOOK("title", "kicker")} h1 ~ p{order:-1;opacity:1;font:700 .63em/1 ${BODY_FONT};letter-spacing:.16em;text-transform:uppercase;color:var(--r-link-color);margin-bottom:.6em}`,
+    // Section: big dim number beside the heading, or a "2 / 3" kicker and a progress rule.
+    `.reveal-viewport:has(.slides section.present:is(.slidey-look-section-number,.slidey-look-section-rule)){background:var(--r-background-color)}
+.reveal .slides section:is(.slidey-look-section-number,.slidey-look-section-rule) :is(h1,h2,h3,p){color:var(--r-heading-color)}
+${LOOK("section", "number")} > div{flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:.9em}
+${LOOK("section", "number")} > div > *{margin:0;text-align:left}
+${LOOK("section", "number")} .slidey-n{font:800 6em/1 ${HOUSE_FONT};letter-spacing:-.04em;color:color-mix(in srgb,var(--r-link-color) 38%,var(--r-background-color))}
+${LOOK("section", "rule")} > div{align-items:flex-start!important;justify-content:flex-end!important;text-align:left;padding-bottom:2.2em;box-sizing:border-box}
+${LOOK("section", "rule")} > div > *{margin:0}
+${LOOK("section", "rule")} .slidey-kick{font:700 .63em/1 ${BODY_FONT};letter-spacing:.16em;text-transform:uppercase;color:var(--r-link-color)!important;opacity:1;margin-bottom:.5em}
+${LOOK("section", "rule")}::after{content:"";position:absolute;left:0;right:0;bottom:1.2em;height:.1em;border-radius:.05em;background:linear-gradient(90deg,var(--r-link-color) var(--slidey-p,30%),#1b1b1f 0)}`,
+    // Statement: the number counts up on arrival; or an amber rule for longer lines.
+    `@property --slidey-n{syntax:"<integer>";initial-value:0;inherits:false}
+${LOOK("statement", "number")} p:has(.slidey-big){font-size:1em;margin:0 auto;max-width:none}
+${LOOK("statement", "number")} .slidey-big{display:block;font:800 5em/1 ${HOUSE_FONT};letter-spacing:-.04em;color:var(--r-link-color);font-variant-numeric:tabular-nums}
+${LOOK("statement", "number")} p:not(:has(.slidey-big)){font-family:${BODY_FONT};font-size:1.15em;font-weight:400;color:var(--r-main-color);margin-top:.2em;text-wrap:balance}
+.reveal .slides section .slidey-count{--slidey-n:var(--slidey-to);counter-reset:slidey-n var(--slidey-n)}
+.reveal .slides section .slidey-count::after{content:counter(slidey-n)}
+.reveal .slides section .slidey-count > span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.reveal .slides section.present .slidey-count{animation:slidey-count .9s cubic-bezier(.2,.8,.2,1) .15s both}
+@keyframes slidey-count{from{--slidey-n:0}}
+${LOOK("statement", "rule")} > div{align-items:flex-start!important}
+${LOOK("statement", "rule")} p{text-align:left;padding-left:.6em;border-left:.15em solid var(--r-link-color);max-width:90%;margin:0}`,
+    // Bullets: numbered cards in a row, or steps with numbered circles.
+    `${LOOK("bullets", "cards")} ul{list-style:none;margin:0!important;padding:0;display:grid!important;grid-auto-flow:column;grid-auto-columns:1fr;gap:.5em;width:100%;counter-reset:slidey-c}
+${LOOK("bullets", "cards")} li{display:block;margin:0;padding:.7em;border-radius:.42em;background:#1b1b1f;font-size:.9em;line-height:1.25;min-height:5em}
+${LOOK("bullets", "cards")} li::before{counter-increment:slidey-c;content:counter(slidey-c,decimal-leading-zero);display:block;margin-bottom:.45em;font:800 1.1em/1 ${HOUSE_FONT};color:var(--r-link-color)}
+${LOOK("bullets", "steps")} ol{list-style:none;margin:0!important;padding:0;display:flex!important;flex-direction:column;gap:.55em;counter-reset:slidey-s}
+${LOOK("bullets", "steps")} li{position:relative;display:flex;align-items:center;gap:.7em;margin:0}
+${LOOK("bullets", "steps")} li::before{counter-increment:slidey-s;content:counter(slidey-s);flex:none;width:1.7em;height:1.7em;border-radius:50%;display:grid;place-items:center;background:#3a2f12;color:#ffd45c;font:700 .85em/1 ${HOUSE_FONT}}
+${LOOK("bullets", "steps")} li:not(:last-child)::after{content:"";position:absolute;left:.72em;top:1.5em;width:.06em;height:.55em;background:#3a2f12}`,
+    // Compare: two short lists, each under a bold line, as two cards.
+    `.reveal .slides section:is(.slidey-look-bullets-compare,.slidey-look-two-column-compare) > div{display:grid!important;column-count:auto;grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto;grid-auto-flow:column;column-gap:.5em;align-content:center;align-items:stretch!important;text-align:left}
+.reveal .slides section:is(.slidey-look-bullets-compare,.slidey-look-two-column-compare) > div > :is(h1,h2,h3){grid-column:1/-1;grid-row:1;margin-bottom:.4em}
+.reveal .slides section:is(.slidey-look-bullets-compare,.slidey-look-two-column-compare) > div > p{margin:0;padding:.6em .8em .2em;border-radius:.42em .42em 0 0;background:#1b1b1f;font:700 .85em/1.2 ${HOUSE_FONT}}
+.reveal .slides section:is(.slidey-look-bullets-compare,.slidey-look-two-column-compare) > div > p:first-of-type strong{color:var(--r-link-color)}
+.reveal .slides section:is(.slidey-look-bullets-compare,.slidey-look-two-column-compare) > div > :is(ul,ol){display:block;column-count:1;margin:0!important;padding:.2em .8em .7em 1.8em;border-radius:0 0 .42em .42em;background:#1b1b1f;font-size:.85em}
+.reveal .slides section:is(.slidey-look-bullets-compare,.slidey-look-two-column-compare) > div > :is(ul,ol):last-of-type li::marker{color:#a3a09a}`,
+    // Quote: a big amber quote mark over the quote, in the heading font.
+    `${LOOK("quote", "mark")} blockquote{background:none;box-shadow:none;border-left:0!important;padding-left:0!important;font:700 1.45em/1.2 ${HOUSE_FONT};font-style:normal!important;color:var(--r-heading-color);text-wrap:balance}
+${LOOK("quote", "mark")} blockquote::before{content:"\\201C";display:block;font:800 3.4em/.7 ${HOUSE_FONT};color:var(--r-link-color);margin-bottom:.05em}
+${LOOK("quote", "mark")} blockquote p:last-child:not(:first-child){font-family:${BODY_FONT};font-weight:400}`,
+    // Picture beside text: the picture bleeds to the slide edge; or a quote over a photo.
+    `${LOOK("image-side", "bleed")}[class] > div img{position:absolute!important;grid-area:auto!important;margin:0!important;top:0;right:0;width:46%!important;height:100%!important;max-height:none!important;object-fit:cover!important;border-radius:0!important}
+${LOOK("image-side", "photo")} > div{display:flex!important;flex-direction:column;justify-content:flex-end!important;align-items:flex-start!important;padding-bottom:1.2em;box-sizing:border-box}
+${LOOK("image-side", "photo")}[class] > div img{position:absolute!important;inset:0;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;border-radius:0!important;margin:0!important}
+${LOOK("image-side", "photo")} > div::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(transparent 20%,rgba(10,10,12,.88))}
+${LOOK("image-side", "photo")} blockquote{background:none;box-shadow:none;position:relative;z-index:2;width:90%;margin:0;border:0!important;padding:0!important;font:700 1.35em/1.2 ${HOUSE_FONT};font-style:normal;color:#fff;text-wrap:balance}
+${LOOK("image-side", "photo")} blockquote p:last-child:not(:first-child){font-family:${BODY_FONT};font-weight:400;color:rgba(255,255,255,.75)}`,
+].join("\n");
+
 // The one look of an auto deck (see domain/autoLayout.ts): the design system's tool dark look
 // (owner approved mock-slidey-house, 2026-11-25): graphite ground, warm-white text, one amber accent, bundled Poppins + Inter so nothing has to be installed. Overrides the
 // reveal theme's variables; `:root:root` outranks the theme's `:root`.
@@ -418,7 +494,9 @@ export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#141417;--r-main
 .reveal .slides section[class*="layout-section"] p{opacity:.8}
 .reveal-viewport:has(.slides section.present[class*="layout-code"]){background:#1b1b1f}
 .reveal .slides section[class*="layout-code"] pre{background:#141417;border-radius:.42em;box-shadow:none}
-.reveal .slides section:is([class*="layout-image-side"],[class*="layout-image-left"],[class*="layout-image-right"]) img{border-radius:.42em}`;
+.reveal .slides section:is([class*="layout-image-side"],[class*="layout-image-left"],[class*="layout-image-right"]) img{border-radius:.42em}
+${MODIFIERS_CSS}
+${LOOKS_CSS}`;
 
 // Images on every slide: shrink to fit the 960×700 slide instead of spilling
 // off it, and 2+ pictures side by side as a row with any text above/below.
