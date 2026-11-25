@@ -28,7 +28,7 @@ A `%% layout=x %%` line on the slide still wins: `PresetProcessor` (`LAYOUTS_KIN
 
 ## House theme
 
-`HOUSE_THEME_CSS` goes last in the `presetStyles` slot when `isAutoDeck`. It overrides reveal theme variables with `:root:root`: near-black `#0e0e0f`, text `#e9e7e1`, headings white, accent warm yellow `#f5c542` (list markers, quote bar, controls, progress; no heading underline since 0.25.0). Fonts (0.27.0): Poppins for headings, statements and title cards, Inter for body text, both bundled (see below).
+`HOUSE_THEME_CSS` goes last in the `presetStyles` slot when `isAutoDeck`. It overrides reveal theme variables with `:root:root`: the design system's tool dark look since 2026-11-25 (owner approved mock-slidey-house): graphite `#141417`, text `#ece9e2`, headings `#f6f3ec`, accent amber `#e0b84c`; section slides turn the whole screen amber tint `#3a2f12` with `#ffd45c` text, code slides `#1b1b1f` with a `#141417` panel (both via `.reveal-viewport:has(section.present…)`), callouts are flat `#1b1b1f` cards, side pictures get rounded corners (list markers, quote bar, controls, progress; no heading underline since 0.25.0). Fonts (0.27.0): Poppins for headings, statements and title cards, Inter for body text, both bundled (see below).
 
 - `image-full` (every deck, 0.25.0): picture at `brightness(.7)` plus a radial vignette on the wrapper `::after` (`z-index:0`, under the text at `z-index:1`).
 - **Title cards** (0.26.0, font 0.27.0): `image-full` text uses `TITLE_CARD_FONT` (Rustica when installed, else bundled Poppins) at weight 800, `letter-spacing:-.025em`, `text-wrap:balance`; a line with no heading is 2em.

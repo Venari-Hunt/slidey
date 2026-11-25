@@ -243,7 +243,7 @@ export const STARTER_PRESETS: SlidePreset[] = [
     {
         name: "cover",
         label: "Cover / title",
-        accent: "#4dabf7",
+        accent: "#e0b84c",
         align: "center",
         css: `& h1{font-size:2.4em;margin-bottom:.2em}
 & > *:not(h1){opacity:.85;font-size:.9em}`,
@@ -251,9 +251,9 @@ export const STARTER_PRESETS: SlidePreset[] = [
     {
         name: "section",
         label: "Section divider",
-        background: "#4dabf7",
-        color: "#ffffff",
-        accent: "#ffffff",
+        background: "#3a2f12",
+        color: "#ffd45c",
+        accent: "#ffd45c",
         align: "center",
         css: "& h1,& h2{font-size:2.6em;letter-spacing:.02em}",
     },
@@ -263,7 +263,7 @@ export const STARTER_PRESETS: SlidePreset[] = [
         align: "left",
         fontScale: 1.15,
         css: `&{font-style:italic}
-& blockquote,& p{border-left:.15em solid var(--r-link-color,#4dabf7);padding-left:.6em}`,
+& blockquote,& p{border-left:.15em solid var(--r-link-color,#e0b84c);padding-left:.6em}`,
     },
     {
         name: "image-left",
@@ -281,13 +281,13 @@ export const STARTER_PRESETS: SlidePreset[] = [
         align: "left",
         css: `& ul,& ol{line-height:1.5}
 & li{margin:.25em 0}
-& li::marker{color:var(--r-link-color,#4dabf7)}`,
+& li::marker{color:var(--r-link-color,#e0b84c)}`,
     },
     {
         name: "code",
         label: "Code focus",
-        background: "#1e1e2e",
-        color: "#e6e6e6",
+        background: "#1b1b1f",
+        color: "#ece9e2",
         align: "left",
         css: `& pre{width:100%;font-size:.8em}
 & pre code{max-height:70vh;padding:1em}`,
@@ -385,12 +385,13 @@ const HOUSE_FONT = `"${HOUSE_FONT_NAME}","Poppins","Segoe UI",system-ui,sans-ser
 const BODY_FONT = `"${BODY_FONT_NAME}","Inter","Segoe UI",system-ui,sans-serif`;
 const TITLE_CARD_FONT = `"Rustica",${HOUSE_FONT}`;
 
-// The one look of an auto deck (see domain/autoLayout.ts): near-black, white
-// text, one warm-yellow accent, bundled Poppins + Inter so nothing has to be installed. Overrides the
+// The one look of an auto deck (see domain/autoLayout.ts): the design system's tool dark look
+// (owner approved mock-slidey-house, 2026-11-25): graphite ground, warm-white text, one amber accent, bundled Poppins + Inter so nothing has to be installed. Overrides the
 // reveal theme's variables; `:root:root` outranks the theme's `:root`.
-export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#0e0e0f;--r-main-color:#e9e7e1;--r-heading-color:#ffffff;--r-link-color:#f5c542;--r-link-color-hover:#ffd75e;--r-selection-background-color:#5c4a12;--r-main-font:${BODY_FONT};--r-heading-font:${HOUSE_FONT};--r-main-font-size:38px;--r-heading-font-weight:700;--r-heading-text-transform:none;--r-heading-letter-spacing:-.02em;--r-heading-text-shadow:none;--r-heading-line-height:1.1}
+export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#141417;--r-main-color:#ece9e2;--r-heading-color:#f6f3ec;--r-link-color:#e0b84c;--r-link-color-hover:#ffd45c;--r-selection-background-color:#3a2f12;--r-main-font:${BODY_FONT};--r-heading-font:${HOUSE_FONT};--r-main-font-size:38px;--r-heading-font-weight:700;--r-heading-text-transform:none;--r-heading-letter-spacing:-.02em;--r-heading-text-shadow:none;--r-heading-line-height:1.1}
 .reveal-viewport{background:var(--r-background-color)}
 .reveal .slides section :is(h1,h2,h3){color:var(--r-heading-color)}
+.reveal .slides section:not([class*="layout-image-full"]) :is(h1,h2,h3) :is(em,i){font-style:normal;color:var(--r-link-color)}
 .reveal .slides section h2{font-size:1.6em}
 .reveal .slides section h3{font-size:1.2em}
 .reveal .slides section[class*="layout-image-full"] :is(h1,h2,h3){color:#fff}
@@ -406,12 +407,18 @@ export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#0e0e0f;--r-main
 .reveal .slides section blockquote{color:var(--r-main-color)}
 .reveal .slides section blockquote p:last-child:not(:first-child){font-style:normal;font-size:.65em;opacity:.7;margin-top:.8em}
 .reveal .controls,.reveal .progress{color:var(--r-link-color)}
-.reveal .slides section .callout{margin:.5em 0;max-width:85%;text-align:left;background:rgba(var(--callout-color),.12);border-left:.15em solid rgb(var(--callout-color));border-radius:.4em}
-.reveal .slides section .callout-title{padding:.5em .9em .15em;background:none;border:0;color:rgb(var(--callout-color));font-family:${HOUSE_FONT}}
+.reveal .slides section .callout{margin:.5em 0;max-width:85%;text-align:left;background:#1b1b1f;border:0;border-radius:.42em}
+.reveal .slides section .callout-title{padding:.5em .9em .15em;background:none;border:0;color:var(--r-link-color);font-family:${HOUSE_FONT}}
 .reveal .slides section .callout-content{padding:.1em .9em .6em;overflow:visible}
 .reveal .slides section .callout-content > *{margin:.2em 0}
 .reveal .slides section > div:has(> .callout:only-child){align-items:center!important}
-.reveal .slides section > div > .callout:only-child{font-size:1.3em;min-width:50%}`;
+.reveal .slides section > div > .callout:only-child{font-size:1.3em;min-width:50%}
+.reveal-viewport:has(.slides section.present[class*="layout-section"]){background:#3a2f12}
+.reveal .slides section[class*="layout-section"] :is(h1,h2,h3,p){color:#ffd45c}
+.reveal .slides section[class*="layout-section"] p{opacity:.8}
+.reveal-viewport:has(.slides section.present[class*="layout-code"]){background:#1b1b1f}
+.reveal .slides section[class*="layout-code"] pre{background:#141417;border-radius:.42em;box-shadow:none}
+.reveal .slides section:is([class*="layout-image-side"],[class*="layout-image-left"],[class*="layout-image-right"]) img{border-radius:.42em}`;
 
 // Images on every slide: shrink to fit the 960×700 slide instead of spilling
 // off it, and 2+ pictures side by side as a row with any text above/below.
@@ -494,7 +501,7 @@ export const LAYOUTS: SlideLayout[] = [
         name: "quote",
         label: "Quote",
         css: `&{text-align:left}
-& blockquote{width:85%;font-size:1.25em;font-style:italic;background:none;box-shadow:none;border-left:.15em solid var(--r-link-color,#4dabf7);padding-left:.6em}`,
+& blockquote{width:85%;font-size:1.25em;font-style:italic;background:none;box-shadow:none;border-left:.15em solid var(--r-link-color,#e0b84c);padding-left:.6em}`,
     },
     {
         name: "code",

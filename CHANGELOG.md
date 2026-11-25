@@ -5,6 +5,7 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 
 ## [Unreleased]
 
+- **New house look for auto slides.** Decks now use the Noctívago tool dark colors: a graphite background, warm-white text and one amber accent (the blue presets are gone). Section dividers fill the screen with a dark amber, code slides get a darker panel, callouts are flat cards and side pictures have rounded corners. A word in *italics* inside a heading turns amber, so a title can have one highlighted word. The Night, Paper, Clean white, Bold and Ocean styles are unchanged.
 - **Tidier shortcuts window, `/` menu and present-exit button.** The shortcuts window has small grey group labels, one fixed column for keys and a highlight on the row under the mouse. `/` menu rows are a steady height and their hint stays readable when selected. The "exit" button in present mode shows hover, press and keyboard-focus states. Speaker-view slide-time rows use the same spacing. Colors still come from your Obsidian theme.
 
 - **Privacy note in the README.** One paragraph: what stays on your computer and when Slidey goes online.

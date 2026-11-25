@@ -14,7 +14,7 @@ OUTDIR="<dev-vault>/.obsidian/plugins/slidey" corepack pnpm dev
 - Styles source: `src/scss/styles.scss`.
 - `pnpm dev:vault` assembles a complete plugin folder into `se-test-vault/` (upstream's dev vault, with render test notes: `media-test.md`, `math-test.md`, `mermaid-test.md`, …). `.hotreload` in the output dir makes the Hot-Reload plugin pick up rebuilds.
 - Live test notes + their images live in `C:\Claude\Vault Claude\02 - Projetos\Slidey\Tests\` (`_slidey-*-test.md`). Put new ones there, never loose in the project folder.
-- Quick install into the real vault: copy `build/main.js` + `build/styles.css` into `C:\Claude\Vault Claude\.obsidian\plugins\slidey\`, then `app.plugins.disablePlugin('slidey')` / `enablePlugin('slidey')` over CDP.
+- Quick install into the real vault: copy `build/main.js` + `build/styles.css` into `C:\Claude\Vault Claude\.obsidian\plugins\slidey\`, then `app.plugins.disablePlugin('slidey')` / `enablePlugin('slidey')` over CDP. BRAT (`updateAtStartup: true`) replaces a copied build at the next Obsidian start whenever a newer pre-release exists than the folder's `manifest.json` version, so check that version against `gh release list` (2026-11-25: the 0.28.2 release overwrote a dev build).
 
 ## Live testing over CDP
 
