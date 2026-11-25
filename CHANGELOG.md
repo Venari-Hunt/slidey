@@ -5,6 +5,8 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 
 ## [Unreleased]
 
+- **Tidier shortcuts window, `/` menu and present-exit button.** The shortcuts window has small grey group labels, one fixed column for keys and a highlight on the row under the mouse. `/` menu rows are a steady height and their hint stays readable when selected. The "exit" button in present mode shows hover, press and keyboard-focus states. Speaker-view slide-time rows use the same spacing. Colors still come from your Obsidian theme.
+
 - **Privacy note in the README.** One paragraph: what stays on your computer and when Slidey goes online.
 
 - **Automatic pre-releases.** Every merge that changes the plugin or deck engine now publishes a patch pre-release on GitHub, so BRAT (or anyone following the repo) gets updates without copying files by hand.
