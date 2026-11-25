@@ -51,10 +51,10 @@ describe("buildPresetCss", () => {
 
     it("scopes structured fields to the slide class", () => {
         const css = buildPresetCss([
-            { name: "section", background: "#4dabf7", accent: "#fff" },
+            { name: "section", background: "#3a2f12", accent: "#fff" },
         ]);
         expect(css).toContain(".reveal .slides section.slidey-preset-section{");
-        expect(css).toContain("--r-background-color:#4dabf7");
+        expect(css).toContain("--r-background-color:#3a2f12");
         expect(css).toContain(
             ".reveal .slides section.slidey-preset-section h1",
         );
