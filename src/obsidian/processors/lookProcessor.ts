@@ -64,7 +64,24 @@ export class LookProcessor implements Processor {
                     `${Math.round((section / Math.max(sections, 1)) * 100)}%`,
                 );
             }
-            let next = slide.replace(
+            // Bleed and Photo behind reach the screen edge only as the slide
+            // background (reveal paints it over its margin), so the picture
+            // moves there; `data-state` lets the theme crop or darken it.
+            let body = slide;
+            if (
+                layout === "image-side" &&
+                (look === "bleed" || look === "photo") &&
+                !comment.hasAttribute("bg") &&
+                !comment.hasAttribute("data-background-image")
+            ) {
+                const moved = movePictureToBackground(body);
+                if (moved) {
+                    body = moved.slide;
+                    comment.addAttribute("bg", moved.target);
+                    comment.addAttribute("data-state", `slidey-${look}`);
+                }
+            }
+            let next = body.replace(
                 SLIDE_COMMENT,
                 this.parser.commentToString(comment),
             );
@@ -133,4 +150,25 @@ export class LookProcessor implements Processor {
             yield* group.split(new RegExp(options.verticalSeparator, "gmi"));
         }
     }
+}
+
+const PICTURE_LINE =
+    /^\s*(?:!\[\[([^\]|]+)(?:\|[^\]]*)?\]\]|!\[[^\]]*\]\(([^)\s]+)[^)]*\))\s*$/;
+
+/** Takes the slide's one picture line out, for use as its background. */
+export function movePictureToBackground(
+    slide: string,
+): { slide: string; target: string } | null {
+    const lines = slide.split(/\r?\n/);
+    const at = lines.findIndex((l) => PICTURE_LINE.test(l));
+    if (at < 0) {
+        return null;
+    }
+    const m = PICTURE_LINE.exec(lines[at]);
+    const target = m?.[1] ? `[[${m[1].trim()}]]` : (m?.[2] ?? "");
+    if (!target) {
+        return null;
+    }
+    lines.splice(at, 1);
+    return { slide: lines.join("\n"), target };
 }

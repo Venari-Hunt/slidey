@@ -452,11 +452,10 @@ ${LOOK("bullets", "steps")} li:not(:last-child)::after{content:"";position:absol
     `${LOOK("quote", "mark")} blockquote{background:none;box-shadow:none;border-left:0!important;padding-left:0!important;font:700 1.45em/1.2 ${HOUSE_FONT};font-style:normal!important;color:var(--r-heading-color);text-wrap:balance}
 ${LOOK("quote", "mark")} blockquote::before{content:"\\201C";display:block;font:800 3.4em/.7 ${HOUSE_FONT};color:var(--r-link-color);margin-bottom:.05em}
 ${LOOK("quote", "mark")} blockquote p:last-child:not(:first-child){font-family:${BODY_FONT};font-weight:400}`,
-    // Picture beside text: the picture bleeds to the slide edge; or a quote over a photo.
-    `${LOOK("image-side", "bleed")}[class] > div img{position:absolute!important;grid-area:auto!important;margin:0!important;top:0;right:0;width:46%!important;height:100%!important;max-height:none!important;object-fit:cover!important;border-radius:0!important}
+    // Picture beside text: the picture is the slide background (LookProcessor moves it there), so it reaches the screen edge: cropped to the right 46% (bleed) or darkened at the bottom under a quote (photo). reveal puts the slide's data-state on the viewport.
+    `.reveal-viewport.slidey-bleed .backgrounds .slide-background.present .slide-background-content{left:54%}
+.reveal-viewport.slidey-photo .backgrounds .slide-background.present .slide-background-content::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 25%,rgba(10,10,12,.9))}
 ${LOOK("image-side", "photo")} > div{display:flex!important;flex-direction:column;justify-content:flex-end!important;align-items:flex-start!important;padding-bottom:1.2em;box-sizing:border-box}
-${LOOK("image-side", "photo")}[class] > div img{position:absolute!important;inset:0;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;border-radius:0!important;margin:0!important}
-${LOOK("image-side", "photo")} > div::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(transparent 20%,rgba(10,10,12,.88))}
 ${LOOK("image-side", "photo")} blockquote{background:none;box-shadow:none;position:relative;z-index:2;width:90%;margin:0;border:0!important;padding:0!important;font:700 1.35em/1.2 ${HOUSE_FONT};font-style:normal;color:#fff;text-wrap:balance}
 ${LOOK("image-side", "photo")} blockquote p:last-child:not(:first-child){font-family:${BODY_FONT};font-weight:400;color:rgba(255,255,255,.75)}`,
 ].join("\n");
