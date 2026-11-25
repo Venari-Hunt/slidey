@@ -391,6 +391,7 @@ const TITLE_CARD_FONT = `"Rustica",${HOUSE_FONT}`;
 export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#141417;--r-main-color:#ece9e2;--r-heading-color:#f6f3ec;--r-link-color:#e0b84c;--r-link-color-hover:#ffd45c;--r-selection-background-color:#3a2f12;--r-main-font:${BODY_FONT};--r-heading-font:${HOUSE_FONT};--r-main-font-size:38px;--r-heading-font-weight:700;--r-heading-text-transform:none;--r-heading-letter-spacing:-.02em;--r-heading-text-shadow:none;--r-heading-line-height:1.1}
 .reveal-viewport{background:var(--r-background-color)}
 .reveal .slides section :is(h1,h2,h3){color:var(--r-heading-color)}
+.reveal .slides section:not([class*="layout-image-full"]) :is(h1,h2,h3) :is(em,i){font-style:normal;color:var(--r-link-color)}
 .reveal .slides section h2{font-size:1.6em}
 .reveal .slides section h3{font-size:1.2em}
 .reveal .slides section[class*="layout-image-full"] :is(h1,h2,h3){color:#fff}
