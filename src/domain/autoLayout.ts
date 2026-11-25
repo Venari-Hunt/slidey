@@ -167,10 +167,14 @@ export function isAutoDeck(options: DeckLooks): boolean {
 export function autoDeckSize(
     options: DeckLooks,
     frontmatter: unknown,
-): { width?: number; height?: number } {
+): { width?: number; height?: number; margin?: number } {
     const own = (frontmatter ?? {}) as Record<string, unknown>;
     if (!isAutoDeck(options) || own.width != null || own.height != null) {
         return {};
     }
-    return { width: 1280, height: 720 };
+    // No margin: the slide fills a 16:9 screen edge to edge, so pictures can
+    // bleed; the house theme pads the text instead (owner, 2026-11-25).
+    return own.margin != null
+        ? { width: 1280, height: 720 }
+        : { width: 1280, height: 720, margin: 0 };
 }

@@ -52,6 +52,15 @@ export class LookProcessor implements Processor {
                 section++;
             }
             prev = { layout, look };
+            if (layout === "image-full") {
+                // A title card's picture is the slide background too, so it
+                // fills any screen shape, not only the 16:9 slide box.
+                const full = this.fullPicture(slide, comment);
+                if (full !== slide) {
+                    output = output.split(slide).join(full);
+                }
+                continue;
+            }
             if (!look) {
                 continue;
             }
@@ -91,6 +100,28 @@ export class LookProcessor implements Processor {
             }
         }
         return output;
+    }
+
+    private fullPicture(
+        slide: string,
+        comment: NonNullable<ReturnType<CommentParser["parseLine"]>>,
+    ): string {
+        if (
+            comment.hasAttribute("bg") ||
+            comment.hasAttribute("data-background-image")
+        ) {
+            return slide;
+        }
+        const moved = movePictureToBackground(slide);
+        if (!moved) {
+            return slide;
+        }
+        comment.addAttribute("bg", moved.target);
+        comment.addAttribute("data-state", "slidey-full");
+        return moved.slide.replace(
+            SLIDE_COMMENT,
+            this.parser.commentToString(comment),
+        );
     }
 
     private addMarkup(

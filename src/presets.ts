@@ -453,7 +453,10 @@ ${LOOK("bullets", "steps")} li:not(:last-child)::after{content:"";position:absol
 ${LOOK("quote", "mark")} blockquote::before{content:"\\201C";display:block;font:800 3.4em/.7 ${HOUSE_FONT};color:var(--r-link-color);margin-bottom:.05em}
 ${LOOK("quote", "mark")} blockquote p:last-child:not(:first-child){font-family:${BODY_FONT};font-weight:400}`,
     // Picture beside text: the picture is the slide background (LookProcessor moves it there), so it reaches the screen edge: cropped to the right 46% (bleed) or darkened at the bottom under a quote (photo). reveal puts the slide's data-state on the viewport.
-    `.reveal-viewport.slidey-bleed .backgrounds .slide-background.present .slide-background-content{left:54%}
+    `.reveal-viewport.slidey-full .backgrounds .slide-background.present .slide-background-content{filter:brightness(.7)}
+.reveal-viewport.slidey-full .backgrounds .slide-background.present .slide-background-content::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.55) 75%,rgba(0,0,0,.9) 100%)}
+.reveal .slides section[data-state="slidey-full"] > div::after{display:none}
+.reveal-viewport.slidey-bleed .backgrounds .slide-background.present .slide-background-content{left:54%}
 .reveal-viewport.slidey-photo .backgrounds .slide-background.present .slide-background-content::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 25%,rgba(10,10,12,.9))}
 ${LOOK("image-side", "photo")} > div{display:flex!important;flex-direction:column;justify-content:flex-end!important;align-items:flex-start!important;padding-bottom:1.2em;box-sizing:border-box}
 ${LOOK("image-side", "photo")} blockquote{background:none;box-shadow:none;position:relative;z-index:2;width:90%;margin:0;border:0!important;padding:0!important;font:700 1.35em/1.2 ${HOUSE_FONT};font-style:normal;color:#fff;text-wrap:balance}
@@ -465,6 +468,7 @@ ${LOOK("image-side", "photo")} blockquote p:last-child:not(:first-child){font-fa
 // reveal theme's variables; `:root:root` outranks the theme's `:root`.
 export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#141417;--r-main-color:#ece9e2;--r-heading-color:#f6f3ec;--r-link-color:#e0b84c;--r-link-color-hover:#ffd45c;--r-selection-background-color:#3a2f12;--r-main-font:${BODY_FONT};--r-heading-font:${HOUSE_FONT};--r-main-font-size:38px;--r-heading-font-weight:700;--r-heading-text-transform:none;--r-heading-letter-spacing:-.02em;--r-heading-text-shadow:none;--r-heading-line-height:1.1}
 .reveal-viewport{background:var(--r-background-color)}
+.reveal .slides section > div{box-sizing:border-box;padding:56px 80px}
 .reveal .slides section :is(h1,h2,h3){color:var(--r-heading-color)}
 .reveal .slides section:not([class*="layout-image-full"]) :is(h1,h2,h3) :is(em,i){font-style:normal;color:var(--r-link-color)}
 .reveal .slides section h2{font-size:1.6em}
