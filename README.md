@@ -10,7 +10,7 @@ Turn a markdown note into a controllable, preset-styled slide deck — write in 
 
 - Write slides as markdown, `---` between slides, `--` for vertical slides
 - Live preview while editing
-- reveal.js 5.2 themes, transitions, fragments, speaker notes
+- reveal.js 6 themes, transitions, fragments, speaker notes
 - Embed other notes into slides
 - Math (KaTeX / MathJax), Mermaid, syntax highlighting, charts
 - Export as PDF or as a standalone HTML presentation

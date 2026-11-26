@@ -29,6 +29,14 @@ Obsidian must run with `--remote-debugging-port=9222` (standing permission to qu
 
 `corepack pnpm exec eslint src` runs the same `eslint-plugin-obsidianmd` rules as Obsidian's plugin-directory review. Keep it at 0 errors (warnings are advisory). Rules that bite: no `element.style.x =` (use a CSS class or `setCssProps`), no `<style>` elements, no `createEl("h1".."h6")` inside a `PluginSettingTab` class, and type `JSON.parse`/`parseYaml` results.
 
+## reveal.js 6 layout (since the 5.2 to 6.0 bump)
+
+- Plugins ship as `dist/plugin/<name>.js` (UMD, globals `RevealMarkdown` etc.) and `.mjs`; CSS has no `dist/` prefix (`reveal.js/reveal.css`); types are bundled (no `@types/reveal.js`).
+- The package is `"type": "module"`, so a bundler's `require()` of the UMD `.js` gets an empty namespace. `src/reveal/markdown.js` therefore imports the `.mjs` default factory.
+- `reveal-dist/esbuild.config.mjs` copies each plugin back to `plugin/<name>/<name>.js`, so the deck templates keep their URLs.
+- `RevealMarkdown().marked` is `null` until `init()` runs; `reveal-dist/plugin/obsidian-markdown.js` passes its marked extensions through the `markdown` config instead. marked is v17, so renderers take token objects (`renderer.code({text, lang, escaped})`).
+- Static render check with no Obsidian: build `reveal-dist`, then `node scripts/render-check.mjs reveal-dist/build <scratch-dir>` renders the real `reveal.html` template (callout, fenced-code placeholder, KaTeX, fragment, notes) in headless Edge and prints what rendered; open `<scratch-dir>/shot.png`.
+
 ## Slide screenshots without a visible window
 
 The preview iframe can't be screenshotted, and fullscreen hangs when the Obsidian window is hidden. Instead, launch headless Edge with `--remote-debugging-port`, `Page.navigate` to `http://localhost:3000/<vault path>`, step with `Reveal.slide(i)` and `Page.captureScreenshot` each slide (a Node script, ~40 lines). Edge's own `--screenshot` flag hangs on the deck's live-reload connection.

@@ -87,13 +87,22 @@ const parameters = {
                 to: ['./dist/fontawesome/'],
             }
         }),
+        // reveal.js 6 ships plugins flat in dist/plugin/<name>.js (UMD, global
+        // Reveal<Name>); the deck templates still load plugin/<name>/<name>.js,
+        // so each file is copied back into that folder.
+        ...['notes', 'markdown', 'zoom', 'search', 'math'].map((name) => copy({
+            assets: {
+                from: [`node_modules/reveal.js/dist/plugin/${name}.js`],
+                to: [`./plugin/${name}/`],
+            }
+        })),
         copy({
             assets: {
                 from: [
-                    'node_modules/reveal.js/plugin/**/*',
+                    'node_modules/reveal.js/dist/plugin/highlight.js',
+                    'node_modules/reveal.js/dist/plugin/highlight/*.css',
                 ],
-                to: ['./plugin/'],
-                keepStructure: true
+                to: ['./plugin/highlight/'],
             }
         }),
         copy({

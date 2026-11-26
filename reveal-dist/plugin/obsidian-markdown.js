@@ -5,11 +5,15 @@ window.ObsidianMarkdown = window.ObsidianMarkdown || {
         // Create the markdown plugin (this is confusing with binds)
         const self = window.ObsidianMarkdown;
         const revealMarkdownPlugin = RevealMarkdown();
-        const marked = revealMarkdownPlugin.marked;
+        // reveal.js 6 creates its marked instance inside init(), so
+        // `.marked` is null until then; read it lazily at render time.
+        const getMarked = () => revealMarkdownPlugin.marked;
 
-        // Special Obsidian markdown parsing that should be done
-        // when reveal.js is rendering slides
-        marked.use({
+        // Special Obsidian markdown parsing that should be done when
+        // reveal.js is rendering slides. reveal.js 6 passes every
+        // `markdown` config key other than renderer/animateLists/smartypants
+        // to marked.use(), so the extensions are handed over as config.
+        const markdownOptions = {
             walkTokens(token) {
                 if (token.type === "blockquote") {
                     return self.processCallout(this, self, token);
@@ -24,7 +28,7 @@ window.ObsidianMarkdown = window.ObsidianMarkdown || {
                     level: "block",
                     renderer({ meta, tokens = [] }) {
                         // Parse the title as inline markdown (for bold, italic, etc.)
-                        const parsedTitle = marked.parseInline(meta.title);
+                        const parsedTitle = getMarked().parseInline(meta.title);
 
                         let tmpl = `<div class="callout ${meta.color}" data-type="${meta.type}">\n`;
 
@@ -53,11 +57,14 @@ window.ObsidianMarkdown = window.ObsidianMarkdown || {
                     name: "fencedcode",
                     level: "block",
                     renderer({ meta }) {
-                        return this.parser.renderer.code(
-                            meta.text,
-                            meta.lang,
-                            meta.escaped,
-                        );
+                        // marked 17 renderers take the token object.
+                        return this.parser.renderer.code({
+                            type: "code",
+                            raw: meta.text,
+                            text: meta.text,
+                            lang: meta.lang,
+                            escaped: meta.escaped,
+                        });
                     },
                 },
                 {
@@ -72,6 +79,10 @@ window.ObsidianMarkdown = window.ObsidianMarkdown || {
                     },
                 },
             ],
+        };
+
+        deck.configure({
+            markdown: { ...(deck.getConfig().markdown || {}), ...markdownOptions },
         });
 
         return revealMarkdownPlugin.init(deck);
