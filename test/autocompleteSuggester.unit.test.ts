@@ -11,11 +11,15 @@ function makeWritableEditor(initialLine: string, cursorCh: number) {
     let currentLine = initialLine;
     return {
         getLine: () => currentLine,
-        setLine: (_lineNum: number, text: string) => { currentLine = text; },
+        setLine: (_lineNum: number, text: string) => {
+            currentLine = text;
+        },
         setCursor: (_line: number, _ch: number) => {},
         getCursor: () => ({ line: 0, ch: cursorCh }),
         getRange: () => currentLine,
-        get currentLine() { return currentLine; },
+        get currentLine() {
+            return currentLine;
+        },
     };
 }
 
@@ -33,37 +37,53 @@ describe("AutoCompleteSuggest.onTrigger", () => {
 
     test("returns null when inactive", () => {
         suggest.deactivate();
-        expect(suggest.onTrigger(cur(5), makeEditor("hello world") as any, null)).toBeNull();
+        expect(
+            suggest.onTrigger(cur(5), makeEditor("hello world") as any, null),
+        ).toBeNull();
     });
 
     test("returns null for plain prose", () => {
-        expect(suggest.onTrigger(cur(5), makeEditor("hello world") as any, null)).toBeNull();
+        expect(
+            suggest.onTrigger(cur(5), makeEditor("hello world") as any, null),
+        ).toBeNull();
     });
 
     test("returns null mid-word with no slide prefix", () => {
-        expect(suggest.onTrigger(cur(3), makeEditor("foo bar") as any, null)).toBeNull();
+        expect(
+            suggest.onTrigger(cur(3), makeEditor("foo bar") as any, null),
+        ).toBeNull();
     });
 
     test("returns null at start of empty line", () => {
-        expect(suggest.onTrigger(cur(0), makeEditor("") as any, null)).toBeNull();
+        expect(
+            suggest.onTrigger(cur(0), makeEditor("") as any, null),
+        ).toBeNull();
     });
 
     test("triggers when word starts with <", () => {
-        expect(suggest.onTrigger(cur(4), makeEditor("<gri") as any, null)).not.toBeNull();
+        expect(
+            suggest.onTrigger(cur(4), makeEditor("<gri") as any, null),
+        ).not.toBeNull();
     });
 
     test("triggers when word starts with :::‌", () => {
-        expect(suggest.onTrigger(cur(3), makeEditor(":::") as any, null)).not.toBeNull();
+        expect(
+            suggest.onTrigger(cur(3), makeEditor(":::") as any, null),
+        ).not.toBeNull();
     });
 
     test("triggers inside <!-- slide tag", () => {
         const line = "<!-- slide ";
-        expect(suggest.onTrigger(cur(line.length), makeEditor(line) as any, null)).not.toBeNull();
+        expect(
+            suggest.onTrigger(cur(line.length), makeEditor(line) as any, null),
+        ).not.toBeNull();
     });
 
     test("triggers inside <!-- element tag with attribute", () => {
         const line = '<!-- element class="';
-        expect(suggest.onTrigger(cur(line.length), makeEditor(line) as any, null)).not.toBeNull();
+        expect(
+            suggest.onTrigger(cur(line.length), makeEditor(line) as any, null),
+        ).not.toBeNull();
     });
 });
 
@@ -91,7 +111,7 @@ describe("AutoCompleteSuggest.getSuggestions", () => {
 
     test("filters suggestions by input", () => {
         const results = suggest.getSuggestions({ query: "<grid" } as any);
-        expect(results.some(r => r.value.startsWith("<grid"))).toBe(true);
+        expect(results.some((r) => r.value.startsWith("<grid"))).toBe(true);
     });
 
     test("returns empty for closing tag", () => {
@@ -103,8 +123,12 @@ describe("AutoCompleteSuggest.getSuggestions", () => {
         const query = JSON.stringify(suggest.getTag(line, line.length));
         const results = suggest.getSuggestions({ query } as any);
         expect(results.length).toBeGreaterThan(0);
-        expect(results.every(r => (r.value + (r.description ?? "")).toLowerCase().includes("dr"))).toBe(true);
-        expect(results.some(r => r.value.startsWith('drag'))).toBe(true);
+        expect(
+            results.every((r) =>
+                (r.value + (r.description ?? "")).toLowerCase().includes("dr"),
+            ),
+        ).toBe(true);
+        expect(results.some((r) => r.value.startsWith("drag"))).toBe(true);
     });
 });
 

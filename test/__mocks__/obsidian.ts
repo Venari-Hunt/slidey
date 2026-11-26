@@ -2,8 +2,7 @@ export { parse as parseYaml } from "yaml";
 
 export class EditorSuggest<T> {
     context: unknown = null;
-    constructor(_app: unknown) {
-    }
+    constructor(_app: unknown) {}
     close() {}
 }
 
@@ -16,3 +15,5 @@ declare global {
         first(): T | undefined;
     }
 }
+
+export const getLanguage = (): string => "en";

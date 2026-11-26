@@ -8,10 +8,17 @@ Code: `src/reveal/revealPreviewView.ts` (leaf type `reveal-preview-view`, upstre
 - `navKeyMethods` + a `keydown` fallback on `containerEl` forward PageUp/PageDown/Arrow keys/Space to reveal.js as `{method: 'next'|'prev'|'left'|'right'|'up'|'down'}` via `postMessage` when focus is on Obsidian chrome. reveal.js 5.2 has `postMessage: true` by default; its blacklist is only `registerPlugin|registerKeyboardShortcut|addKeyBinding|addEventListener|showPreview`.
 - Keydowns inside the iframe don't bubble to the parent listener → no double-trigger.
 - Known latent issue: editor↔deck cursor sync (`LineSelectionListener.onTrigger` → `onLineChanged` → `setState`) can fight navigation if something moves the editor cursor mid-sequence. Keys < 650 ms apart can coalesce during a slide transition.
+- Key map (0.28.0): one shared `CLICKER_KEYS` in `src/reveal/clickerKeys.ts`, used by the preview pane (arrows remapped to `left`/`right`) and the audience/speaker views. `.` / `b` / `B` → `togglePause` (the clicker "blank screen" button). While paused, reveal ignores Next until the pause key again (reveal's own rule, kept). Checked live over CDP: PageDown steps fragments, `.` and `b` toggle `Reveal.isPaused()`.
 
 ## Present mode (0.2.0)
 
 Command `present-active-presentation` ("Present slides (fullscreen)", no default hotkey). `presentMode()` / `exitPresentMode()` put the view's content element in real Fullscreen API mode; a `fullscreenchange` listener toggles `.is-presenting`; a `pointermove` idle timer (2 s) fades a `.slidey-present-exit` button in/out (top-right). Escape or the button exits back to whatever pane layout was already configured.
+
+- 0.25.0: with 2+ screens (`screenCount()`, Electron `remote.screen.getAllDisplays()`), the command runs `presentWithSpeakerView()` instead (see Two-screen presenting). One screen, or no `remote`: fullscreen as above.
+
+### Fading controls (0.25.0)
+
+`src/reveal/idleUi.ts`: `IDLE_UI_SCRIPT` (in `slideyScript`) toggles `.slidey-idle` on `.reveal` 2 s after the last `mousemove` / `pointerdown` / `touchstart`; keys (clickers) don't wake it. `IDLE_UI_CSS` (in `presetStyles`) fades `.controls`, `.progress`, `.slide-number` over 0.4 s. Every deck, every view. Testing gotcha: in a hidden Obsidian window (`visibilityState: hidden`) the transition never advances, so computed opacity stays 1; measure in headless Edge instead (`docs/development.md`).
 
 ## PDF export (0.15.0)
 
@@ -38,6 +45,7 @@ Gotcha: headless Chrome's `--print-to-pdf` flag prints before reveal lays out �
 - Print layout **flattens vertical stacks**, so a click carries only the page index. `slideStartLines()` (`slideLines.ts`, moved out of the preview view with `getSlideLines`) lists each slide's note line in deck order; page i → line i. Cursor moves (`LineSelectionListener`) call `onLineChanged` → last start ≤ line → `overview-current`.
 - **The preview's message handler takes every window message as a deck URL.** It now ignores data starting with `{"slidey"`; without that, the panel's messages would replace the preview's URL.
 - **The template called `window.print()` on any `print-pdf` URL.** It now skips that when the URL has `slidey-overview` (template change → ships in `slidey.zip`).
+- **Empty / failed states.** `renderEmpty()` explains the empty panel and offers `plugin.newDeck()`; if `overview-ready` never arrives after the two retries, `renderFailed()` shows a message and a "Try again" button. Strings live in `domain/strings.ts`.
 - reveal lays out print pages once, at load. A deck loaded into a 0-wide (hidden) panel never gets them, so `reload()` waits for a size (`onResize`), and a deck that hasn't posted `overview-ready` within 10 s is reloaded (twice at most).
 - Reloads 1.5 s after the note changes (`vault.on("modify")`), and on `file-open` of another deck note (`deckMode()` on the metadata cache frontmatter).
 - Testing gotcha: after the panel reloads, CDP's `/json/list` can still point at the closed frame (reports 0×0, hidden). Screenshot the main page instead.
@@ -52,8 +60,17 @@ Gotcha: headless Chrome's `--print-to-pdf` flag prints before reveal lays out �
 - Speaker view: two mirror iframes (`MIRROR_QUERY`: `slidey-mirror` + reveal query options `controls=false&progress=false&keyboard=false&transition=none…`) moved with reveal's postMessage `slide(h, v, f)`. A transparent cover over each keeps focus in the speaker view, whose `keydown` (PageDown/Up, arrows, Space) calls `AudienceView.go()`. Notes: reveal's notes HTML → `DOMParser` → text (never inserted as HTML).
 - S: reveal's notes plugin `window.open()`s a popup, which Obsidian blocks (`open()` returned null → `Cannot set properties of null (setting 'marked')`). In any deck inside an iframe, `SPEAKER_SCRIPT` rebinds S (keyCode 83) to post `{"slidey":"open-speaker-view"}`; the plugin listens on `window`.
 - The preview ignores messages whose data matches `[?&]slidey-` (URLs posted by the overview, audience or mirror copies on `popstate`) or starts with `{"slidey"`.
-- `onunload()` calls `endSpeakerPresentation()`: disabling the plugin used to leave the full-screen popout open. Testing gotcha: re-enabling Slidey right after a speaker session once took minutes to finish loading; not investigated yet.
+- Rehearsal times (0.23.0): `SpeakerView.slideTimes` (Map index → ms). `onState` banks the old slide when `state.index` changes (fragments keep the index) and calls `tick()` so the "This slide" label updates at once. **Slide times** toggles `.is-times` on the notes pane (CSS swaps notes text ↔ `.slidey-speaker-times` list, re-rendered each tick). **Reset timer** clears the map.
+- `onunload()` calls `endSpeakerPresentation()`: disabling the plugin used to leave the full-screen popout open. Testing gotcha: don't race `disablePlugin` against a timeout and then `enablePlugin`. If the old instance hasn't finished unloading, the new `onload` never reaches `onLayoutReady` and the preview server never starts. A plain disable + enable takes about 15 ms + 435 ms and starts the server.
+
+## New slide deck (0.22.0)
+
+`slidey:new-deck` → `createDeck()` (`src/obsidian/newDeck.ts`): `Untitled deck[ N].md` in `fileManager.getNewFileParent(active)`, content from `settings.deckTemplate` (vault path, `.md` optional) or `STARTER_DECK`; a set-but-missing template shows a Notice and uses the starter. Then opens the note + `showView()`.
 
 ## Commands
 
-`slidey:open-preview` (toggles), `show-slide-overview`, `present-with-speaker-view`, `reload-preview`, `present-active-presentation`, `print-active-presentation` (opens `?print-pdf` in the browser), `export-active-presentation-pdf`, `export-active-presentation-pptx`, `export-active-presentation-html`, `start-server-preview`, `stop-server-preview`.
+`slidey:new-deck`, `open-preview` (toggles), `show-slide-overview`, `present-with-speaker-view`, `reload-preview`, `present-active-presentation`, `print-active-presentation` (opens `?print-pdf` in the browser), `export-active-presentation-pdf`, `export-active-presentation-pptx`, `export-active-presentation-html`, `start-server-preview`, `stop-server-preview`.
+
+## Shortcuts sheet and strings (unreleased)
+
+Command `show-shortcuts` opens `ShortcutsModal` (`src/obsidian/shortcutsModal.ts`) with the rows in `SHORTCUT_GROUPS`. All its text comes from the one table in `src/domain/strings.ts` (en + pt-BR, language from Obsidian's `getLanguage()`); new screens add their strings there. Older screens (settings tab, slash menu) are still English-only. Keep the rows in step with `CLICKER_KEYS` and reveal's defaults.

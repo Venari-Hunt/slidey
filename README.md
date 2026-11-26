@@ -2,6 +2,8 @@
 
 Turn a markdown note into a controllable, preset-styled slide deck — write in Obsidian, present with a physical clicker, export to PDF/HTML.
 
+**User guide:** https://venari-hunt.github.io/slidey-docs/
+
 > **Status: early.** Slidey is a hard fork of [Slides Extended](https://github.com/ebullient/obsidian-slides-extended) (v2.4.3). Slide presets and presentation-remote handling are in; PDF export saves straight to a file.
 
 ## Features (inherited from Slides Extended)
@@ -21,6 +23,10 @@ Turn a markdown note into a controllable, preset-styled slide deck — write in 
 ### Planned
 
 - PPTX export
+
+## Privacy
+
+Slidey has no analytics and no account. Your notes and settings stay in your vault. Its preview server runs on your computer; other devices can reach it only if you change its address in settings. Slidey goes online only to download its deck engine from this project's GitHub releases, and when a slide loads something you pointed it to, like a web image or a CDN library.
 
 ## Development
 

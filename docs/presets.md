@@ -69,7 +69,7 @@ Stored presets are *copies* of the starters, so editing `STARTER_PRESETS` doesn'
 
 ## Preview swatches (0.3.0)
 
-Settings shows a mini sample slide per preset: one `<style>` with `buildPresetCss(presets, (_, i) => '.slidey-preset-swatch[data-swatch="i"]')`, regenerated on every field `onChange`. Base swatch styles in `src/scss/styles.scss` (black-theme defaults; font-size = `var(--r-main-font-size,42px)/3`; `height:auto!important` keeps 16:9 when a preset sets `height:100%`). Obsidian hides `.vertical-tab-content h1`, so the swatch forces `h1{display:block}`. A placeholder SVG image is added when the preset's CSS mentions `img`.
+Settings shows a mini sample slide per preset (`src/presetSwatch.ts`): one constructed stylesheet (`SwatchStylesheet`, adopted by the settings window document, removed on `hide()`; Obsidian review forbids `<style>` elements) holding one part per list with `buildPresetCss(presets, (_, i) => '.slidey-preset-swatch[data-swatch="i"]')`, regenerated on every field `onChange`. Base swatch styles in `src/scss/styles.scss` (black-theme defaults; font-size = `var(--r-main-font-size,42px)/3`; `height:auto!important` keeps 16:9 when a preset sets `height:100%`). Obsidian hides `.vertical-tab-content h1`, so the swatch forces `h1{display:block}`. A placeholder SVG image is added when the preset's CSS mentions `img`.
 
 ## Gotchas
 

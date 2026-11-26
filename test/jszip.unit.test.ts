@@ -1,7 +1,9 @@
 import JSZip from "@progress/jszip-esm";
 import { SlidesExtendedDistribution } from "../src/slidesExtended-Distribution";
 
-async function makeZipBuffer(files: Record<string, string>): Promise<ArrayBuffer> {
+async function makeZipBuffer(
+    files: Record<string, string>,
+): Promise<ArrayBuffer> {
     const zip = new JSZip();
     for (const [name, content] of Object.entries(files)) {
         zip.file(name, content);
@@ -10,7 +12,9 @@ async function makeZipBuffer(files: Record<string, string>): Promise<ArrayBuffer
 }
 
 function makeDistribution(): SlidesExtendedDistribution {
-    return Object.create(SlidesExtendedDistribution.prototype) as SlidesExtendedDistribution;
+    return Object.create(
+        SlidesExtendedDistribution.prototype,
+    ) as SlidesExtendedDistribution;
 }
 
 test("JSZip: create zip, load from arraybuffer, read file as uint8array", async () => {

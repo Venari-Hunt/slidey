@@ -73,6 +73,8 @@ export interface SlideOverrides {
     color?: string;
     accent?: string;
     size?: string;
+    /** Part of a cover picture kept in frame, as a CSS position ("left top"). */
+    focus?: string;
 }
 
 // `1.2` → 1.2 × the theme size; `36px`, `1.5em`, `120%` pass through.
@@ -120,6 +122,9 @@ export function overrideStyle(overrides: SlideOverrides): string {
     const size = overrides.size ? sizeValue(overrides.size) : "";
     if (size) {
         decls.push(`--r-main-font-size:${size}`, `font-size:${size}`);
+    }
+    if (overrides.focus) {
+        decls.push(`--slidey-focus:${clean(overrides.focus)}`);
     }
     return decls.join("; ");
 }
@@ -238,7 +243,7 @@ export const STARTER_PRESETS: SlidePreset[] = [
     {
         name: "cover",
         label: "Cover / title",
-        accent: "#4dabf7",
+        accent: "#e0b84c",
         align: "center",
         css: `& h1{font-size:2.4em;margin-bottom:.2em}
 & > *:not(h1){opacity:.85;font-size:.9em}`,
@@ -246,9 +251,9 @@ export const STARTER_PRESETS: SlidePreset[] = [
     {
         name: "section",
         label: "Section divider",
-        background: "#4dabf7",
-        color: "#ffffff",
-        accent: "#ffffff",
+        background: "#3a2f12",
+        color: "#ffd45c",
+        accent: "#ffd45c",
         align: "center",
         css: "& h1,& h2{font-size:2.6em;letter-spacing:.02em}",
     },
@@ -258,7 +263,7 @@ export const STARTER_PRESETS: SlidePreset[] = [
         align: "left",
         fontScale: 1.15,
         css: `&{font-style:italic}
-& blockquote,& p{border-left:.15em solid var(--r-link-color,#4dabf7);padding-left:.6em}`,
+& blockquote,& p{border-left:.15em solid var(--r-link-color,#e0b84c);padding-left:.6em}`,
     },
     {
         name: "image-left",
@@ -276,13 +281,13 @@ export const STARTER_PRESETS: SlidePreset[] = [
         align: "left",
         css: `& ul,& ol{line-height:1.5}
 & li{margin:.25em 0}
-& li::marker{color:var(--r-link-color,#4dabf7)}`,
+& li::marker{color:var(--r-link-color,#e0b84c)}`,
     },
     {
         name: "code",
         label: "Code focus",
-        background: "#1e1e2e",
-        color: "#e6e6e6",
+        background: "#1b1b1f",
+        color: "#ece9e2",
         align: "left",
         css: `& pre{width:100%;font-size:.8em}
 & pre code{max-height:70vh;padding:1em}`,
@@ -371,13 +376,58 @@ export function buildLayoutCss(): string {
     );
 }
 
+// The auto-deck fonts, bundled (see reveal/houseFont.ts): Poppins for headings
+// and one-line statements, Inter for body text. Title cards (a picture with a
+// line over it) use Poppins ExtraBold, or Rustica when installed.
+export const HOUSE_FONT_NAME = "Slidey Poppins";
+export const BODY_FONT_NAME = "Slidey Inter";
+const HOUSE_FONT = `"${HOUSE_FONT_NAME}","Poppins","Segoe UI",system-ui,sans-serif`;
+const BODY_FONT = `"${BODY_FONT_NAME}","Inter","Segoe UI",system-ui,sans-serif`;
+const TITLE_CARD_FONT = `"Rustica",${HOUSE_FONT}`;
+
+// The one look of an auto deck (see domain/autoLayout.ts): the design system's tool dark look
+// (owner approved mock-slidey-house, 2026-11-25): graphite ground, warm-white text, one amber accent, bundled Poppins + Inter so nothing has to be installed. Overrides the
+// reveal theme's variables; `:root:root` outranks the theme's `:root`.
+export const HOUSE_THEME_CSS = `:root:root{--r-background-color:#141417;--r-main-color:#ece9e2;--r-heading-color:#f6f3ec;--r-link-color:#e0b84c;--r-link-color-hover:#ffd45c;--r-selection-background-color:#3a2f12;--r-main-font:${BODY_FONT};--r-heading-font:${HOUSE_FONT};--r-main-font-size:38px;--r-heading-font-weight:700;--r-heading-text-transform:none;--r-heading-letter-spacing:-.02em;--r-heading-text-shadow:none;--r-heading-line-height:1.1}
+.reveal-viewport{background:var(--r-background-color)}
+.reveal .slides section :is(h1,h2,h3){color:var(--r-heading-color)}
+.reveal .slides section:not([class*="layout-image-full"]) :is(h1,h2,h3) :is(em,i){font-style:normal;color:var(--r-link-color)}
+.reveal .slides section h2{font-size:1.6em}
+.reveal .slides section h3{font-size:1.2em}
+.reveal .slides section[class*="layout-image-full"] :is(h1,h2,h3){color:#fff}
+.reveal .slides section[class*="layout-statement"] p{font-family:${HOUSE_FONT}}
+.reveal .slides section[class*="layout-image-full"] :is(h1,h2,h3,p){font-family:${TITLE_CARD_FONT};font-weight:800;letter-spacing:-.025em;line-height:1.1;text-wrap:balance}
+.reveal .slides section[class*="layout-image-full"] p:not(:has(img)){max-width:85%;margin-inline:auto}
+.reveal .slides section[class*="layout-image-full"] > div:not(:has(> :is(h1,h2,h3))) > p:not(:has(img)){font-size:2em}
+.reveal .slides section:not([class*="layout-"]){text-align:left}
+.reveal .slides section:not([class*="layout-"]) > div{align-items:flex-start!important}
+.reveal .slides section[class*="layout-two-column"] > div{display:flex!important;column-count:1;align-items:flex-start!important}
+.reveal .slides section[class*="layout-two-column"] :is(ul,ol){column-count:2;column-gap:1.5em;align-self:stretch;width:auto}
+.reveal .slides section li::marker{color:var(--r-link-color)}
+.reveal .slides section blockquote{color:var(--r-main-color)}
+.reveal .slides section blockquote p:last-child:not(:first-child){font-style:normal;font-size:.65em;opacity:.7;margin-top:.8em}
+.reveal .controls,.reveal .progress{color:var(--r-link-color)}
+.reveal .slides section .callout{margin:.5em 0;max-width:85%;text-align:left;background:#1b1b1f;border:0;border-radius:.42em}
+.reveal .slides section .callout-title{padding:.5em .9em .15em;background:none;border:0;color:var(--r-link-color);font-family:${HOUSE_FONT}}
+.reveal .slides section .callout-content{padding:.1em .9em .6em;overflow:visible}
+.reveal .slides section .callout-content > *{margin:.2em 0}
+.reveal .slides section > div:has(> .callout:only-child){align-items:center!important}
+.reveal .slides section > div > .callout:only-child{font-size:1.3em;min-width:50%}
+.reveal-viewport:has(.slides section.present[class*="layout-section"]){background:#3a2f12}
+.reveal .slides section[class*="layout-section"] :is(h1,h2,h3,p){color:#ffd45c}
+.reveal .slides section[class*="layout-section"] p{opacity:.8}
+.reveal-viewport:has(.slides section.present[class*="layout-code"]){background:#1b1b1f}
+.reveal .slides section[class*="layout-code"] pre{background:#141417;border-radius:.42em;box-shadow:none}
+.reveal .slides section:is([class*="layout-image-side"],[class*="layout-image-left"],[class*="layout-image-right"]) img{border-radius:.42em}`;
+
 // Images on every slide: shrink to fit the 960×700 slide instead of spilling
 // off it, and 2+ pictures side by side as a row with any text above/below.
 // Layout and preset rules (`section.slidey-…`) are more specific, so they win.
 export const IMAGE_FIT_CSS = `.reveal .slides section > div > img,.reveal .slides section > img{flex:0 1 auto;min-height:0;min-width:0;max-width:100%;max-height:100%;object-fit:contain}
 .reveal .slides section:not([class*="image-"]) > div:has(> img ~ img){flex-flow:row wrap!important;align-content:center;align-items:center;column-gap:.5em}
 .reveal .slides section:not([class*="image-"]) > div:has(> img ~ img) > :not(img){flex:0 0 100%}
-.reveal .slides section:not([class*="image-"]) > div:has(> img ~ img) > img{flex:1 1 0;width:0;height:auto;max-height:60%}`;
+.reveal .slides section:not([class*="image-"]) > div:has(> img ~ img) > img{flex:1 1 0;width:0;height:auto;max-height:60%}
+.reveal .slides section img{object-position:var(--slidey-focus,center)}`;
 
 // Headings span both columns; everything after flows down one, then the other.
 const TWO_COLUMN_CSS = `&:not(:has(> div)),& > div{display:block!important;column-count:2;column-gap:1.5em;column-fill:balance;text-align:left}
@@ -402,6 +452,29 @@ export const LAYOUTS: SlideLayout[] = [
 & h1,& h2{font-size:2.6em;letter-spacing:.02em}`,
     },
     {
+        name: "statement",
+        label: "One big statement",
+        css: `&{text-align:center}
+& p{font-size:1.7em;line-height:1.25;font-weight:600;max-width:85%;margin:0 auto}`,
+    },
+    {
+        name: "bullets",
+        label: "Heading and list",
+        css: `&{text-align:left}
+&:not(:has(> div)),& > div{align-items:flex-start!important}
+& :is(ul,ol){display:block;margin-left:1em}
+& li{margin:.3em 0}`,
+    },
+    {
+        name: "image-side",
+        label: "Text left, picture right",
+        css: `&:not(:has(> div)),& > div{display:grid!important;grid-template-columns:1fr 45%;grid-auto-rows:min-content;column-gap:1.5em;align-content:center;text-align:left}
+& > div > :not(img):not(p:has(> img)){grid-column:1;margin-left:0;margin-right:0}
+& > div > img,& > div > p:has(> img){grid-column:2;grid-row:1 / span 12;align-self:center;width:100%;max-width:100%;max-height:600px;margin:0;object-fit:contain!important}
+& > div > p:has(> img) img{width:100%;max-height:600px;object-fit:contain}
+& :is(ul,ol){display:block;margin-left:1em}`,
+    },
+    {
         name: "two-column",
         label: "Two columns",
         css: TWO_COLUMN_CSS,
@@ -420,14 +493,15 @@ export const LAYOUTS: SlideLayout[] = [
         name: "image-full",
         label: "Full-slide image, text on top",
         css: `&{text-align:center}
-& img{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;object-fit:cover!important;margin:0;border:0;box-shadow:none;filter:brightness(.6)}
+& img{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;object-fit:cover!important;margin:0;border:0;box-shadow:none;filter:brightness(.7)}
+&:not(:has(> div))::after,& > div::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.55) 75%,rgba(0,0,0,.9) 100%)}
 & :is(h1,h2,h3,h4,ul,ol,blockquote),& p:not(:has(img)){position:relative;z-index:1;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.6)}`,
     },
     {
         name: "quote",
         label: "Quote",
         css: `&{text-align:left}
-& blockquote{width:85%;font-size:1.25em;font-style:italic;background:none;box-shadow:none;border-left:.15em solid var(--r-link-color,#4dabf7);padding-left:.6em}`,
+& blockquote{width:85%;font-size:1.25em;font-style:italic;background:none;box-shadow:none;border-left:.15em solid var(--r-link-color,#e0b84c);padding-left:.6em}`,
     },
     {
         name: "code",

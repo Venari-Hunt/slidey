@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import path, { basename, extname, join } from "node:path";
 import Mustache from "mustache";
 import type { Options, QueryString } from "../@types";
+import { autoDeckSize, isAutoDeck } from "../domain/autoLayout";
 import type { MarkdownProcessor } from "../obsidian/markdownProcessor";
 import {
     getMediaCollector,
@@ -13,12 +14,15 @@ import {
     buildLayoutCss,
     buildPresetCss,
     buildStyleCss,
+    HOUSE_THEME_CSS,
     IMAGE_FIT_CSS,
 } from "../presets";
 import { DEFAULTS } from "../slidesExtended-constants";
 import { has, isEmpty } from "../util";
 import { YamlParser } from "../yaml/yamlParser";
 import { FIT_TEXT_SCRIPT } from "./fitText";
+import { HOUSE_FONT_FACES } from "./houseFont";
+import { IDLE_UI_CSS, IDLE_UI_SCRIPT } from "./idleUi";
 import { md } from "./markdown";
 import { OVERVIEW_SCRIPT } from "./overviewScript";
 import { RevealExporter } from "./revealExporter";
@@ -92,6 +96,7 @@ export class RevealRenderer {
     ): Promise<{ html: string; localAssetPaths: string[] }> {
         const { yamlOptions, markdown } = this.yaml.parseYamlFrontMatter(input);
         const options = this.yaml.getSlideOptions(yamlOptions, renderForPrint);
+        Object.assign(options, autoDeckSize(options, yamlOptions));
         const deckMarkdown = applySlidesMode(markdown, options);
         const revealOptions = this.yaml.getRevealOptions(options);
 
@@ -193,15 +198,19 @@ export class RevealRenderer {
                 fitText === false ? "" : FIT_TEXT_SCRIPT,
                 OVERVIEW_SCRIPT,
                 SPEAKER_SCRIPT,
+                IDLE_UI_SCRIPT,
             ]
                 .filter(Boolean)
                 .join("\n"),
             // Layouts first, styles last so their look wins over a preset's.
             presetStyles: [
                 IMAGE_FIT_CSS,
+                IDLE_UI_CSS,
                 buildLayoutCss(),
                 buildPresetCss(options.presets),
                 buildStyleCss(options.styles),
+                isAutoDeck(options) ? HOUSE_FONT_FACES : "",
+                isAutoDeck(options) ? HOUSE_THEME_CSS : "",
             ]
                 .filter(Boolean)
                 .join("\n"),

@@ -1,0 +1,53 @@
+# Auto slides (0.24.0, title cards 0.26.0)
+
+Write plain text, separate slides with `---`, and each slide gets a layout picked from its content, in one dark house theme. Code: `src/domain/autoLayout.ts` (rules, no DOM), `HOUSE_THEME_CSS` and the `statement` / `bullets` / `image-side` layouts in `src/presets.ts`.
+
+## When it is on
+
+`isAutoDeck(options)`: setting **Auto slides** (`autoSlides`, default on; note frontmatter `autoSlides:` overrides it) **and** no `preset:` / `style:` / `layout:` in the note frontmatter. Decks written for the old look system keep it. Upstream snapshot tests pass no `autoSlides`, so they still cover the old path.
+
+## Picking a layout
+
+`guessLayout(slide)` reads the visible lines (drops `<!-- … -->` and `%% … %%` lines, stops at `note:` / the notes sentinel). First match wins:
+
+| Slide content | Layout |
+|---|---|
+| a fenced code block | `code` |
+| one image, at most a heading + one line ≤ 40 words (not a list or quote) | `image-full` (title card) |
+| image(s) + text | `image-side` (2+ images, no text → `""`, the gallery row) |
+| every body line is `>` | `quote` |
+| heading only | `title` for `#`, `section` for `##`+ |
+| a list | `bullets`; 8+ items → `two-column` |
+| `#` + one line ≤ 16 words | `title` (subtitle) |
+| one line ≤ 14 words, no heading | `statement` |
+| anything else | `""` — default text slide (left-aligned in the house theme) |
+
+A `%% layout=x %%` line on the slide still wins: `PresetProcessor` (`LAYOUTS_KIND.auto`) only uses the guess when there is no per-slide or deck layout.
+
+`separateQuoteCredit` puts a blank `>` line before a `> — Name` line under a quote, so the credit is its own paragraph (styled smaller, upright, dimmed).
+
+## House theme
+
+`HOUSE_THEME_CSS` goes last in the `presetStyles` slot when `isAutoDeck`. It overrides reveal theme variables with `:root:root`: the design system's tool dark look since 2026-11-25 (owner approved mock-slidey-house): graphite `#141417`, text `#ece9e2`, headings `#f6f3ec`, accent amber `#e0b84c`; section slides turn the whole screen amber tint `#3a2f12` with `#ffd45c` text, code slides `#1b1b1f` with a `#141417` panel (both via `.reveal-viewport:has(section.present…)`), callouts are flat `#1b1b1f` cards, side pictures get rounded corners (list markers, quote bar, controls, progress; no heading underline since 0.25.0). Fonts (0.27.0): Poppins for headings, statements and title cards, Inter for body text, both bundled (see below).
+
+- `image-full` (every deck, 0.25.0): picture at `brightness(.7)` plus a radial vignette on the wrapper `::after` (`z-index:0`, under the text at `z-index:1`).
+- **Title cards** (0.26.0, font 0.27.0): `image-full` text uses `TITLE_CARD_FONT` (Rustica when installed, else bundled Poppins) at weight 800, `letter-spacing:-.025em`, `text-wrap:balance`; a line with no heading is 2em.
+- **Bundled fonts** (0.27.0): `HOUSE_FONT` = "Slidey Poppins" (400/700/800) for `--r-heading-font` and `layout-statement` text; `BODY_FONT` = "Slidey Inter" (400/700 + italics) for `--r-main-font`. Latin-subset woff2 from `@fontsource` in `src/assets/fonts/` (OFL, notices there), inlined as data URLs by esbuild's `.woff2` loader in `src/reveal/houseFont.ts` (~140 KB of main.js), so export needs nothing extra. TeX Gyre Adventor (0.26.0) was dropped: too light, no heavier weight.
+- `autoDeckSize` makes auto decks 1280×720 (16:9) unless the frontmatter sets `width:` / `height:`; applied in `RevealRenderer.render` right after `getSlideOptions`.
+- Two-column in auto decks keeps the wrapper flex-centered and splits only the list (`column-count:2`, `align-self:stretch`). A list at `width:100%` plus its indent overflowed and text-fit shrank it to half size.
+
+## Starter deck
+
+`STARTER_DECK` (`src/obsidian/newDeck.ts`) is a plain-text `---` deck with no frontmatter, so **New slide deck** starts in auto mode.
+
+**Test note:** `02 - Projetos/Slidey/Tests/Sample talk - auto slides.md` (12 slides, every layout but code); `Tests/_slidey-title-cards-test.md` (3 title cards). Screenshots: headless Edge over CDP, see `docs/development.md`.
+
+## Step bullets, picture focus, callouts (0.28.0)
+
+Rules in `src/domain/slideBuild.ts` (no DOM), read by `slidesMode.ts` in every slides mode, not only auto decks.
+
+- **Step bullets:** note frontmatter `stepBullets: true` (deck), `%% step %%` / `%% step=on|off %%` (slide; slide wins). `stepLists` rewrites top-level list items to upstream's fragment syntax (`+ x`, `1) x`), which `FragmentProcessor` turns into fragments. Nested items arrive with their parent; fenced code and speaker notes are untouched.
+- **Picture focus:** `%% focus=… %%` takes `top`/`bot`/`bottom`/`left`/`right`/`center`, one or two words (`left top`, `top-left`, `left,bot`). `focusPosition` → CSS position, written as slide-comment `data-background-position` (for `bg=`) and inline `--slidey-focus` (via `overrideStyle`); `IMAGE_FIT_CSS` sets `object-position:var(--slidey-focus,center)` on slide images. An unreadable value leaves the marker as text.
+- **Callouts:** upstream already renders `> [!type]` as `.callout` boxes in the browser (`reveal-dist/plugin/obsidian-markdown.js`, `_callouts.scss`). `guessLayout` returns `""` for a slide with a callout so it isn't laid out as a quote; `HOUSE_THEME_CSS` restyles `.callout` as a tinted card (Poppins title in the callout color) and centers and enlarges a callout alone on a slide.
+
+**Test note:** `Tests/_slidey-step-focus-callout-test.md`.

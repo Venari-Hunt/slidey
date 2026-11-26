@@ -1,8 +1,16 @@
 name: Release Obsidian Plugin
-# Manual trigger only (UI or API). Bumps the version, builds the plugin and the
+# Manual trigger (UI or API) or called by auto-release.yml on a merge to main. Bumps the version, builds the plugin and the
 # reveal.js distribution assets, packages slidey.zip, and publishes a GitHub
 # Release with all the artifacts the plugin needs at runtime.
 on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        default: 'patch'
+      prerelease:
+        type: boolean
+        default: true
   workflow_dispatch:
     inputs:
       version:
@@ -35,10 +43,10 @@ jobs:
       with:
         fetch-depth: 0
 
-    - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+    - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
 
     - name: Use Node.js
-      uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version: 24
         cache: "pnpm"
@@ -46,7 +54,7 @@ jobs:
     - name: Bump version, commit and tag
       id: build
       env:
-        INPUT_VERSION: ${{ github.event.inputs.version }}
+        INPUT_VERSION: ${{ inputs.version }}
       run: |
         git config user.name "$GH_BOT_NAME"
         git config user.email "$GH_BOT_EMAIL"
@@ -115,7 +123,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         RELEASE_VERSION: ${{ steps.build.outputs.version }}
-        PRERELEASE: ${{ github.event.inputs.prerelease }}
+        PRERELEASE: ${{ inputs.prerelease }}
       run: |
         gh release create "$RELEASE_VERSION" \
             -F ./release-notes.md \

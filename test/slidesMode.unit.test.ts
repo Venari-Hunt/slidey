@@ -355,6 +355,18 @@ describe("speaker notes and backgrounds", () => {
         ]);
     });
 
+    it("reads transition= and lets an explicit data-transition win", () => {
+        const { markdown } = headingsToSlides(
+            '# A\n%% transition=zoom %%\n# B\n%% transition="fade-in slide-out" %%\n# C\n%% transition=fade %%\n<!-- slide data-transition="none" -->',
+            [],
+        );
+        expect(slidesOf(markdown)).toEqual([
+            '<!-- slide data-transition="zoom" -->\n# A',
+            '<!-- slide data-transition="fade-in slide-out" -->\n# B',
+            '# C\n<!-- slide data-transition="none" -->',
+        ]);
+    });
+
     it("keeps markers with unknown keys, and an explicit bg wins", () => {
         const { markdown } = headingsToSlides(
             '# A\n%% bg=a.jpg foo=1 %%\n# B\n%% bg=a.jpg %%\n<!-- slide bg="red" -->',

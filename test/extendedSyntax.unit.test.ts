@@ -1,10 +1,13 @@
-import { MarkdownProcessor } from '../src/obsidian/markdownProcessor';
-import { restoreFencedCode } from '../src/obsidian/fencedCode';
-import { when } from 'ts-mockito';
-import { prepare } from './testUtils';
-import { MockedObsidianUtils, obsidianUtils as utilsInstance } from './__mocks__/mockObsidianUtils';
+import { when } from "ts-mockito";
+import { restoreFencedCode } from "../src/obsidian/fencedCode";
+import { MarkdownProcessor } from "../src/obsidian/markdownProcessor";
+import {
+    MockedObsidianUtils,
+    obsidianUtils as utilsInstance,
+} from "./__mocks__/mockObsidianUtils";
+import { prepare } from "./testUtils";
 
-test('Extended Markdown Syntax > Horizontal / Vertical Slides', () => {
+test("Extended Markdown Syntax > Horizontal / Vertical Slides", () => {
     const input = `# Slide 1
 
 ---
@@ -23,7 +26,7 @@ test('Extended Markdown Syntax > Horizontal / Vertical Slides', () => {
     return expect(result).toMatchSnapshot();
 });
 
-test('Extended Markdown Syntax >  Element Annotations', () => {
+test("Extended Markdown Syntax >  Element Annotations", () => {
     const input = `text with border <!-- element class="with-border" -->
 
 text with background <!-- element style="background:blue" -->
@@ -38,7 +41,7 @@ text with attribute <!-- element data-toggle="modal" -->
     return expect(result).toMatchSnapshot();
 });
 
-test('Extended Markdown Syntax >  Slide Annotations', () => {
+test("Extended Markdown Syntax >  Slide Annotations", () => {
     const input = `<!-- slide style="background-color: coral;" -->
 
 # Header with coral background color
@@ -61,7 +64,7 @@ Paragraph has coral background color, too!
     return expect(result).toMatchSnapshot();
 });
 
-test('Extended Markdown Syntax >  Block Comments', () => {
+test("Extended Markdown Syntax >  Block Comments", () => {
     const input = `::: block
 
 #### Header
@@ -99,7 +102,7 @@ no color
     return expect(result).toMatchSnapshot();
 });
 
-test('Extended Markdown Syntax >  Fragments', () => {
+test("Extended Markdown Syntax >  Fragments", () => {
     const input = `Fade in <!-- element class="fragment" -->
 
 Fade out <!-- element class="fragment fade-out" -->
@@ -126,7 +129,7 @@ Slide up while fading in <!-- element class="fragment fade-up" -->
     return expect(result).toMatchSnapshot();
 });
 
-test('Extended Markdown Syntax >  Inline Styling', () => {
+test("Extended Markdown Syntax >  Inline Styling", () => {
     const input = `<style>
 .with-border{
     border: 1px solid red;
@@ -143,10 +146,9 @@ styled text <!-- element class="with-border" -->
     return expect(result).toMatchSnapshot();
 });
 
-test('Extended Markdown Syntax >  Slide Backgrounds', () => {
-
-    when(MockedObsidianUtils.findMediaFile('Image.jpg')).thenCall(arg => {
-        return '/documentation/Image.jpg';
+test("Extended Markdown Syntax >  Slide Backgrounds", () => {
+    when(MockedObsidianUtils.findMediaFile("Image.jpg")).thenCall((arg) => {
+        return "/documentation/Image.jpg";
     });
 
     const input = `<!-- slide data-background="aquamarine" -->
@@ -201,14 +203,13 @@ See [reveal backgrounds](https://revealjs.com/backgrounds/)
     return expect(result).toMatchSnapshot();
 });
 
-test('Extended Markdown Syntax >  Default Background', () => {
-
-    when(MockedObsidianUtils.findMediaFile('Image.jpg')).thenCall(arg => {
-        return '/documentation/Image.jpg';
+test("Extended Markdown Syntax >  Default Background", () => {
+    when(MockedObsidianUtils.findMediaFile("Image.jpg")).thenCall((arg) => {
+        return "/documentation/Image.jpg";
     });
 
-    when(MockedObsidianUtils.findMediaFile('Slide.jpg')).thenCall(arg => {
-        return '/documentation/Slide.jpg';
+    when(MockedObsidianUtils.findMediaFile("Slide.jpg")).thenCall((arg) => {
+        return "/documentation/Slide.jpg";
     });
 
     const input = `
@@ -229,15 +230,14 @@ test('Extended Markdown Syntax >  Default Background', () => {
 `;
 
     const { options, markdown } = prepare(input);
-    options.bg = '[[Image.jpg]]'
+    options.bg = "[[Image.jpg]]";
     const sut = new MarkdownProcessor(utilsInstance);
 
     const result = JSON.stringify(sut.process(markdown, options));
     return expect(result).toMatchSnapshot();
 });
 
-
-test('Extended Markdown Syntax >  Speaker Notes', () => {
+test("Extended Markdown Syntax >  Speaker Notes", () => {
     const input = `## My Slide
 
 This is part of my Presentation
@@ -258,7 +258,7 @@ note: this is not! Only the speaker might see this text.
     return expect(result).toMatchSnapshot();
 });
 
-test('Extended Markdown Syntax >  Fragmented list', () => {
+test("Extended Markdown Syntax >  Fragmented list", () => {
     const input = `# Unordered list
 
 - First
@@ -312,18 +312,24 @@ test('Extended Markdown Syntax >  Fragmented list', () => {
     const { options, markdown } = prepare(input);
     const sut = new MarkdownProcessor(utilsInstance);
 
-    const result = JSON.stringify(restoreFencedCode(sut.process(markdown, options)));
+    const result = JSON.stringify(
+        restoreFencedCode(sut.process(markdown, options)),
+    );
     return expect(result).toMatchSnapshot();
 });
 
-test('Extended Markdown Syntax >  Excalidraw support', () => {
-    when(MockedObsidianUtils.findMediaFile('Sample.excalidraw')).thenCall(arg => {
-        return 'Sample.excalidraw.svg';
-    });
+test("Extended Markdown Syntax >  Excalidraw support", () => {
+    when(MockedObsidianUtils.findMediaFile("Sample.excalidraw")).thenCall(
+        (arg) => {
+            return "Sample.excalidraw.svg";
+        },
+    );
 
-    when(MockedObsidianUtils.findMediaFile('Sample.excalidraw.svg')).thenCall(arg => {
-        return 'path/to/Sample.excalidraw.svg';
-    });
+    when(MockedObsidianUtils.findMediaFile("Sample.excalidraw.svg")).thenCall(
+        (arg) => {
+            return "path/to/Sample.excalidraw.svg";
+        },
+    );
 
     const input = `#### Excalidraw support
 
@@ -338,8 +344,7 @@ test('Extended Markdown Syntax >  Excalidraw support', () => {
     return expect(result).toMatchSnapshot();
 });
 
-test('Extended Markdown Syntax >  Chart support', () => {
-
+test("Extended Markdown Syntax >  Chart support", () => {
     const input = `
 
     \`\`\`chart
@@ -361,8 +366,7 @@ test('Extended Markdown Syntax >  Chart support', () => {
     return expect(result).toMatchSnapshot();
 });
 
-test('Extended Markdown Syntax >  Chart support > Illegal Input', () => {
-
+test("Extended Markdown Syntax >  Chart support > Illegal Input", () => {
     const input = `
 
     \`\`\`chart
@@ -383,8 +387,7 @@ test('Extended Markdown Syntax >  Chart support > Illegal Input', () => {
     return expect(result).toMatchSnapshot();
 });
 
-test('Extended Markdown Syntax >  Chart support > Extended Settings', () => {
-
+test("Extended Markdown Syntax >  Chart support > Extended Settings", () => {
     const input = `
 
     \`\`\`chart
@@ -412,12 +415,12 @@ test('Extended Markdown Syntax >  Chart support > Extended Settings', () => {
     return expect(result).toMatchSnapshot();
 });
 
-test('Slides Extended Feature >  Show Debug Grid', () => {
+test("Slides Extended Feature >  Show Debug Grid", () => {
     const input = `## My Slide
 
 This slide shows the debug view feature
 
-$$\lim_{t \to \infty} (w(t) - y(t)) = 0$$
+$$lim_{t \to infty} (w(t) - y(t)) = 0$$
 
 `;
 

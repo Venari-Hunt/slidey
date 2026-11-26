@@ -15,6 +15,7 @@ Obsidian community plugin: a markdown note → a controllable, preset-styled rev
 
 ## Docs (read only the one a task touches)
 
+- `docs/auto-slides.md` — auto layout per slide + the one dark house theme (default).
 - `docs/authoring-modes.md` — `slides:` frontmatter dispatch, headings mode.
 - `docs/presets.md` — preset pipeline, deck DOM shape, changing starters, swatches.
 - `docs/slash-menu.md` — the `/` slide menu, priority over other `/` menus.

@@ -28,6 +28,7 @@ export const DEFAULT_SETTINGS: SlidesExtendedSettings = {
     showGrid: false,
     autoComplete: "inPreview",
     slashMenu: true,
+    deckTemplate: "",
     fitText: true,
     paneMode: "split",
     assetsDirectory: "",
@@ -42,6 +43,7 @@ export const DEFAULT_SETTINGS: SlidesExtendedSettings = {
     headingPresets: ["", "", "", "", "", ""],
     headingLayouts: ["title", "", "", "", "", ""],
     headingStyles: ["", "", "", "", "", ""],
+    autoSlides: true,
 };
 export const DEFAULTS: Options = {
     bg: "",

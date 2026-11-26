@@ -4,6 +4,10 @@
 
 At runtime the plugin runs a local Fastify server (default port 3000) serving the rendered deck into an iframe preview / export. It compares `distVersion.json` against `manifest.json`'s version and, if they differ, downloads `slidey.zip` from this repo's matching GitHub release and unpacks the reveal assets (`css/`, `dist/`, `plugin/`, `template/`) into the plugin folder. **So every version needs a real release with `slidey.zip` attached.** The repo is public, so a fresh non-dev install works.
 
+## Automatic pre-releases
+
+`auto-release.yml` runs on every push to `main` that touches `src/`, `reveal-dist/`, `package.json` or `esbuild.config.mjs`, and calls `release.yml` (`workflow_call`) with `patch` + pre-release. BRAT in the owner's vault tracks `Venari-Hunt/slidey` and updates at Obsidian start. The bump commit is pushed with `GITHUB_TOKEN`, which does not re-trigger the workflow. Docs-only merges don't release. A stable release is still the manual command below.
+
 ## Cutting a release
 
 ```

@@ -62,7 +62,7 @@ export class SlidesExtendedDistribution {
 
     async update() {
         const version = this.plugin.manifest.version;
-        const downloadUrl = `https://github.com/joaovenari/slidey/releases/download/${version}/slidey.zip`;
+        const downloadUrl = `https://github.com/Venari-Hunt/slidey/releases/download/${version}/slidey.zip`;
 
         // Backup existing dist directory before attempting update
         // Use dist-backup instead of dist/.backup to avoid issues with trailing slashes

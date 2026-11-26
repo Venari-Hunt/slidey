@@ -14,6 +14,8 @@ export interface SlidesExtendedSettings {
     autoReload: boolean;
     autoStart: boolean;
     exportDirectory: string;
+    /** Vault path of a note to copy for "New slide deck"; blank = starter. */
+    deckTemplate: string;
     enableOverview: boolean;
     enableChalkboard: boolean;
     enableMenu: boolean;
@@ -46,6 +48,8 @@ export interface SlidesExtendedSettings {
     headingLayouts: string[];
     /** Style per heading level (index 0 = `#`). */
     headingStyles: string[];
+    /** Pick each slide's layout from its content, in the house theme. */
+    autoSlides: boolean;
 }
 
 export type ChartJsOptions = {
@@ -103,6 +107,10 @@ export type Options = {
     headingLayouts?: string[];
     /** Style per heading level, from plugin settings. */
     headingStyles?: string[];
+    /** Auto mode (setting; note frontmatter `autoSlides:`). */
+    autoSlides?: boolean;
+    /** Lists show one item per click (note frontmatter `stepBullets:`). */
+    stepBullets?: boolean;
     [key: string]: unknown;
 };
 

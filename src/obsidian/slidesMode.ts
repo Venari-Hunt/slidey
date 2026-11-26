@@ -1,4 +1,10 @@
 import type { Options } from "../@types";
+import {
+    FOCUS_WORD,
+    focusPosition,
+    stepLists,
+    stepValue,
+} from "../domain/slideBuild";
 import { overrideStyle, type SlideOverrides } from "../presets";
 
 // How a note is cut into slides, picked by the `slides:` frontmatter key.
@@ -50,6 +56,10 @@ interface SlideAttrs extends SlideOverrides {
     fit?: string;
     /** reveal's `data-background-opacity`, from `dim=40%` → 0.6. */
     opacity?: string;
+    /** reveal's `data-transition`: fade, zoom, none, `fade-in slide-out`… */
+    transition?: string;
+    /** Lists show one item per click (`%% step %%`, `step=off`). */
+    step?: boolean;
 }
 
 /** Layout and style per heading level (index 0 = `#`), from settings. */
@@ -83,15 +93,20 @@ export function applySlidesMode(markdown: string, options: Options): string {
     options.verticalSeparator = HEADING_VERTICAL_SEPARATOR;
     options.notesSeparator = HEADING_NOTES_SEPARATOR;
     if (mode === "blocks") {
-        return blocksToSlides(markdown).markdown;
+        return blocksToSlides(markdown, options.stepBullets === true).markdown;
     }
     const levelPresets = Array.isArray(options.headingPresets)
-        ? (options.headingPresets as string[])
+        ? options.headingPresets
         : [];
-    return headingsToSlides(markdown, levelPresets, {
-        layouts: stringList(options.headingLayouts),
-        styles: stringList(options.headingStyles),
-    }).markdown;
+    return headingsToSlides(
+        markdown,
+        levelPresets,
+        {
+            layouts: stringList(options.headingLayouts),
+            styles: stringList(options.headingStyles),
+        },
+        options.stepBullets === true,
+    ).markdown;
 }
 
 /**
@@ -107,6 +122,7 @@ export function separatorMarkers(markdown: string, options: Options): string {
     const separator = options.separator || DEFAULT_SEPARATOR;
     const vertical = options.verticalSeparator || DEFAULT_VERTICAL_SEPARATOR;
     const notes = options.notesSeparator || "note:";
+    const step = options.stepBullets === true;
     // A capture group keeps the separators in the split result (odd indexes).
     const parts = markdown.split(
         new RegExp(`(${separator}|${vertical})`, "gm"),
@@ -117,7 +133,10 @@ export function separatorMarkers(markdown: string, options: Options): string {
                 return part ?? "";
             }
             const { lines, attrs } = readMarkers(part.split(/\r?\n/), 0);
-            return withAttrs(withNotes(lines, notes).join("\n"), attrs);
+            return withAttrs(
+                withNotes(stepIf(lines, attrs.step ?? step), notes).join("\n"),
+                attrs,
+            );
         })
         .join("");
 }
@@ -224,6 +243,7 @@ export function headingsToSlides(
     markdown: string,
     levelPresets: string[],
     levelLooks: LevelLooks = {},
+    step = false,
 ): { markdown: string; starts: number[] } {
     const slides: string[] = [];
     const starts: number[] = [];
@@ -240,7 +260,7 @@ export function headingsToSlides(
             continue;
         }
         slides.push(
-            withAttrs(withNotes(lines).join("\n"), {
+            withAttrs(withNotes(stepIf(lines, attrs.step ?? step)).join("\n"), {
                 ...attrs,
                 preset:
                     attrs.preset ?? levelPreset(levelPresets, section.level),
@@ -272,7 +292,10 @@ interface Block {
  * A `%% notes %%` line inside a region starts its speaker notes. Markers
  * inside fenced code are text.
  */
-export function blocksToSlides(markdown: string): {
+export function blocksToSlides(
+    markdown: string,
+    step = false,
+): {
     markdown: string;
     starts: number[];
 } {
@@ -283,7 +306,12 @@ export function blocksToSlides(markdown: string): {
     return {
         markdown: blocks
             .map((block) =>
-                withAttrs(withNotes(block.lines).join("\n"), block.attrs),
+                withAttrs(
+                    withNotes(
+                        stepIf(block.lines, block.attrs.step ?? step),
+                    ).join("\n"),
+                    block.attrs,
+                ),
             )
             .join(HEADING_SLIDE_SEPARATOR),
         starts: blocks.map((block) => block.start),
@@ -413,6 +441,10 @@ function readMarkers(
             skip = true;
             continue;
         }
+        if (/^step$/i.test(body)) {
+            attrs.step = true;
+            continue;
+        }
         const read = readAttrs(body.replace(/^slide\s+/i, ""));
         if (!read.rest && Object.keys(read.attrs).length) {
             Object.assign(attrs, read.attrs);
@@ -424,11 +456,19 @@ function readMarkers(
 }
 
 // Reads `preset=quote layout=two-column style=night bg=[[My photo.jpg]]`,
-// plus the one-off overrides `font= color= accent= size=`. `rest` is whatever wasn't a known
+// `transition=fade`, plus the one-off overrides `font= color= accent= size=`. `rest` is whatever wasn't a known
 // attribute, so a marker holding anything else can be left alone.
 function readAttrs(text: string): { attrs: SlideAttrs; rest: string } {
     const attrs: SlideAttrs = {};
-    const rest = text.replace(ATTR, (match, key: string, raw: string) => {
+    // `focus=left top` is one value; join it so ATTR reads both words.
+    const joined = text.replace(
+        new RegExp(
+            `\\bfocus\\s*=\\s*(${FOCUS_WORD})\\s+(${FOCUS_WORD})\\b`,
+            "gi",
+        ),
+        "focus=$1-$2",
+    );
+    const rest = joined.replace(ATTR, (match, key: string, raw: string) => {
         const value = raw.replace(/^"|"$/g, "").trim();
         switch (key.toLowerCase()) {
             case "preset":
@@ -446,6 +486,25 @@ function readAttrs(text: string): { attrs: SlideAttrs; rest: string } {
             case "fit":
                 attrs.fit = value;
                 return "";
+            case "transition":
+                attrs.transition = value;
+                return "";
+            case "step": {
+                const step = stepValue(value);
+                if (step === undefined) {
+                    return match;
+                }
+                attrs.step = step;
+                return "";
+            }
+            case "focus": {
+                const focus = focusPosition(value);
+                if (!focus) {
+                    return match;
+                }
+                attrs.focus = focus;
+                return "";
+            }
             case "dim": {
                 const opacity = dimOpacity(value);
                 if (opacity === undefined) {
@@ -487,6 +546,11 @@ function dimOpacity(value: string): string | undefined {
     return String(Math.round((1 - Math.min(dim, 1)) * 100) / 100);
 }
 
+// `%% step %%` on the slide, else the deck's `stepBullets:`.
+function stepIf(lines: string[], step: boolean): string[] {
+    return step ? stepLists(lines) : lines;
+}
+
 // The first `%% notes %%` line (outside code) becomes the notes separator;
 // later ones are dropped, since reveal.js takes a single split.
 function withNotes(
@@ -513,13 +577,15 @@ function withNotes(
 // comment they already read. Attributes already on an existing slide comment
 // win. Style travels as `slidey-style`: `style` there is inline CSS.
 function withAttrs(slide: string, attrs: SlideAttrs): string {
-    const owned: [keyof SlideAttrs, string, RegExp][] = [
+    const owned: [Exclude<keyof SlideAttrs, "step">, string, RegExp][] = [
         ["preset", "preset", /\bpreset\s*=/],
         ["layout", "layout", /\blayout\s*=/],
         ["style", "slidey-style", /\bslidey-style\s*=/],
         ["bg", "bg", /\b(?:bg|data-background-\w+)\s*=/],
         ["fit", "data-background-size", /\bdata-background-size\s*=/],
         ["opacity", "data-background-opacity", /\bdata-background-opacity\s*=/],
+        ["transition", "data-transition", /\bdata-transition\s*=/],
+        ["focus", "data-background-position", /\bdata-background-position\s*=/],
     ];
     const comment = SLIDE_COMMENT.exec(slide);
     const existing = comment

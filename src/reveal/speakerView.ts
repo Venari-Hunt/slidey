@@ -1,5 +1,7 @@
 import { ItemView, type TFile, type WorkspaceLeaf } from "obsidian";
+import { t } from "../domain/strings";
 import type { SlidesExtendedPlugin } from "../slidesExtended-Plugin";
+import { CLICKER_KEYS } from "./clickerKeys";
 import { AUDIENCE_QUERY, MIRROR_QUERY } from "./speakerScript";
 
 export const AUDIENCE_VIEW = "slidey-audience";
@@ -16,18 +18,6 @@ export interface DeckState {
     next: { h: number; v: number; f?: number } | null;
     title: string;
 }
-
-// Keys a clicker (or keyboard) sends → reveal.js postMessage API method.
-const NAV_KEYS: Record<string, string> = {
-    PageDown: "next",
-    PageUp: "prev",
-    ArrowRight: "next",
-    ArrowLeft: "prev",
-    ArrowDown: "down",
-    ArrowUp: "up",
-    " ": "next",
-    Spacebar: "next",
-};
 
 function deckUrl(plugin: SlidesExtendedPlugin, file: TFile, query: string) {
     const url = new URL(plugin.revealServer.getTargetUrl(file).href);
@@ -81,7 +71,7 @@ export class AudienceView extends ItemView {
     async onOpen(): Promise<void> {
         this.contentEl.addClass("slidey-audience");
         this.registerDomEvent(this.contentEl, "keydown", (ev) => {
-            const method = NAV_KEYS[ev.key];
+            const method = CLICKER_KEYS[ev.key];
             if (method) {
                 ev.preventDefault();
                 this.go(method);
@@ -129,7 +119,7 @@ export class AudienceView extends ItemView {
         }
         let data: { slidey?: string } & Partial<DeckState>;
         try {
-            data = JSON.parse(String(ev.data));
+            data = JSON.parse(String(ev.data)) as typeof data;
         } catch {
             return;
         }
@@ -157,6 +147,14 @@ export class SpeakerView extends ItemView {
     private started = 0;
     private ticker: number | null = null;
     private lastState: DeckState | null = null;
+    // Rehearsal: time spent per slide (by linear index), in ms. Revisits add
+    // up; fragments within a slide don't restart it.
+    private slideTimes = new Map<number, number>();
+    private slideIndex = -1;
+    private slideSince = 0;
+    private slideTimerEl: HTMLElement | null = null;
+    private notesBox: HTMLElement | null = null;
+    private timesEl: HTMLElement | null = null;
 
     constructor(
         leaf: WorkspaceLeaf,
@@ -206,7 +204,7 @@ export class SpeakerView extends ItemView {
         this.contentEl.addClass("slidey-speaker");
         this.contentEl.tabIndex = 0;
         this.registerDomEvent(this.contentEl, "keydown", (ev) => {
-            const method = NAV_KEYS[ev.key];
+            const method = CLICKER_KEYS[ev.key];
             if (method) {
                 ev.preventDefault();
                 this.plugin.getAudienceView()?.go(method);
@@ -227,6 +225,7 @@ export class SpeakerView extends ItemView {
     show(file: TFile): void {
         this.file = file;
         this.started = 0;
+        this.resetSlideTimes(-1);
         const el = this.contentEl;
         el.empty();
 
@@ -241,7 +240,18 @@ export class SpeakerView extends ItemView {
             cls: "slidey-speaker-timer",
             text: "00:00",
         });
+        this.slideTimerEl = bar.createSpan({
+            cls: "slidey-speaker-slide-timer",
+            attr: { title: "Time on this slide" },
+        });
         const reset = bar.createEl("button", { text: "Reset timer" });
+        const times = bar.createEl("button", { text: "Slide times" });
+        times.onclick = () => {
+            const on = !this.showingTimes();
+            this.notesBox?.toggleClass("is-times", on);
+            times.toggleClass("is-active", on);
+            this.renderTimes();
+        };
         const end = bar.createEl("button", { text: "End" });
         end.onclick = () => this.plugin.endSpeakerPresentation();
         this.clockEl = bar.createSpan({ cls: "slidey-speaker-clock" });
@@ -249,6 +259,7 @@ export class SpeakerView extends ItemView {
         nextBtn.onclick = () => this.plugin.getAudienceView()?.go("next");
         reset.onclick = () => {
             this.started = Date.now();
+            this.resetSlideTimes(this.slideIndex);
             this.tick();
         };
 
@@ -257,8 +268,17 @@ export class SpeakerView extends ItemView {
         this.current = this.mirror(slides, "Now", file);
         this.next = this.mirror(slides, "Next", file);
         const notes = main.createDiv({ cls: "slidey-speaker-notes" });
-        notes.createDiv({ cls: "slidey-speaker-label", text: "Notes" });
+        this.notesBox = notes;
+        notes.createDiv({
+            cls: "slidey-speaker-label mod-notes",
+            text: "Notes",
+        });
+        notes.createDiv({
+            cls: "slidey-speaker-label mod-times",
+            text: "Slide times",
+        });
         this.notesEl = notes.createDiv({ cls: "slidey-speaker-notes-text" });
+        this.timesEl = notes.createDiv({ cls: "slidey-speaker-times" });
         this.tick();
         el.focus();
     }
@@ -283,7 +303,13 @@ export class SpeakerView extends ItemView {
         if (!this.started) {
             this.started = Date.now();
         }
+        if (state.index !== this.slideIndex) {
+            this.bankSlideTime();
+            this.slideIndex = state.index;
+            this.slideSince = Date.now();
+        }
         this.lastState = state;
+        this.tick();
         this.moveMirrors(state);
         if (this.counterEl) {
             this.counterEl.setText(
@@ -311,7 +337,7 @@ export class SpeakerView extends ItemView {
             } else {
                 this.notesEl.createSpan({
                     cls: "slidey-speaker-empty",
-                    text: "No notes on this slide. Add them under %% notes %%.",
+                    text: t("speakerNoNotes"),
                 });
             }
         }
@@ -328,13 +354,69 @@ export class SpeakerView extends ItemView {
         this.clockEl?.setText(
             now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         );
-        if (this.timerEl) {
-            const secs = this.started
-                ? Math.floor((Date.now() - this.started) / 1000)
-                : 0;
-            const mm = String(Math.floor(secs / 60)).padStart(2, "0");
-            const ss = String(secs % 60).padStart(2, "0");
-            this.timerEl.setText(`${mm}:${ss}`);
+        this.timerEl?.setText(
+            clock(this.started ? Date.now() - this.started : 0),
+        );
+        this.slideTimerEl?.setText(
+            this.slideIndex >= 0
+                ? `This slide ${clock(this.timeOn(this.slideIndex))}`
+                : "",
+        );
+        this.renderTimes();
+    }
+
+    private timeOn(index: number): number {
+        const banked = this.slideTimes.get(index) ?? 0;
+        return index === this.slideIndex && this.slideSince
+            ? banked + Date.now() - this.slideSince
+            : banked;
+    }
+
+    private bankSlideTime(): void {
+        if (this.slideIndex >= 0 && this.slideSince) {
+            this.slideTimes.set(this.slideIndex, this.timeOn(this.slideIndex));
         }
     }
+
+    // Clears all slide times; the slide at `index` (if any) restarts now.
+    private resetSlideTimes(index: number): void {
+        this.slideTimes.clear();
+        this.slideIndex = index;
+        this.slideSince = index >= 0 ? Date.now() : 0;
+    }
+
+    private showingTimes(): boolean {
+        return this.notesBox?.hasClass("is-times") ?? false;
+    }
+
+    // The "Slide times" list: every slide, time spent so far, current marked.
+    private renderTimes(): void {
+        if (!this.timesEl || !this.showingTimes()) {
+            return;
+        }
+        this.timesEl.empty();
+        const total = this.lastState?.total ?? 0;
+        for (let i = 0; i < total; i++) {
+            const row = this.timesEl.createDiv({
+                cls: "slidey-speaker-times-row",
+            });
+            row.toggleClass("is-current", i === this.slideIndex);
+            row.createSpan({ text: `Slide ${i + 1}` });
+            row.createSpan({ text: clock(this.timeOn(i)) });
+        }
+        if (!total) {
+            this.timesEl.createSpan({
+                cls: "slidey-speaker-empty",
+                text: t("speakerNoTimes"),
+            });
+        }
+    }
+}
+
+// 83000 → "01:23"
+function clock(ms: number): string {
+    const secs = Math.floor(ms / 1000);
+    const mm = String(Math.floor(secs / 60)).padStart(2, "0");
+    const ss = String(secs % 60).padStart(2, "0");
+    return `${mm}:${ss}`;
 }

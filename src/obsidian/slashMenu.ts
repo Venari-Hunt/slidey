@@ -1,3 +1,4 @@
+import type { Lang } from "../domain/strings";
 import { LAYOUTS } from "../presets";
 import { type SlidesMode, slidesMode } from "./slidesMode";
 
@@ -109,6 +110,9 @@ function lookItems(
         }));
 }
 
+// reveal.js's built-in slide transitions.
+const TRANSITIONS = ["fade", "slide", "zoom", "convex", "concave", "none"];
+
 const SLIDE_ITEMS: SlashItem[] = [
     {
         title: "Background picture",
@@ -164,6 +168,30 @@ const SLIDE_ITEMS: SlashItem[] = [
         keywords: "size bigger smaller scale",
         insert: marker(`size=${CURSOR}`),
     },
+    ...TRANSITIONS.map((name) => ({
+        title: `Transition: ${name}`,
+        hint: marker(`transition=${name}`),
+        keywords: `transition animation effect ${name}`,
+        insert: marker(`transition=${name}`),
+    })),
+    {
+        title: "Bullets one per click",
+        hint: marker("step"),
+        keywords: "step bullets list fragment click appear one by one",
+        insert: marker("step"),
+    },
+    ...[
+        ["top", "Top"],
+        ["bot", "Bottom"],
+        ["left", "Left"],
+        ["right", "Right"],
+        ["center", "Center"],
+    ].map(([value, label]) => ({
+        title: `Picture focus: ${label}`,
+        hint: marker(`focus=${value}`),
+        keywords: `focus crop picture image position ${value} ${label}`,
+        insert: marker(`focus=${value}`),
+    })),
     {
         title: "Show step by step",
         hint: '<!-- element class="fragment" -->',
@@ -253,6 +281,75 @@ export function slashItems(
     ];
 }
 
+// pt-BR for the menu's plain-English titles and hints, keyed by the English
+// text. Syntax hints (`%% bg=... %%`) are code and stay as they are.
+const PT: Record<string, string> = {
+    "New slide": "Novo slide",
+    "New slide below (vertical)": "Novo slide abaixo (vertical)",
+    "Leave this section out": "Deixar esta seção de fora",
+    "End slide": "Fim do slide",
+    "Background picture": "Imagem de fundo",
+    "Background picture, darkened": "Imagem de fundo, escurecida",
+    "Background picture, whole picture": "Imagem de fundo, imagem inteira",
+    "Background color": "Cor de fundo",
+    "Speaker notes": "Notas do apresentador",
+    "Text color": "Cor do texto",
+    "Accent color": "Cor de destaque",
+    Font: "Fonte",
+    "Text size": "Tamanho do texto",
+    "Bullets one per click": "Um item por clique",
+    "Show step by step": "Mostrar passo a passo",
+    "Open slide preview": "Abrir a prévia dos slides",
+    "Shows this note's slides": "Mostra os slides desta nota",
+    "Slide overview": "Visão geral dos slides",
+    "Small pictures of every slide": "Miniaturas de todos os slides",
+    "Present full screen": "Apresentar em tela cheia",
+    "Runs a command": "Executa um comando",
+    "Present with speaker view": "Apresentar com a visão do apresentador",
+    "Notes + next slide here, slides on the projector":
+        "Notas e próximo slide aqui, slides no projetor",
+    "Export as PowerPoint": "Exportar como PowerPoint",
+    "Export as PDF": "Exportar como PDF",
+    "Make this note slides: every heading is a slide":
+        "Transformar a nota em slides: cada título é um slide",
+    "Make this note slides: --- separates slides":
+        "Transformar a nota em slides: --- separa os slides",
+    "Make this note slides: only marked blocks":
+        "Transformar a nota em slides: só blocos marcados",
+    Layout: "Layout",
+    Style: "Estilo",
+    Preset: "Predefinição",
+    Transition: "Transição",
+    "Picture focus": "Foco da imagem",
+    Top: "Topo",
+    Bottom: "Base",
+    Left: "Esquerda",
+    Right: "Direita",
+    Center: "Centro",
+};
+
+/** The text in `lang`; "Kind: name" titles translate the kind and the word. */
+export function localText(text: string, lang: Lang): string {
+    if (lang === "en") {
+        return text;
+    }
+    if (PT[text]) {
+        return PT[text];
+    }
+    const split = /^([^:]+): (.*)$/.exec(text);
+    if (split && PT[split[1]]) {
+        return `${PT[split[1]]}: ${PT[split[2]] ?? split[2]}`;
+    }
+    return text;
+}
+
+function startsWith(item: SlashItem, first: string, lang: Lang): boolean {
+    return (
+        normalize(item.title).startsWith(first) ||
+        normalize(localText(item.title, lang)).startsWith(first)
+    );
+}
+
 function normalize(text: string): string {
     return text.toLowerCase().replace(/[^a-z0-9]+/g, " ");
 }
@@ -264,19 +361,22 @@ function normalize(text: string): string {
 export function filterSlashItems(
     items: SlashItem[],
     query: string,
+    lang: Lang = "en",
 ): SlashItem[] {
     const words = normalize(query).split(" ").filter(Boolean);
     if (!words.length) {
         return items;
     }
     const matches = items.filter((item) => {
-        const haystack = ` ${normalize(`${item.title} ${item.keywords ?? ""}`)}`;
+        const haystack = ` ${normalize(
+            `${item.title} ${localText(item.title, lang)} ${item.keywords ?? ""}`,
+        )}`;
         return words.every((word) => haystack.includes(` ${word}`));
     });
     const first = normalize(query).trim();
     return [
-        ...matches.filter((item) => normalize(item.title).startsWith(first)),
-        ...matches.filter((item) => !normalize(item.title).startsWith(first)),
+        ...matches.filter((item) => startsWith(item, first, lang)),
+        ...matches.filter((item) => !startsWith(item, first, lang)),
     ];
 }
 

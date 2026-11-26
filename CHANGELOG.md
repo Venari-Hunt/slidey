@@ -5,12 +5,80 @@ Upstream (Slides Extended) history is frozen in `CHANGELOG-upstream-slides-exten
 
 ## [Unreleased]
 
+- **New house look for auto slides.** Decks now use the Noctívago tool dark colors: a graphite background, warm-white text and one amber accent (the blue presets are gone). Section dividers fill the screen with a dark amber, code slides get a darker panel, callouts are flat cards and side pictures have rounded corners. A word in *italics* inside a heading turns amber, so a title can have one highlighted word. The Night, Paper, Clean white, Bold and Ocean styles are unchanged.
+- **Tidier shortcuts window, `/` menu and present-exit button.** The shortcuts window has small grey group labels, one fixed column for keys and a highlight on the row under the mouse. `/` menu rows are a steady height and their hint stays readable when selected. The "exit" button in present mode shows hover, press and keyboard-focus states. Speaker-view slide-time rows use the same spacing. Colors still come from your Obsidian theme.
+
+- **Privacy note in the README.** One paragraph: what stays on your computer and when Slidey goes online.
+
+- **Automatic pre-releases.** Every merge that changes the plugin or deck engine now publishes a patch pre-release on GitHub, so BRAT (or anyone following the repo) gets updates without copying files by hand.
+
+- **Empty and error states for the overview panel.** With no slide note open, the panel now says why it is empty and offers a "New slide deck" button. If the thumbnails never load, it says so and offers "Try again" instead of staying blank. These two texts and the speaker view's two "nothing here" lines also follow Obsidian's language (English or Brazilian Portuguese).
+
+- **Portuguese for the settings tab and the `/` menu.** With Obsidian set to Portuguese (Brazil), the settings tab (names, descriptions, buttons, dropdown choices, notices) and the `/` slide menu (titles, hints, and typing the Portuguese word to filter) now show in Portuguese. Setting keys and `%% … %%` syntax stay as written. Anything without a translation stays in English.
+
+- **Keyboard shortcuts sheet.** New command "Show keyboard shortcuts" lists the keys that move and show the slides (arrows, Space, PageUp/PageDown, the clicker blank button, O, F, S, Esc). It follows Obsidian's language: English or Brazilian Portuguese.
+
+- **Author name.** Now "Venari" in the manifest, license and About section; the engine download comes from the Venari-Hunt/slidey releases.
+
+- **About section in settings.** Bottom of the settings tab: version, author, license and credits (Slides Extended, Advanced Slides, reveal.js), links to the user guide, what's new and the issue tracker, and a privacy line (nothing collected, nothing sent).
+
 ### Known gaps
 
 - Preset tuning (the 7 starters are a first cut).
 - `image-bg` needs a real image on the slide to look like anything.
 - Rebrand of internal TypeScript identifiers (`SlidesExtendedPlugin`, `slidesExtended-*.ts`) — cosmetic, deferred.
 - Literal `<!-- slide ... -->` text in slide content (even inside inline code) is still interpreted as a real annotation — a pre-existing footgun shared with the upstream processors.
+
+## 0.28.0 — 2026-10-08
+
+- **Bullets one per click.** Put `stepBullets: true` in a note's properties and every list shows one item per clicker press. For one slide only, add `%% step %%` at its top; `%% step=off %%` turns it off for one slide. Also in the `/` menu as "Bullets one per click".
+- **Picture focus.** A full-slide picture is cropped from the middle. `%% focus=top %%` keeps the top in frame instead; also `bot`, `left`, `right`, `center`, or two together: `%% focus=left top %%`. Works for `bg=` backgrounds too. In the `/` menu as "Picture focus".
+- **Callouts in auto slides.** A `> [!tip]` callout now shows as a tinted card with a colored title, centered and larger when it's alone on a slide, instead of being laid out as a quote.
+- **Blank-screen button.** Your clicker's blank button (it sends `.` or `b`) turns the screen black and back, also when Obsidian, not the slide, has the keyboard and in the two-screen speaker view.
+
+## 0.27.0 — 2026-10-08
+
+- **New fonts for auto slides.** Headings, one-line slides and title cards use Poppins; body text, lists and quotes use Inter. Both ship inside Slidey, so they work with nothing installed, in PDF and PowerPoint export too.
+- **Title cards are heavier and less tight:** Poppins ExtraBold instead of the Avant Garde lookalike, which had no heavier weight. If you have Rustica (Adobe Fonts) installed, title cards use it instead.
+
+## 0.26.0 — 2026-10-08
+
+- **Title cards.** A slide with one picture and one line or short paragraph (a heading on top is fine) now fills the slide with the picture and sets the text over it in a bold Avant Garde style, tightly spaced. A lone line is shown extra large.
+- The font is TeX Gyre Adventor Bold, a free Avant Garde lookalike that ships inside Slidey, so it works with nothing installed, in PDF and PowerPoint export too. If you have the real ITC Avant Garde Gothic installed, Slidey uses it instead, including its special letter pairs (NT, CA, TH…). The free font doesn't have those pairs.
+
+## 0.25.0 — 2026-10-08
+
+- **Controls get out of the way.** The arrows, progress bar and slide number fade out 2 seconds after you stop moving the mouse, and come back when you move it. Clicker and keyboard presses don't bring them back.
+- **Present slides (fullscreen) uses your second screen.** With a projector or second monitor connected, it now opens the slides fullscreen there and the speaker view on your screen (notes, current and next slide, timer, slide times). With one screen, it goes fullscreen as before.
+- Auto slides: headings no longer have a yellow line under them.
+- **Full-bleed image slides get a vignette:** the edges of the picture darken, so the text in the middle stands out.
+
+## 0.24.0 — 2026-10-07
+
+- **Just type, Slidey designs the slides.** Write your talk as plain text and put `---` between slides. Slidey looks at each slide and picks its layout by itself:
+  - a heading alone becomes a title (`#`) or a section break (`##`)
+  - one short sentence becomes a big statement
+  - a list becomes bullets, and a long list (8+ items) splits into two columns
+  - a `>` quote becomes a quote slide, and a `> — Name` line under it becomes the credit
+  - a picture fills the slide, and a picture with text sits beside it
+  - a code block becomes a code slide
+- **One dark theme.** Every auto deck uses the same look: a near-black background, white text and a warm-yellow accent, in a 16:9 frame that fills today's screens. You don't need to choose styles or presets.
+- Your existing decks don't change: a note that sets `style`, `preset` or `layout` in its properties keeps its old look. A `%% layout=quote %%` line still changes one slide by hand.
+- **New slide deck** now starts from a plain-text example deck.
+- To turn it off: **Settings → Slidey → Auto slides**, or `autoSlides: false` in one note's properties.
+
+## 0.23.0 — 2026-09-25
+
+- **Rehearse with slide times.** The speaker view now shows how long you have been on the current slide ("This slide 00:42"), next to the total timer. Click **Slide times** to swap your notes for a list of every slide and the time spent on it so far; going back to a slide adds to its time. **Reset timer** clears them all. Click **Slide times** again to see your notes.
+
+## 0.22.0 — 2026-09-25
+
+- **Start a deck in one step.** Run **New slide deck** from the command palette. Slidey makes a note called `Untitled deck` in your folder for new notes, fills it with a short example deck (a title slide, bullets, a quote, two columns) and opens the preview. To start from your own note instead, pick it in **Settings → Slidey → New deck template**.
+- **Pick how a slide appears.** Put `%% transition=fade %%` under a slide heading (or at the top of a `---` slide). Choices: `fade`, `slide`, `zoom`, `convex`, `concave`, `none`, or two at once like `transition="fade-in slide-out"`. The `/` menu has one item for each. For the whole deck, use `transition:` in the note properties.
+
+## 0.21.1 — 2026-09-25
+
+- Behind the scenes: code cleanup so Slidey passes the checks Obsidian runs before listing a plugin in its directory. Nothing changes in how you use it. The sample slides in **Settings → Slide styles / Slide presets** still show each look's colors and fonts.
 
 ## 0.21.0 — 2026-09-25
 

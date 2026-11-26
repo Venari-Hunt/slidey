@@ -6,9 +6,13 @@ import {
     type TAbstractFile,
 } from "obsidian";
 import type { SlidesExtendedSettings } from "./@types";
+import { t } from "./domain/strings";
+import { electron, type WindowRemote } from "./electron";
 import { EmbeddedSlideProcessor } from "./obsidian/embeddedSlideProcessor";
+import { createDeck } from "./obsidian/newDeck";
 import { ObsidianUtils } from "./obsidian/obsidianUtils";
 import { presetGutter, refreshPresetGutters } from "./obsidian/presetGutter";
+import { ShortcutsModal } from "./obsidian/shortcutsModal";
 import { AutoCompleteSuggest } from "./obsidian/suggesters/AutoCompleteSuggester";
 import { LineSelectionListener } from "./obsidian/suggesters/lineSelectionListener";
 import { PictureSuggest } from "./obsidian/suggesters/PictureSuggester";
@@ -102,6 +106,16 @@ export class SlidesExtendedPlugin extends Plugin {
             callback: async () => this.toggleView(),
         });
         this.addCommand({
+            id: "show-shortcuts",
+            name: t("shortcutsCommand"),
+            callback: () => new ShortcutsModal(this.app).open(),
+        });
+        this.addCommand({
+            id: "new-deck",
+            name: "New slide deck",
+            callback: async () => this.newDeck(),
+        });
+        this.addCommand({
             id: "reload-preview",
             name: "Reload slide preview",
             callback: () => {
@@ -126,6 +140,11 @@ export class SlidesExtendedPlugin extends Plugin {
             id: "present-active-presentation",
             name: "Present slides (fullscreen)",
             callback: async () => {
+                // A second screen: slides there, speaker view here.
+                if (this.screenCount() > 1) {
+                    await this.presentWithSpeakerView();
+                    return;
+                }
                 await this.showView();
                 const instance = this.getViewInstance();
                 await instance?.presentMode();
@@ -320,9 +339,7 @@ export class SlidesExtendedPlugin extends Plugin {
         await speakerLeaf.setViewState({ type: SPEAKER_VIEW, active: true });
         (speakerLeaf.view as SpeakerView).show(file);
 
-        const remote = (
-            require("electron") as { remote?: typeof import("electron") }
-        ).remote;
+        const remote = electron<{ remote?: WindowRemote }>().remote;
         const before = new Set(
             remote?.BrowserWindow.getAllWindows().map((w) => w.id) ?? [],
         );
@@ -343,8 +360,14 @@ export class SlidesExtendedPlugin extends Plugin {
         (speakerLeaf.view as SpeakerView).contentEl.focus();
     }
 
+    /** Screens connected now; 1 when Electron's screen API isn't reachable. */
+    private screenCount(): number {
+        const remote = electron<{ remote?: WindowRemote }>().remote;
+        return remote?.screen.getAllDisplays().length ?? 1;
+    }
+
     private moveToSecondScreen(
-        remote: typeof import("electron"),
+        remote: WindowRemote,
         before: Set<number>,
     ): boolean {
         const popout = remote.BrowserWindow.getAllWindows().find(
@@ -423,6 +446,22 @@ export class SlidesExtendedPlugin extends Plugin {
         if (this.settings.autoComplete === "inPreview") {
             this.autoCompleteSuggester?.deactivate();
         }
+    }
+
+    /** Creates a deck note from the template (or starter), opens it and its preview. */
+    async newDeck() {
+        const { file, missingTemplate } = await createDeck(
+            this.app,
+            this.settings.deckTemplate,
+        );
+        if (missingTemplate) {
+            new Notice(
+                `Slidey: template note "${this.settings.deckTemplate}" not found, so the new deck uses the starter.`,
+                8000,
+            );
+        }
+        await this.app.workspace.getLeaf(false).openFile(file);
+        await this.showView();
     }
 
     async showView() {

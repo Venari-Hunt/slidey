@@ -1,10 +1,10 @@
 {
     "name": "slidey",
-    "version": "0.21.0",
+    "version": "0.28.3",
     "description": "Turn a markdown note into a controllable, preset-styled slide deck. Fork of Slides Extended.",
-    "author": "joaovenari",
+    "author": "Venari",
     "license": "MIT",
-    "homepage": "https://github.com/joaovenari/slidey",
+    "homepage": "https://github.com/Venari-Hunt/slidey",
     "main": "src/main.ts",
     "scripts": {
         "preinstall": "npx only-allow pnpm",
@@ -27,10 +27,10 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/joaovenari/slidey.git"
+        "url": "git+https://github.com/Venari-Hunt/slidey.git"
     },
     "bugs": {
-        "url": "https://github.com/joaovenari/slidey/issues"
+        "url": "https://github.com/Venari-Hunt/slidey/issues"
     },
     "auto-changelog": {
         "backfillLimit": false,
@@ -43,7 +43,7 @@
         "startingDate": "2024-02-17"
     },
     "devDependencies": {
-        "@biomejs/biome": "^2.5.6",
+        "@biomejs/biome": "^2.5.10",
         "@codemirror/state": "6.5.0",
         "@codemirror/view": "6.38.6",
         "@types/color": "^4.2.1",
@@ -51,7 +51,7 @@
         "@types/mustache": "^4.2.6",
         "@types/node": "^26.1.2",
         "@types/request": "^2.48.13",
-        "@typescript-eslint/parser": "^8.65.0",
+        "@typescript-eslint/parser": "^8.68.0",
         "auto-changelog": "^2.6.0",
         "esbuild": "^0.28.1",
         "esbuild-plugin-copy": "^2.1.1",
@@ -72,11 +72,11 @@
         "yaml": "^2.7.1"
     },
     "dependencies": {
-        "@fastify/static": "^10.1.2",
+        "@fastify/static": "^10.1.3",
         "@progress/jszip-esm": "^1.0.4",
         "chart.js": "^4.5.1",
         "color": "^4.2.3",
-        "fastify": "^5.8.5",
+        "fastify": "^5.12.1",
         "mustache": "^4.2.0",
         "pptxgenjs": "^4.0.1"
     },

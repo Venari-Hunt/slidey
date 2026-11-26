@@ -14,7 +14,7 @@ import {
     WidgetType,
 } from "@codemirror/view";
 import { getFrontMatterInfo, parseYaml, type Workspace } from "obsidian";
-import type { Options, SlidesExtendedSettings } from "../@types";
+import type { SlidesExtendedSettings } from "../@types";
 import { LAYOUTS } from "../presets";
 import {
     blockOutline,
@@ -112,7 +112,10 @@ interface HeadingMarks {
     pills: DecorationSet;
 }
 
-const NO_MARKS: HeadingMarks = { dots: RangeSet.empty, pills: Decoration.none };
+const NO_MARKS: HeadingMarks = {
+    dots: RangeSet.of<PresetDot>([]),
+    pills: Decoration.none,
+};
 
 /** Dispatched to every editor when settings change, so marks recolor. */
 const refreshMarks = StateEffect.define<null>();
@@ -128,11 +131,13 @@ function buildMarks(
     }
     let frontmatter: Record<string, unknown>;
     try {
-        frontmatter = parseYaml(info.frontmatter) ?? {};
+        frontmatter =
+            (parseYaml(info.frontmatter) as Record<string, unknown> | null) ??
+            {};
     } catch {
         return NO_MARKS;
     }
-    const mode = slidesMode(frontmatter as Partial<Options>);
+    const mode = slidesMode(frontmatter);
     // A plain `---` note only counts as a deck once its frontmatter says so;
     // otherwise every note with a horizontal rule would get marks.
     if (mode === "separators" && !DECK_KEYS.some((key) => key in frontmatter)) {
@@ -140,9 +145,7 @@ function buildMarks(
     }
 
     const deckLook = (key: string): string =>
-        typeof frontmatter[key] === "string"
-            ? (frontmatter[key] as string).trim()
-            : "";
+        typeof frontmatter[key] === "string" ? frontmatter[key].trim() : "";
     const known: KnownLooks = {
         presets: namesOf(settings.presets),
         layouts: namesOf(LAYOUTS),
