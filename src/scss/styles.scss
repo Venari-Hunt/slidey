@@ -267,6 +267,27 @@ div.reveal-preview-view>iframe {
     background: #000;
 }
 
+// The slides window shows only the slides: no tab bar, title bar or view
+// header from Obsidian's popout around them (owner, 2026-11-25).
+body.is-popout-window:has(.slidey-audience) {
+    .workspace-tab-header-container,
+    .view-header,
+    .titlebar,
+    .workspace-ribbon,
+    .status-bar {
+        display: none !important;
+    }
+
+    .workspace-leaf-content,
+    .workspace-tabs,
+    .workspace-split,
+    .view-content {
+        padding: 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+    }
+}
+
 .slidey-audience-frame {
     width: 100%;
     height: 100%;

@@ -71,6 +71,11 @@ export class AudienceView extends ItemView {
     async onOpen(): Promise<void> {
         this.contentEl.addClass("slidey-audience");
         this.registerDomEvent(this.contentEl, "keydown", (ev) => {
+            if (ev.key === "Escape") {
+                ev.preventDefault();
+                this.plugin.endSpeakerPresentation();
+                return;
+            }
             const method = CLICKER_KEYS[ev.key];
             if (method) {
                 ev.preventDefault();
@@ -204,6 +209,12 @@ export class SpeakerView extends ItemView {
         this.contentEl.addClass("slidey-speaker");
         this.contentEl.tabIndex = 0;
         this.registerDomEvent(this.contentEl, "keydown", (ev) => {
+            if (ev.key === "Escape") {
+                // Esc ends the presentation from either window (owner, 2026-11-25).
+                ev.preventDefault();
+                this.plugin.endSpeakerPresentation();
+                return;
+            }
             const method = CLICKER_KEYS[ev.key];
             if (method) {
                 ev.preventDefault();

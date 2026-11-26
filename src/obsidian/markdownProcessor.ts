@@ -18,6 +18,7 @@ import { GridProcessor } from "./processors/gridProcessor";
 import { IconsProcessor } from "./processors/iconsProcessor";
 import { InternalLinkProcessor } from "./processors/internalLinkProcessor";
 import { LatexProcessor } from "./processors/latexProcessor";
+import { LookProcessor } from "./processors/lookProcessor";
 import { MediaProcessor } from "./processors/mediaProcessor";
 import { MultipleFileProcessor } from "./processors/multipleFileProcessor";
 import {
@@ -57,6 +58,7 @@ export class MarkdownProcessor {
     private presetProcessor: PresetProcessor;
     private styleProcessor: PresetProcessor;
     private layoutProcessor: PresetProcessor;
+    private lookProcessor: LookProcessor;
     private referenceProcessor: ReferenceProcessor;
     private skipSlideProcessor: SkipSlideProcessor;
     private stripLatexBackTicks: Processor;
@@ -84,6 +86,7 @@ export class MarkdownProcessor {
         this.presetProcessor = new PresetProcessor();
         this.styleProcessor = new PresetProcessor(STYLES);
         this.layoutProcessor = new PresetProcessor(LAYOUTS_KIND);
+        this.lookProcessor = new LookProcessor();
         this.referenceProcessor = new ReferenceProcessor();
         this.skipSlideProcessor = new SkipSlideProcessor();
         this.stripLatexBackTicks = {
@@ -203,6 +206,11 @@ export class MarkdownProcessor {
             {
                 name: "layoutProcessor",
                 processor: this.layoutProcessor,
+            },
+            // Pick each slide's look within its layout (auto decks)
+            {
+                name: "lookProcessor",
+                processor: this.lookProcessor,
             },
             // Stamp style classes onto slides; first, so a style's
             // background wins over a preset's

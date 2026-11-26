@@ -51,6 +51,8 @@ interface SlideAttrs extends SlideOverrides {
     preset?: string;
     style?: string;
     layout?: string;
+    /** One of the layout's looks (domain/slideLook.ts). */
+    look?: string;
     bg?: string;
     /** reveal's `data-background-size`: cover (default), contain, 50%… */
     fit?: string;
@@ -480,6 +482,9 @@ function readAttrs(text: string): { attrs: SlideAttrs; rest: string } {
             case "layout":
                 attrs.layout = value;
                 return "";
+            case "look":
+                attrs.look = value;
+                return "";
             case "bg":
                 attrs.bg = bgValue(value);
                 return "";
@@ -580,6 +585,7 @@ function withAttrs(slide: string, attrs: SlideAttrs): string {
     const owned: [Exclude<keyof SlideAttrs, "step">, string, RegExp][] = [
         ["preset", "preset", /\bpreset\s*=/],
         ["layout", "layout", /\blayout\s*=/],
+        ["look", "slidey-look", /\bslidey-look\s*=/],
         ["style", "slidey-style", /\bslidey-style\s*=/],
         ["bg", "bg", /\b(?:bg|data-background-\w+)\s*=/],
         ["fit", "data-background-size", /\bdata-background-size\s*=/],

@@ -24,13 +24,13 @@ const TITLE_CARD_MAX_WORDS = 40;
 /** More list items than this split into two columns. */
 const TWO_COLUMN_MIN_ITEMS = 8;
 
-const HEADING = /^(#{1,6})\s+\S/;
-const LIST_ITEM = /^\s*(?:[-*+]|\d+[.)])\s+\S/;
-const QUOTE = /^\s*>/;
+export const HEADING = /^(#{1,6})\s+\S/;
+export const LIST_ITEM = /^\s*(?:[-*+]|\d+[.)])\s+\S/;
+export const QUOTE = /^\s*>/;
 // An Obsidian callout opener; it renders as a box, not a quote.
 const CALLOUT = /^\s*>\s*\[![\w-]+\]/;
-const FENCE = /^\s*(?:`{3,}|~{3,})/;
-const IMAGE_ONLY =
+export const FENCE = /^\s*(?:`{3,}|~{3,})/;
+export const IMAGE_ONLY =
     /^\s*(?:!\[[^\]]*\]\([^)]*\)|!\[\[[^\]]+\]\]|<img\b[^>]*>|<p>\s*<img\b[^>]*>\s*<\/p>)\s*$/i;
 const OBSIDIAN_COMMENT_LINE = /^\s*%%.*%%\s*$/;
 // Where speaker notes start: upstream's `note:` or Slidey's notes sentinel.
@@ -43,7 +43,7 @@ function isCommentLine(line: string): boolean {
 }
 
 /** The lines the audience will see: no comments, notes or blank lines. */
-function visibleLines(slide: string): string[] {
+export function visibleLines(slide: string): string[] {
     const lines: string[] = [];
     for (const line of slide.split(/\r?\n/)) {
         if (NOTES_START.test(line)) {
@@ -61,7 +61,7 @@ function visibleLines(slide: string): string[] {
     return lines;
 }
 
-function words(line: string): number {
+export function words(line: string): number {
     return line.trim().split(/\s+/).filter(Boolean).length;
 }
 
@@ -167,10 +167,14 @@ export function isAutoDeck(options: DeckLooks): boolean {
 export function autoDeckSize(
     options: DeckLooks,
     frontmatter: unknown,
-): { width?: number; height?: number } {
+): { width?: number; height?: number; margin?: number } {
     const own = (frontmatter ?? {}) as Record<string, unknown>;
     if (!isAutoDeck(options) || own.width != null || own.height != null) {
         return {};
     }
-    return { width: 1280, height: 720 };
+    // No margin: the slide fills a 16:9 screen edge to edge, so pictures can
+    // bleed; the house theme pads the text instead (owner, 2026-11-25).
+    return own.margin != null
+        ? { width: 1280, height: 720 }
+        : { width: 1280, height: 720, margin: 0 };
 }

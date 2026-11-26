@@ -12,6 +12,7 @@ import {
     type SlidePreset,
     styleClass,
 } from "../../presets";
+import { restoreFencedCode } from "../fencedCode";
 
 /** Which list a processor resolves: presets, or the styles split from them. */
 interface LookKind {
@@ -92,7 +93,7 @@ export class PresetProcessor implements Processor {
             }
             const newSlide = this.transformSlide(
                 auto ? separateQuoteCredit(slide) : slide,
-                deckPreset || auto?.(slide) || "",
+                deckPreset || auto?.(restoreFencedCode(slide)) || "",
                 byName,
             );
             if (newSlide !== slide) {

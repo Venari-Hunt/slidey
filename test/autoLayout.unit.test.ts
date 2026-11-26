@@ -71,6 +71,11 @@ describe("autoDeckSize", () => {
         expect(autoDeckSize({ autoSlides: true }, {})).toEqual({
             width: 1280,
             height: 720,
+            margin: 0,
+        });
+        expect(autoDeckSize({ autoSlides: true }, { margin: 0.1 })).toEqual({
+            width: 1280,
+            height: 720,
         });
     });
     test("keeps the note's own size, and old decks", () => {

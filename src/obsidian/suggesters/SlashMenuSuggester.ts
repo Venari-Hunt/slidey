@@ -10,6 +10,7 @@ import {
     type TFile,
 } from "obsidian";
 import type { SlidesExtendedSettings } from "../../@types";
+import { isAutoDeck } from "../../domain/autoLayout";
 import { currentLang } from "../../domain/strings";
 import {
     CURSOR,
@@ -20,6 +21,7 @@ import {
     type SlashItem,
     slashItems,
     slashQuery,
+    slideAround,
 } from "../slashMenu";
 
 // A non-deck note only gets the menu once the typed word starts naming it, so
@@ -79,12 +81,25 @@ export class SlashMenuSuggest extends EditorSuggest<SlashItem> {
         if (!mode && typed.query.length < MIN_QUERY_OUTSIDE_DECKS) {
             return null;
         }
-        if (inFencedCode(text.split("\n"), cursor.line)) {
+        const lines = text.split("\n");
+        if (inFencedCode(lines, cursor.line)) {
             return null;
         }
 
+        const auto =
+            mode !== null &&
+            isAutoDeck({
+                ...(frontmatter ?? {}),
+                autoSlides: frontmatter?.autoSlides ?? settings.autoSlides,
+            });
         this.items = filterSlashItems(
-            slashItems(mode, settings),
+            slashItems(
+                mode,
+                settings,
+                auto && mode
+                    ? slideAround(lines, cursor.line, mode)
+                    : undefined,
+            ),
             typed.query,
             currentLang(),
         );

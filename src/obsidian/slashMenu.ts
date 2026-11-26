@@ -1,3 +1,5 @@
+import { guessLayout } from "../domain/autoLayout";
+import { LOOK_LABELS, lookChoices } from "../domain/slideLook";
 import type { Lang } from "../domain/strings";
 import { LAYOUTS } from "../presets";
 import { type SlidesMode, slidesMode } from "./slidesMode";
@@ -108,6 +110,51 @@ function lookItems(
             keywords: `${kind} ${look.name}`,
             insert: marker(`${kind}=${look.name}`),
         }));
+}
+
+/**
+ * The slide the cursor is on, without the cursor's own line (it holds the
+ * `/query`): between `---`/`--` lines, from the heading above to the next
+ * heading, or inside a `%% slide %%` block, by the note's mode.
+ */
+export function slideAround(
+    lines: string[],
+    lineNo: number,
+    mode: SlidesMode,
+): string {
+    const isHeading = (l: string) => /^#{1,6}\s/.test(l);
+    const isSep = (l: string) => /^-{2,3}\s*$/.test(l);
+    const isBlock = (l: string) =>
+        /^\s*%%\s*(?:slide\b|endslide|\/slide)/i.test(l);
+    let start = lineNo;
+    let end = lineNo;
+    if (mode === "headings") {
+        while (start > 0 && !isHeading(lines[start])) start--;
+        while (end + 1 < lines.length && !isHeading(lines[end + 1])) end++;
+    } else {
+        const edge = mode === "blocks" ? isBlock : isSep;
+        while (start > 0 && !edge(lines[start - 1])) start--;
+        while (end + 1 < lines.length && !edge(lines[end + 1])) end++;
+    }
+    return lines
+        .slice(start, end + 1)
+        .filter((_, i) => start + i !== lineNo)
+        .join("\n");
+}
+
+/** "Look: …" items for the looks that fit this slide (auto decks). */
+export function slideLookItems(slide: string): SlashItem[] {
+    const layout = guessLayout(slide);
+    const choices = layout ? lookChoices(layout, slide, 99) : [];
+    if (choices.length < 2) {
+        return [];
+    }
+    return choices.map((look) => ({
+        title: `Look: ${LOOK_LABELS[look] ?? look}`,
+        hint: marker(`look=${look}`),
+        keywords: `look ${look} ${layout}`,
+        insert: marker(`look=${look}`),
+    }));
 }
 
 // reveal.js's built-in slide transitions.
@@ -267,12 +314,15 @@ export function slashItems(
         styles?: { name?: string; label?: string }[];
         presets?: { name?: string; label?: string }[];
     },
+    /** The slide under the cursor, in an auto deck: adds its Look items. */
+    slide?: string,
 ): SlashItem[] {
     if (!mode) {
         return MAKE_DECK_ITEMS;
     }
     return [
         ...newSlideItems(mode),
+        ...(slide ? slideLookItems(slide) : []),
         ...lookItems("layout", LAYOUTS),
         ...lookItems("style", looks.styles),
         ...SLIDE_ITEMS,
@@ -320,6 +370,25 @@ const PT: Record<string, string> = {
     Style: "Estilo",
     Preset: "Predefinição",
     Transition: "Transição",
+    Look: "Visual",
+    Centered: "Centralizado",
+    "Big left": "Grande à esquerda",
+    Kicker: "Chamada",
+    "Amber block": "Bloco âmbar",
+    "Big number": "Número grande",
+    Rule: "Régua",
+    Plain: "Simples",
+    Markers: "Marcadores",
+    "Numbered cards": "Cartões numerados",
+    Steps: "Passos",
+    Compare: "Comparar",
+    Columns: "Colunas",
+    Bar: "Barra",
+    "Big quote mark": "Aspas grandes",
+    "Rounded card": "Cartão arredondado",
+    "Bleed to edge": "Até a borda",
+    "Photo behind": "Foto atrás",
+    Panel: "Painel",
     "Picture focus": "Foco da imagem",
     Top: "Topo",
     Bottom: "Base",
