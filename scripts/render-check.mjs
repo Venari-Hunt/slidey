@@ -1,7 +1,7 @@
 // Static render check of reveal-dist template with reveal.js 6: node render-check.mjs <buildDir> <outDir>
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import { createServer } from "node:http";
-import { extname, join, resolve, sep } from "node:path";
+import { extname, join, sep } from "node:path";
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
 
@@ -55,13 +55,17 @@ const html = Mustache.render(readFileSync(join(build, "template/reveal.html"), "
 writeFileSync(join(out, "index.html"), html);
 
 const types = { ".js": "text/javascript", ".css": "text/css", ".html": "text/html", ".json": "application/json", ".woff2": "font/woff2" };
-const root = resolve(build);
+// Serve from a table built at startup: no request value ever reaches the
+// file system.
+const files = new Map([["/", join(out, "index.html")]]);
+for (const rel of readdirSync(build, { recursive: true })) {
+    const full = join(build, rel);
+    if (statSync(full).isFile()) files.set(`/${rel.split(sep).join("/")}`, full);
+}
 const server = createServer((req, res) => {
     const p = decodeURIComponent(req.url.split("?")[0]);
-    const f = p === "/" ? join(out, "index.html") : resolve(root, `.${p}`);
-    // Local test server: only ever serve the built folder (or the page).
-    if (p !== "/" && !f.startsWith(root + sep)) { res.statusCode = 403; return res.end(); }
-    if (!existsSync(f)) { console.log("404", p); res.statusCode = 404; return res.end(); }
+    const f = files.get(p);
+    if (!f) { console.log("404", p); res.statusCode = 404; return res.end(); }
     res.setHeader("content-type", types[extname(f)] || "application/octet-stream");
     res.end(readFileSync(f));
 });
