@@ -1,7 +1,6 @@
-export const md = (() => {
-    // Hack required since https://github.com/hakimel/reveal.js/commit/d780352b7f78e16635ce9fabf2dbb53639610f18
-    global.Reveal = {
-        registerPlugin: () => {},
-    };
-    return require("reveal.js/plugin/markdown/markdown")();
-})();
+// reveal.js 6 ships the markdown plugin as dist/plugin/markdown.mjs (default
+// export: a factory). Its .js build is a UMD file that a bundler sees as ESM
+// (the package is "type": "module"), so require() gives an empty namespace.
+import Markdown from "reveal.js/plugin/markdown";
+
+export const md = Markdown();
