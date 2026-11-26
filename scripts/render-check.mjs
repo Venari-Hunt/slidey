@@ -1,7 +1,7 @@
 // Static render check of reveal-dist template with reveal.js 6: node render-check.mjs <buildDir> <outDir>
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { createServer } from "node:http";
-import { extname, join } from "node:path";
+import { extname, join, resolve, sep } from "node:path";
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
 
@@ -55,9 +55,12 @@ const html = Mustache.render(readFileSync(join(build, "template/reveal.html"), "
 writeFileSync(join(out, "index.html"), html);
 
 const types = { ".js": "text/javascript", ".css": "text/css", ".html": "text/html", ".json": "application/json", ".woff2": "font/woff2" };
+const root = resolve(build);
 const server = createServer((req, res) => {
     const p = decodeURIComponent(req.url.split("?")[0]);
-    const f = p === "/" ? join(out, "index.html") : join(build, p);
+    const f = p === "/" ? join(out, "index.html") : resolve(root, `.${p}`);
+    // Local test server: only ever serve the built folder (or the page).
+    if (p !== "/" && !f.startsWith(root + sep)) { res.statusCode = 403; return res.end(); }
     if (!existsSync(f)) { console.log("404", p); res.statusCode = 404; return res.end(); }
     res.setHeader("content-type", types[extname(f)] || "application/octet-stream");
     res.end(readFileSync(f));
@@ -78,6 +81,6 @@ const dom = (await run(["--dump-dom", "http://localhost:3999/"])).stdout || "";
 writeFileSync(join(out, "dom.html"), dom);
 console.log("screenshot", existsSync(shot));
 console.log("reveal classes:", /class="reveal[^"]*"/.exec(dom)?.[0]);
-console.log("h1:", /<h1[^>]*>Slide one/.test(dom), "callout:", /class="callout callout-color2"/.test(dom), "placeholder code:", /const placeholder|placeholder/.test(dom) && /<pre><code/.test(dom), "pre/code:", (dom.match(/<pre>/g) || []).length, "katex-ish:", /katex/.test(dom));
+console.log("h1:", /<h1[^>]*>Slide one/.test(dom), "callout:", /class="callout callout-color2"/.test(dom), "placeholder code:", /hljs-keyword">const<\/span> placeholder/.test(dom), "code blocks:", (dom.match(/<pre class="code-wrapper">/g) || []).length, "katex-ish:", /katex/.test(dom));
 console.log("sections:",(dom.match(/<section/g) || []).length, "fragment:", /class="fragment/.test(dom), "hljs:", /hljs/.test(dom), "katex:", /class="katex/.test(dom), "ready-marker:", /slidey-script/.test(dom), "present:", /class="[^"]*present/.test(dom));
 server.close();
