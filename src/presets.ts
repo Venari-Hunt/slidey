@@ -461,6 +461,11 @@ ${LOOK("quote", "mark")} blockquote p:last-child:not(:first-child){font-family:$
 ${LOOK("image-side", "photo")} > div{display:flex!important;flex-direction:column;justify-content:flex-end!important;align-items:flex-start!important;padding-bottom:1.2em;box-sizing:border-box}
 ${LOOK("image-side", "photo")} blockquote{background:none;box-shadow:none;position:relative;z-index:2;width:90%;margin:0;border:0!important;padding:0!important;font:700 1.35em/1.2 ${HOUSE_FONT};font-style:normal;color:#fff;text-wrap:balance}
 ${LOOK("image-side", "photo")} blockquote p:last-child:not(:first-child){font-family:${BODY_FONT};font-weight:400;color:rgba(255,255,255,.75)}`,
+    // Code, line focus: lines marked in the fence (```js [2-3], reveal.js highlight) stay lit on an amber tint, the rest dims; no line-number gutter.
+    `${LOOK("code", "focus")} pre code .hljs-ln-numbers{display:none}
+${LOOK("code", "focus")} pre code table{width:100%}
+${LOOK("code", "focus")} pre code.has-highlights tr:not(.highlight-line){opacity:.35}
+${LOOK("code", "focus")} pre code.has-highlights tr.highlight-line td{background:#3a2f12;border-radius:.3em}`,
 ].join("\n");
 
 // The one look of an auto deck (see domain/autoLayout.ts): the design system's tool dark look

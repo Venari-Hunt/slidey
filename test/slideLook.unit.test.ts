@@ -60,6 +60,16 @@ describe("pickLook", () => {
         expect(pickLook(layout, slide)).toBe(look);
     });
 
+    test("code with marked lines gets line focus, plain code the panel", () => {
+        const marked = "## Fade\n\n```js [2-3]\na()\nb()\nc()\n```";
+        expect(pickLook("code", marked)).toBe("focus");
+        expect(pickLook("code", marked, { style: "calm" })).toBe("focus");
+        expect(pickLook("code", "## Fade\n\n```js\na()\n```")).toBe("panel");
+        expect(pickLook("code", "```js []\na()\n```")).toBe("panel");
+        expect(lookChoices("code", marked)).toEqual(["panel", "focus"]);
+        expect(lookChoices("code", "```js\na()\n```")).toEqual(["panel"]);
+    });
+
     test("sections get a number only in decks with 3 or more", () => {
         expect(pickLook("section", "## Part", { sections: 2 })).toBe("block");
         expect(pickLook("section", "## Part", { sections: 3 })).toBe("number");
