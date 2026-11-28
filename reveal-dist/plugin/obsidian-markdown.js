@@ -95,9 +95,24 @@ window.ObsidianMarkdown = window.ObsidianMarkdown || {
             token.meta = { text: content };
         } else {
             token.type = "fencedcode";
-            token.meta = { text: content, lang: type, escaped: false };
+            // Line marks (```js [2-3]) ride along in the language string:
+            // reveal's code renderer turns them into data-line-numbers.
+            token.meta = {
+                text: content,
+                lang: type + self.lineMarks(fenceText),
+                escaped: false,
+            };
         }
         return token;
+    },
+
+    // The ` [2-3]` part of a fence's opening line, or "".
+    lineMarks: (fenceText) => {
+        const opening = /^(?:`{3,}|~{3,})([^\r\n]*)/.exec(fenceText);
+        const marks = opening
+            ? /\[[\d,|:\s-]*\d[\d,|:\s-]*\]/.exec(opening[1])
+            : null;
+        return marks ? ` ${marks[0]}` : "";
     },
 
     // Mirrors src/obsidian/fencedCode.ts's extractFenceContent().

@@ -29,6 +29,7 @@ export const LOOKS: Record<string, readonly string[]> = {
     "two-column": ["cols", "compare"],
     quote: ["bar", "mark"],
     "image-side": ["card", "bleed", "photo"],
+    code: ["panel", "focus"],
 };
 
 /** Friendly names, for the `/` menu. */
@@ -50,6 +51,8 @@ export const LOOK_LABELS: Record<string, string> = {
     card: "Rounded card",
     bleed: "Bleed to edge",
     photo: "Photo behind",
+    panel: "Panel",
+    focus: "Line focus",
 };
 
 /** Title: a heading longer than this goes big and left. */
@@ -71,6 +74,9 @@ const SECTION_NUMBER_MIN = 3;
 /** A statement that opens with a number: `73%`, `3x`, `$40`, `1,200`. */
 export const LEADING_NUMBER =
     /^(\s*)((?:R\$|[$€£])?\d[\d.,]*(?:%|x|×|k|K|M)?)(?=\s|$)/;
+/** A fence opening that marks lines: ```js [2-3] (reveal.js highlight syntax). */
+export const LINE_MARKED_FENCE =
+    /^[ \t]*(?:`{3,}|~{3,})[^\r\n]*\[[\d,|:\s-]*\d[\d,|:\s-]*\]/m;
 const ORDERED_ITEM = /^\s*\d+[.)]\s+\S/;
 const BOLD_LINE = /^\s*(?:\*\*|__)[^*_]+(?:\*\*|__):?\s*$/;
 
@@ -172,6 +178,8 @@ function contentLooks(
             }
             return words(text) <= BLEED_MAX_WORDS ? ["bleed"] : [];
         }
+        case "code":
+            return LINE_MARKED_FENCE.test(slide) ? ["focus"] : [];
         default:
             return [];
     }
@@ -180,7 +188,7 @@ function contentLooks(
 // Calm keeps the default unless the content leaves no choice (a numbered list
 // is steps, a quote with a photo is the photo);
 // Bold prefers the loud looks.
-const CALM_KEEPS = new Set(["steps", "photo", "compare", "rule"]);
+const CALM_KEEPS = new Set(["steps", "photo", "compare", "rule", "focus"]);
 const BOLD_EXTRA: Record<string, string> = { title: "left", quote: "mark" };
 
 /** The look for one slide, or "" when the layout has no looks. */
